@@ -1,0 +1,126 @@
+<div class="min-h-screen bg-gray-50 py-12">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Mes Réservations</h1>
+
+    <!-- Tab Bar -->
+    <div class="border-b border-gray-200 mb-8 relative">
+      <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        <button (click)="activeTab.set('A_VENIR')"
+                [class.text-emerald-600]="activeTab() === 'A_VENIR'"
+                [class.border-emerald-500]="activeTab() === 'A_VENIR'"
+                [class.border-transparent]="activeTab() !== 'A_VENIR'"
+                [class.text-gray-500]="activeTab() !== 'A_VENIR'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 hover:text-emerald-700">
+          À venir
+        </button>
+        <button (click)="activeTab.set('PASSEES')"
+                [class.text-emerald-600]="activeTab() === 'PASSEES'"
+                [class.border-emerald-500]="activeTab() === 'PASSEES'"
+                [class.border-transparent]="activeTab() !== 'PASSEES'"
+                [class.text-gray-500]="activeTab() !== 'PASSEES'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 hover:text-emerald-700">
+          Passées
+        </button>
+        <button (click)="activeTab.set('ANNULEES')"
+                [class.text-emerald-600]="activeTab() === 'ANNULEES'"
+                [class.border-emerald-500]="activeTab() === 'ANNULEES'"
+                [class.border-transparent]="activeTab() !== 'ANNULEES'"
+                [class.text-gray-500]="activeTab() !== 'ANNULEES'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 hover:text-emerald-700">
+          Annulées
+        </button>
+      </nav>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="loading()" class="space-y-4">
+      <div *ngFor="let i of [1,2,3]" class="bg-gray-200 animate-pulse h-32 rounded-2xl"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="errorMessage()" class="max-w-5xl mx-auto mb-4 p-4 bg-red-50 text-red-700 rounded-lg">{{ errorMessage() }}</div>
+    <div *ngIf="successMessage()" class="max-w-5xl mx-auto mb-4 p-4 bg-emerald-50 text-emerald-700 rounded-lg">{{ successMessage() }}</div>
+    <div *ngIf="!loading() && filteredReservations().length === 0" class="bg-white rounded-3xl p-12 text-center shadow-sm">
+      <div class="text-7xl mb-6">
+        <span *ngIf="activeTab() === 'A_VENIR'">📅</span>
+        <span *ngIf="activeTab() === 'PASSEES'">⏳</span>
+        <span *ngIf="activeTab() === 'ANNULEES'">📝</span>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Aucune réservation</h3>
+      <p class="text-gray-500 mb-8 max-w-sm mx-auto">
+        <span *ngIf="activeTab() === 'A_VENIR'">Vous n'avez pas de réservations prévues prochainement.</span>
+        <span *ngIf="activeTab() === 'PASSEES'">Vous n'avez pas encore joué sur nos terrains.</span>
+        <span *ngIf="activeTab() === 'ANNULEES'">Vous n'avez aucune réservation annulée.</span>
+      </p>
+      <button routerLink="/terrains" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-xl transition-colors inline-block">
+        Trouver un terrain
+      </button>
+    </div>
+
+    <!-- Cards List -->
+    <div *ngIf="!loading() && filteredReservations().length > 0" class="space-y-4">
+      <div *ngFor="let res of filteredReservations()" 
+           class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border-l-4"
+           [ngClass]="getStatusBadge(res).borderClass">
+        <div class="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center">
+          
+          <!-- Info -->
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="text-lg font-bold text-gray-900">{{ res.terrain?.name }}</h3>
+              <span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="getStatusBadge(res).class">
+                {{ getStatusBadge(res).label }}
+              </span>
+              <span class="rounded-full px-3 py-1 text-xs font-bold ml-2" [ngClass]="getPaymentStatusBadge(res).class">
+                {{ getPaymentStatusBadge(res).label }}
+              </span>
+            </div>
+            <p class="text-gray-500 mb-4">{{ res.terrain?.complexe?.name }}</p>
+            
+            <div class="flex flex-wrap gap-4 text-sm font-medium text-gray-700">
+              <div class="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                <span class="text-lg">📅</span>
+                {{ res.start_at | date:'mediumDate' }}
+              </div>
+              <div class="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                 <span class="text-lg">🕐</span>
+                 {{ res.heure_debut }} → {{ res.heure_fin }}
+               </div>
+            </div>
+          </div>
+
+          <!-- Price & Actions -->
+          <div class="flex flex-col items-start sm:items-end gap-4 w-full sm:w-auto">
+            <div class="text-2xl font-black text-gray-900">
+              {{ res.terrain?.price_per_hour }} <span class="text-sm font-bold text-gray-400">TND</span>
+            </div>
+            
+            <div class="flex gap-2 flex-wrap">
+              <button *ngIf="canPay(res)" 
+                      (click)="payReservation(res.id)"
+                      class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                Payer maintenant
+              </button>
+              <button *ngIf="canCancel(res)" 
+                      (click)="cancelReservation(res.id)"
+                      class="w-full sm:w-auto border border-red-300 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                Annuler
+              </button>
+              <button *ngIf="res.status === 'cancelled' || res.status === 'expired' || res.status === 'played'"
+                      (click)="deleteReservation(res.id)"
+                      class="w-full sm:w-auto border border-gray-300 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                Supprimer
+              </button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Payment modal -->
+  <app-payment-modal *ngIf="showPaymentModal()"
+                     [reservationId]="paymentReservationId()"
+                     (paid)="onPaymentModalPaid($event)"
+                     (closed)="onPaymentModalCancelled()"></app-payment-modal>
+</div>

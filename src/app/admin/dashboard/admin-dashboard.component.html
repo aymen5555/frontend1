@@ -1,0 +1,1071 @@
+<section class="page">
+
+    <!-- ═══════ QUICK NAV ═══════ -->
+    @if (auth.isSuperAdmin() && !loading()) {
+    <nav class="quick-nav">
+        <a (click)="scrollToSection('section-complexes')" class="quick-link">🏢 Complexes</a>
+        <a (click)="scrollToSection('section-gerants')" class="quick-link">🔑 Gérants</a>
+        <a (click)="scrollToSection('section-clients')" class="quick-link">👥 Clients</a>
+        <a (click)="scrollToSection('section-reservations')" class="quick-link">📅 Réservations</a>
+        <a (click)="scrollToSection('section-activites')" class="quick-link">⚽ Activités</a>
+        <a (click)="scrollToSection('section-reservations-activites')" class="quick-link">📋 Réservations activités</a>
+        <a (click)="scrollToSection('section-abonnements')" class="quick-link">📦 Abonnements</a>
+    </nav>
+    }
+
+    <header class="topbar">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p>Bonjour {{ user?.first_name }}, gérez vos complexes, terrains, réservations et abonnements depuis cet espace.</p>
+        </div>
+    </header>
+
+    @if (errorMessage()) {
+    <div class="alert">{{ errorMessage() }}</div>
+    }
+
+    @if (loading()) {
+    <p class="muted">Chargement…</p>
+    } @else {
+
+    @if (auth.isGerant() && complexes().length === 0 && terrains().length === 0) {
+    <div class="panel" style="margin: 2rem 0; padding: 1.5rem; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem;">
+        <p style="font-size: 1.1rem; font-weight: 600; color: #d97706; margin: 0;">⚠️ Aucun complexe assigné</p>
+        <p style="color: #92400e; margin: 0.5rem 0 0 0;">Votre compte gérant n'a pas encore de complexe assigné. Contactez l'administrateur pour vous attribuer un complexe à gérer.</p>
+    </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-[1.7fr_1fr]" id="section-complexes">
+        <!-- SUPER ADMIN: Complexe Selection Panel -->
+        @if (auth.isSuperAdmin()) {
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Complexes</h2>
+                    <p class="text-sm text-slate-500">Cliquez sur un complexe pour afficher ses courts et gérer votre site.</p>
+                </div>
+                <button type="button" class="btn-sm" (click)="openComplexForm()">
+                    + Ajouter
+                </button>
+            </div>
+
+            @if (showComplexForm()) {
+            <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+                <h3 class="font-semibold mb-3">{{ editingComplex() ? 'Modifier le complexe' : 'Créer un complexe' }}</h3>
+                <form [formGroup]="complexForm" (ngSubmit)="saveComplex()" class="grid gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Nom *</label>
+                        <input type="text" formControlName="name" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Nom du complexe" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Adresse *</label>
+                        <input type="text" formControlName="address" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Rue, quartier" />
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Ville</label>
+                            <input type="text" formControlName="city" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ville" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Téléphone</label>
+                            <input type="text" formControlName="phone" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Numéro de contact" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Description</label>
+                        <input type="text" formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Courte description" />
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" class="btn-outline" (click)="cancelComplexForm()">Annuler</button>
+                        <button type="submit" class="btn-manual" [disabled]="complexForm.invalid || submittingComplex()">
+                            {{ submittingComplex() ? 'Enregistrement…' : (editingComplex() ? 'Mettre à jour' : 'Créer') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            }
+
+            @if (complexes().length === 0) {
+            <p class="text-sm text-gray-500">Aucun complexe disponible.</p>
+            } @else {
+            <div class="space-y-3">
+                @for (c of complexes(); track c.id) {
+                <div class="complex-entry">
+                    <button type="button" class="complex-item" [class.selected]="c.id === selectedComplexId()" (click)="selectComplex(c.id)">
+                        <div>
+                            <p class="font-semibold text-slate-900">{{ c.name }}</p>
+                            <p class="text-sm text-slate-500">{{ c.address || 'Adresse non renseignée' }}</p>
+                        </div>
+                        <span class="badge">{{ c.terrains?.length ?? 0 }} courts</span>
+                    </button>
+                    <div class="complex-actions">
+                        <button type="button" class="btn-xs" (click)="openComplexForm(c); $event.stopPropagation()">Modifier</button>
+                        <button type="button" class="btn-xs danger" (click)="deleteComplex(c); $event.stopPropagation()">Supprimer</button>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </section>
+        }
+
+        <!-- GERANT: Simplified View (just show their complexe) -->
+        @if (auth.isGerant() && complexes().length > 0) {
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Mon Complexe</h2>
+            </div>
+            <div class="panel-card">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Complexe attribué</p>
+                <h3 class="font-semibold text-xl text-slate-900">{{ complexes()[0]?.name }}</h3>
+                <p class="text-sm text-slate-600 mt-2">{{ complexes()[0]?.address }}</p>
+                <p class="text-xs text-slate-500 mt-1">{{ complexes()[0]?.terrains?.length ?? 0 }} courts</p>
+            </div>
+        </section>
+        }
+
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Courts et terrains</h2>
+                    <p class="text-sm text-slate-500">Gérez les terrains du complexe sélectionné.</p>
+                </div>
+                @if (selectedComplexName()) {
+                <button type="button" class="btn-sm" (click)="openTerrainForm()">
+                    + Ajouter un court
+                </button>
+                }
+            </div>
+
+            @if (!selectedComplexName()) {
+            <div class="empty-panel">
+                <p class="text-sm text-gray-500">Sélectionnez un complexe à gauche pour afficher ses courts.</p>
+            </div>
+            } @else {
+            <div class="space-y-4">
+                <div class="panel-card">
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Complexe sélectionné</p>
+                    <h3 class="font-semibold text-xl text-slate-900">{{ selectedComplexName() }}</h3>
+                </div>
+
+                @if (showTerrainForm()) {
+                <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+                    <h3 class="font-semibold mb-3">{{ editingTerrain() ? 'Modifier le court' : 'Créer un court' }}</h3>
+                    <form [formGroup]="terrainForm" (ngSubmit)="saveTerrain()" class="grid gap-4">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Nom *</label>
+                            <input type="text" formControlName="name" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Nom du court" />
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Sport *</label>
+                                <select formControlName="sport_type" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                    <option value="football">Football</option>
+                                    <option value="tennis">Tennis</option>
+                                    <option value="padel">Padel</option>
+                                    <option value="basketball">Basketball</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Prix/h *</label>
+                                <input type="number" formControlName="price_per_hour" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" class="btn-outline" (click)="cancelTerrainForm()">Annuler</button>
+                            <button type="submit" class="btn-manual" [disabled]="terrainForm.invalid || submittingTerrain()">
+                                {{ submittingTerrain() ? 'Enregistrement…' : (editingTerrain() ? 'Mettre à jour' : 'Créer') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                }
+
+                @if (terrains().length === 0) {
+                <p class="text-sm text-gray-500">Aucun court disponible pour ce complexe.</p>
+                } @else {
+                <div class="space-y-4">
+                    @for (t of terrains(); track t.id) {
+                    <div class="court-row">
+                        <div>
+                            <p class="font-semibold text-slate-900">{{ t.name }}</p>
+                            <p class="text-sm text-slate-500">{{ t.sport_type }} • {{ t.price_per_hour | number:'1.2-2' }} TND/h</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn-xs" (click)="openTerrainForm(t)">Modifier</button>
+                            <button type="button" class="btn-xs danger" (click)="deleteTerrains(t)">Supprimer</button>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            }
+        </section>
+    </div>
+
+    <section class="panel mt-6" id="section-clients">
+        <div class="panel-head">
+            <div>
+                <h2>Clients</h2>
+                <p class="text-sm text-slate-500">Liste des clients et leur statut.</p>
+            </div>
+            <input type="text" placeholder="Rechercher clients..." [(ngModel)]="searchClients" class="px-3 py-2 border border-gray-300 rounded-md text-sm" />
+        </div>
+
+        @if (filteredClients().length === 0) {
+        <p class="text-sm text-gray-500">Aucun client inscrit.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Nom</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Téléphone</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Vérifié</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Réservations</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (client of filteredClients(); track client.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3">{{ client.first_name }} {{ client.last_name }}</td>
+                        <td class="px-4 py-3 text-slate-600">{{ client.email }}</td>
+                        <td class="px-4 py-3">{{ client.phone || '—' }}</td>
+                        <td class="px-4 py-3">{{ client.email_verified_at ? 'Oui' : 'Non' }}</td>
+                        <td class="px-4 py-3">{{ client.bookings_on_my_courts_count ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getClientStatusStyle(client.is_active).bg + ' ' + getClientStatusStyle(client.is_active).text">
+                                <span>{{ getClientStatusStyle(client.is_active).icon }}</span>
+                                {{ client.is_active ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button type="button" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition" (click)="toggleClientActive(client)">
+                                {{ client.is_active ? 'Désactiver' : 'Activer' }}
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+
+    <!-- ═══════ SECTION GÉRANTS ═══════ -->
+    @if (auth.isSuperAdmin()) {
+    <section class="panel mt-6" id="section-gerants">
+        <div class="panel-head">
+            <div>
+                <h2>Gérants</h2>
+                <p class="text-sm text-slate-500">Créez et gérez les comptes gérants. Chaque gérant est lié à un complexe sans gérant déjà assigné.</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Rechercher gérants..." [(ngModel)]="searchGerants" class="px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                <button type="button" class="btn-sm" (click)="openGerantForm()">+ Nouveau gérant</button>
+            </div>
+        </div>
+
+        @if (showGerantForm()) {
+        <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+            <h3 class="font-semibold mb-3">Créer un compte gérant</h3>
+
+            @if (gerantError()) {
+            <div class="alert" style="margin-bottom: 0.75rem;">{{ gerantError() }}</div>
+            }
+
+            <form [formGroup]="gerantForm" (ngSubmit)="createGerant()" class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Prénom *</label>
+                    <input type="text" formControlName="first_name" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Prénom" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Nom *</label>
+                    <input type="text" formControlName="last_name" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Nom" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Email *</label>
+                    <input type="email" formControlName="email" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="email@exemple.com" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Mot de passe *</label>
+                    <input type="password" formControlName="password" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Min. 8 caractères" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Téléphone</label>
+                    <input type="text" formControlName="phone" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Optionnel" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Complexe *</label>
+                    <select formControlName="complexe_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option [ngValue]="null" disabled>Sélectionner un complexe…</option>
+                        @for (c of unassignedComplexes(); track c.id) {
+                        <option [ngValue]="c.id">{{ c.name }} ({{ c.address }})</option>
+                        }
+                    </select>
+                    @if (unassignedComplexes().length === 0) {
+                    <p class="text-xs text-amber-600 mt-1">Tous les complexes ont déjà un gérant.</p>
+                    }
+                </div>
+                <div style="grid-column: 1 / -1;" class="flex justify-end gap-2 pt-2">
+                    <button type="button" class="btn-outline" (click)="closeGerantForm()">Annuler</button>
+                    <button type="submit" class="btn-manual" [disabled]="gerantForm.invalid || submittingGerant() || unassignedComplexes().length === 0">
+                        {{ submittingGerant() ? 'Création…' : 'Créer le gérant' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+        }
+
+        @if (gerants().length === 0) {
+        <p class="text-sm text-gray-500">Aucun gérant pour le moment.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Nom</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Complexe</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (g of filteredGerants(); track g.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3">{{ g.first_name }} {{ g.last_name }}</td>
+                        <td class="px-4 py-3 text-slate-600">{{ g.email }}</td>
+                        <td class="px-4 py-3">{{ g.complexe?.name || '—' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getClientStatusStyle(g.is_active).bg + ' ' + getClientStatusStyle(g.is_active).text">
+                                <span>{{ getClientStatusStyle(g.is_active).icon }}</span>
+                                {{ g.is_active ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                @if (g.is_active) {
+                                <button type="button" class="btn-xs" (click)="openAssignComplexeModal(g)">🏢 Assigner</button>
+                                @if (g.complexe) {
+                                <button type="button" class="btn-xs danger" (click)="unassignComplexe(g)">Retirer</button>
+                                }
+                                <button type="button" class="btn-xs danger" (click)="deactivateGerant(g.id)">Désactiver</button>
+                                }
+                                @if (!g.is_active) {
+                                <button type="button" class="btn-xs" (click)="activateGerant(g.id)">Activer</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+    }
+
+    <section class="panel mt-6" id="section-reservations">
+        <div class="panel-head">
+            <div>
+                <h2>Réservations</h2>
+                <p class="text-sm text-slate-500">Gérez toutes les réservations actives et manuelles.</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Rechercher réservations..." [(ngModel)]="searchReservations" class="px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                <button type="button" class="btn-sm" (click)="openManualForm()">+ Nouvelle réservation</button>
+            </div>
+        </div>
+
+        @if (filteredReservations().length === 0) {
+        <p class="text-sm text-gray-500">Aucune réservation pour le moment.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Court</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Client</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Quand</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Paiement</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (r of filteredReservations(); track r.id) {
+                    <tr class="hover:bg-slate-50" [class.unpaid]="r.statut_paiement === 'non_paye'">
+                        <td class="px-4 py-3">{{ r.terrain?.name || '—' }}</td>
+                        <td class="px-4 py-3">{{ r.user?.first_name }} {{ r.user?.last_name }}</td>
+                        <td class="px-4 py-3">{{ r.start_at | date:'dd/MM/yyyy' }} • {{ r.start_at | date:'HH:mm' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getReservationStatusStyle(r.status).bg + ' ' + getReservationStatusStyle(r.status).text">
+                                <span>{{ getReservationStatusStyle(r.status).icon }}</span>
+                                {{ getStatusBadge(r).label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getPaymentStatusStyle(r.statut_paiement || 'non_paye').bg + ' ' + getPaymentStatusStyle(r.statut_paiement || 'non_paye').text">
+                                <span>{{ getPaymentStatusStyle(r.statut_paiement || 'non_paye').icon }}</span>
+                                {{ getPaymentStatusBadge(r).label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <button type="button" class="btn-xs" (click)="openEditReservationForm(r)">Modifier</button>
+                                @if (r.status === 'pending' && canConfirmCashPayment(r)) {
+                                <button type="button" class="btn-xs success" (click)="confirmCashPayment(r)">Confirmer espèces</button>
+                                }
+                                @if (r.status === 'pending' || r.status === 'confirmed') {
+                                <button type="button" class="btn-xs danger" (click)="cancelReservation(r)">Annuler</button>
+                                }
+                                @if (r.status === 'cancelled' || r.status === 'expired' || r.status === 'played') {
+                                <button type="button" class="btn-xs danger" (click)="deleteReservation(r)">Supprimer</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+
+    <section class="panel mt-6" id="section-activites">
+        <div class="panel-head">
+            <div>
+                <h2>Activités</h2>
+                <p class="text-sm text-slate-500">Gérez les activités proposées.</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Rechercher activités..." [(ngModel)]="searchActivites" class="px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                <button type="button" class="btn-sm" (click)="openActiviteForm()">+ Ajouter une activité</button>
+            </div>
+        </div>
+
+        @if (showActiviteForm()) {
+        <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+            <h3 class="font-semibold mb-3">{{ editingActivite() ? 'Modifier' : 'Nouvelle activité' }}</h3>
+    <form [formGroup]="activiteForm" (ngSubmit)="saveActivite()" class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        @if (auth.isSuperAdmin()) {
+        <div style="grid-column: 1 / -1;">
+            <label class="block text-xs font-medium mb-1">Complexe *</label>
+            <select formControlName="complexe_id" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                <option value="">Sélectionner un complexe...</option>
+                <option *ngFor="let c of complexes()" [value]="c.id">
+                    {{ c.name }}
+                </option>
+            </select>
+        </div>
+        }
+        <div>
+            <label class="block text-xs font-medium mb-1">Nom *</label>
+            <input type="text" formControlName="nom" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ex: Yoga du matin" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Sport *</label>
+                    <select formControlName="sport" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="yoga">Yoga</option>
+                        <option value="fitness">Fitness</option>
+                        <option value="pilates">Pilates</option>
+                        <option value="zumba">Zumba</option>
+                        <option value="meditation">Méditation</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Niveau</label>
+                    <select formControlName="niveau" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="tous">Tous</option>
+                        <option value="debutant">Débutant</option>
+                        <option value="intermediaire">Intermédiaire</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Capacité</label>
+                    <input type="number" formControlName="capacite" min="1" max="100" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Prix (TND)</label>
+                    <input type="number" step="0.01" formControlName="prix" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Horaire</label>
+                    <div class="flex gap-2">
+                        <input type="text" formControlName="heure_debut" placeholder="HH:MM" class="flex-1 border border-gray-300 rounded-md px-3 py-2" />
+                        <input type="text" formControlName="heure_fin" placeholder="HH:MM" class="flex-1 border border-gray-300 rounded-md px-3 py-2" />
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="block text-xs font-medium mb-1">Jours</label>
+                    <div class="flex flex-wrap gap-3">
+                        @for (j of joursOptions; track j.key) {
+                        <label class="radio-label">
+                            <input type="checkbox" [checked]="activiteForm.get('jours')?.value?.includes(j.key)" (change)="toggleJour(j.key, $event)" />
+                            {{ j.label }}
+                        </label>
+                        }
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="block text-xs font-medium mb-1">Description</label>
+                    <textarea formControlName="description" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;" class="flex gap-2 justify-end">
+                    <button type="button" class="btn-outline" (click)="closeActiviteForm()">Annuler</button>
+                    <button type="submit" class="btn-manual" [disabled]="activiteForm.invalid || submittingActivite()">
+                        {{ submittingActivite() ? 'Enregistrement…' : (editingActivite() ? 'Mettre à jour' : 'Créer') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+        }
+
+        @if (activites().length === 0) {
+        <p class="text-sm text-gray-500">Aucune activité pour le moment.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Nom</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Complexe</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Sport</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Niveau</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Horaire</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Prix</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Capacité</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (act of filteredActivites(); track act.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3">{{ act.nom }}</td>
+                        <td class="px-4 py-3">{{ act.complexe?.name || '—' }}</td>
+                        <td class="px-4 py-3">{{ act.sport }}</td>
+                        <td class="px-4 py-3">{{ niveauActiviteLabel(act.niveau) }}</td>
+                        <td class="px-4 py-3">{{ act.heure_debut | slice:0:5 }} – {{ act.heure_fin | slice:0:5 }}</td>
+                        <td class="px-4 py-3">{{ act.prix | number:'1.2-2' }} TND</td>
+                        <td class="px-4 py-3">{{ act.capacite }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getActivityStatusStyle(!!act.active).bg + ' ' + getActivityStatusStyle(!!act.active).text">
+                                <span>{{ getActivityStatusStyle(!!act.active).icon }}</span>
+                                {{ act.active ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <button type="button" class="btn-xs" (click)="editActivite(act)">Modifier</button>
+                                <button type="button" class="btn-xs" [class.danger]="act.active" (click)="toggleActiviteActive(act)">{{ act.active ? 'Désactiver' : 'Activer' }}</button>
+                                <button type="button" class="btn-xs danger" (click)="deleteActivite(act)">Supprimer</button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+
+    <section class="panel mt-6" id="section-reservations-activites">
+        <div class="panel-head">
+            <div>
+                <h2>Réservations d'activités</h2>
+                <p class="text-sm text-slate-500">Toutes les réservations d'activités enregistrées.</p>
+            </div>
+        </div>
+
+        @if (activiteReservations().length === 0) {
+        <p class="text-sm text-gray-500">Aucune réservation d'activité.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Activité</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Client</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Paiement</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (ra of activiteReservations(); track ra.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3">{{ ra.activite?.nom || '—' }}</td>
+                        <td class="px-4 py-3">{{ ra.user?.first_name }} {{ ra.user?.last_name }}</td>
+                        <td class="px-4 py-3">{{ ra.date_seance | date:'dd/MM/yyyy' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getActivityReservationStatusStyle(ra.statut).bg + ' ' + getActivityReservationStatusStyle(ra.statut).text">
+                                <span>{{ getActivityReservationStatusStyle(ra.statut).icon }}</span>
+                                {{ getActiviteReservationStatusBadge(ra).label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getPaymentStatusStyle(ra.statut_paiement || 'non_paye').bg + ' ' + getPaymentStatusStyle(ra.statut_paiement || 'non_paye').text">
+                                <span>{{ getPaymentStatusStyle(ra.statut_paiement || 'non_paye').icon }}</span>
+                                {{ getActiviteReservationPaymentBadge(ra).label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                @if (canConfirmActivitePayment(ra)) {
+                                <button type="button" class="btn-xs success" (click)="confirmActivitePayment(ra)">✓ Payer</button>
+                                }
+                                @if (ra.statut !== 'annulee') {
+                                <button type="button" class="btn-xs danger" (click)="cancelActiviteReservation(ra)">Annuler</button>
+                                }
+                                @if (ra.statut === 'annulee') {
+                                <button type="button" class="btn-xs danger" (click)="deleteActiviteReservation(ra)">Supprimer</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+
+    <section class="panel mt-6" id="section-abonnements">
+        <div class="panel-head">
+            <div>
+                <h2>Formules d'abonnement</h2>
+                <p class="text-sm text-slate-500">Gérez les formules disponibles.</p>
+            </div>
+            <button type="button" class="btn-sm" (click)="openTypeForm()">+ Créer</button>
+        </div>
+
+        @if (showTypeForm()) {
+        <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+            <h3 class="font-semibold mb-3">{{ editingType() ? 'Modifier' : 'Nouvelle formule' }}</h3>
+            <form [formGroup]="typeForm" (ngSubmit)="saveType()" class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Nom *</label>
+                    <input type="text" formControlName="nom" placeholder="Ex: Mensuel" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                @if (auth.isSuperAdmin()) {
+                <div style="grid-column: 1 / -1;">
+                    <label class="block text-xs font-medium mb-1">Complexe *</label>
+                    <select formControlName="complexe_id" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                        <option value="">Sélectionner un complexe…</option>
+                        @for (c of complexes(); track c.id) {
+                        <option [value]="c.id">{{ c.name }}</option>
+                        }
+                    </select>
+                </div>
+                }
+                <div>
+                    <label class="block text-xs font-medium mb-1">Durée (mois) *</label>
+                    <input type="number" formControlName="nb_mois" min="1" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Tarif (TND) *</label>
+                    <input type="number" step="0.01" formControlName="tarif" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Prix unitaire (TND)</label>
+                    <input type="number" step="0.01" formControlName="prix_unitaire" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Niveau sportif *</label>
+                    <select formControlName="niveau_sportif_cible" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="tous">Tous</option>
+                        <option value="debutant">Débutant</option>
+                        <option value="intermediaire">Intermédiaire</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Sport cible</label>
+                    <input type="text" formControlName="sport_cible" placeholder="Ex: Tennis" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="block text-xs font-medium mb-1">Description</label>
+                    <textarea formControlName="description" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;" class="flex gap-2 justify-end">
+                    <button type="button" class="btn-outline" (click)="closeTypeForm()">Annuler</button>
+                    <button type="submit" class="btn-sm" [disabled]="typeForm.invalid || submittingType()">
+                        {{ submittingType() ? 'Enregistrement…' : (editingType() ? 'Mettre à jour' : 'Créer') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+        }
+
+        @if (subscriptionTypes().length === 0) {
+        <p class="text-sm text-gray-500">Aucune formule pour le moment.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Nom</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Complexe</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Durée</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Tarif</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Niveau</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (type of subscriptionTypes(); track type.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3 font-medium">{{ type.nom }}</td>
+                        <td class="px-4 py-3">{{ type.complexe?.nom_c || type.complexe?.name || '—' }}</td>
+                        <td class="px-4 py-3">{{ type.nb_mois }} mois</td>
+                        <td class="px-4 py-3">{{ type.tarif | number:'1.2-2' }} TND</td>
+                        <td class="px-4 py-3">{{ type.niveau_sportif_cible }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getActivityStatusStyle(!!type.active).bg + ' ' + getActivityStatusStyle(!!type.active).text">
+                                <span>{{ getActivityStatusStyle(!!type.active).icon }}</span>
+                                {{ type.active ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <button type="button" class="btn-xs" (click)="editType(type)">Modifier</button>
+                                <button type="button" class="btn-xs" [class.danger]="type.active" (click)="toggleTypeActive(type)">{{ type.active ? 'Désactiver' : 'Activer' }}</button>
+                                <button type="button" class="btn-xs danger" (click)="deleteType(type)">Supprimer</button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+
+    <section class="panel mt-6">
+        <div class="panel-head">
+            <div>
+                <h2>Abonnements clients</h2>
+                <p class="text-sm text-slate-500">Toutes les souscriptions et paiements clients.</p>
+            </div>
+        </div>
+
+        @if (clientSubscriptions().length === 0) {
+        <p class="text-sm text-gray-500">Aucun abonnement pour le moment.</p>
+        } @else {
+        <div class="overflow-x-auto rounded-3xl border border-slate-200">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Client</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Formule</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Fin</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Paiement</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Statut</th>
+                        <th class="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @for (sub of clientSubscriptions(); track sub.id) {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3">{{ sub.user?.first_name }} {{ sub.user?.last_name }}</td>
+                        <td class="px-4 py-3">{{ sub.type_abonnement?.nom || 'N/A' }}</td>
+                        <td class="px-4 py-3">{{ sub.date_fin | date:'dd/MM/yyyy' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getPaymentStatusStyle(sub.paye ? 'paye' : 'non_paye').bg + ' ' + getPaymentStatusStyle(sub.paye ? 'paye' : 'non_paye').text">
+                                <span>{{ getPaymentStatusStyle(sub.paye ? 'paye' : 'non_paye').icon }}</span>
+                                {{ sub.paye ? 'Payé' : 'Non payé' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getSubscriptionStatusStyle(sub.statut).bg + ' ' + getSubscriptionStatusStyle(sub.statut).text">
+                                <span>{{ getSubscriptionStatusStyle(sub.statut).icon }}</span>
+                                {{ sub.statut | titlecase }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
+                                @if (!sub.paye && sub.statut !== 'annule') {
+                                <button type="button" class="btn-xs success" (click)="confirmAbonnementPayment(sub)">Confirmer</button>
+                                }
+                                @if (sub.statut === 'actif') {
+                                <button type="button" class="btn-xs danger" (click)="cancelAbonnement(sub)">Annuler</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+    }
+
+    <!-- ════════════════ MODALS ════════════════ -->
+
+    @if (showManualForm()) {
+    <div class="modal-overlay" role="button" tabindex="0" (click)="closeManualForm()" (keydown.enter)="closeManualForm()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Nouvelle réservation manuelle</h2>
+                <button type="button" class="modal-close" (click)="closeManualForm()">✕</button>
+            </div>
+
+            <form [formGroup]="manualForm" (ngSubmit)="submitManualReservation()" class="modal-body">
+                <div class="form-group">
+                    <label for="manual-client">Client *</label>
+                    <select id="manual-client" formControlName="client_id">
+                        <option [ngValue]="null" disabled>Sélectionner un client…</option>
+                        @for (c of clients(); track c.id) {
+                            <option [ngValue]="c.id">{{ c.first_name }} {{ c.last_name }} ({{ c.email }})</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-terrain">Court *</label>
+                    <select id="manual-terrain" formControlName="terrain_id">
+                        <option [ngValue]="null" disabled>Sélectionner un court…</option>
+                        @for (t of allTerrains(); track t.id) {
+                            <option [ngValue]="t.id">{{ t.name }} — {{ t.sport_type }} ({{ t.price_per_hour }} TND/h)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-date">Date *</label>
+                    <input id="manual-date" type="date" formControlName="date_seance_res" [min]="todayDate" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual-debut">Heure début *</label>
+                        @if (slotsLoading()) {
+                            <p class="slots-loading">Chargement des créneaux…</p>
+                        } @else if (availableSlots().length > 0) {
+                            <select id="manual-debut" formControlName="heure_debut_res">
+                                <option value="" disabled>Choisir…</option>
+                                @for (s of availableSlots(); track s.time) {
+                                    <option [value]="s.time">{{ s.time }}</option>
+                                }
+                            </select>
+                        } @else {
+                            <input id="manual-debut" type="time" formControlName="heure_debut_res" />
+                        }
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-fin">Heure fin *</label>
+                        <input id="manual-fin" type="time" formControlName="heure_fin_res" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="font-semibold mb-2">Mode de paiement *</div>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" formControlName="modalite_paiement" value="especes" /> Espèces
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" formControlName="modalite_paiement" value="carte" /> Carte
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-notes">Notes (optionnel)</label>
+                    <textarea id="manual-notes" formControlName="notes" rows="2" placeholder="Remarques…"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" (click)="closeManualForm()">Annuler</button>
+                    <button type="submit" class="btn-sm" [disabled]="manualForm.invalid || submittingManual()">
+                        {{ submittingManual() ? 'Création…' : 'Créer la réservation' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    @if (showEditReservationForm()) {
+    <div class="modal-overlay" (click)="closeEditReservationForm()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Modifier la réservation</h2>
+                <button type="button" class="modal-close" (click)="closeEditReservationForm()">✕</button>
+            </div>
+            <form [formGroup]="editReservationForm" (ngSubmit)="submitEditReservation()" class="modal-body">
+                <p class="text-xs text-gray-500 mb-2">
+                    Client: <strong>{{ editingReservation()?.user?.first_name }} {{ editingReservation()?.user?.last_name }}</strong>
+                    &nbsp;·&nbsp; Terrain: <strong>{{ editingReservation()?.terrain?.name }}</strong>
+                </p>
+                <div class="form-group">
+                    <label>Statut</label>
+                    <select formControlName="status">
+                        <option value="pending">En attente</option>
+                        <option value="confirmed">Confirmé</option>
+                        <option value="cancelled">Annulé</option>
+                        <option value="played">Joué</option>
+                        <option value="expired">Expiré</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Statut paiement</label>
+                    <select formControlName="statut_paiement">
+                        <option value="non_paye">Non payé</option>
+                        <option value="paye">Payé</option>
+                        <option value="rembourse">Remboursé</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Modalité paiement</label>
+                    <select formControlName="modalite_paiement">
+                        <option value="especes">Espèces</option>
+                        <option value="carte">Carte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea formControlName="notes" rows="2"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" (click)="closeEditReservationForm()">Annuler</button>
+                    <button type="submit" class="btn-manual" [disabled]="submittingReservationEdit()">
+                        {{ submittingReservationEdit() ? 'Enregistrement…' : 'Enregistrer' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    @if (showEspecesModal()) {
+    <div class="modal-overlay" (click)="closeEspecesModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Confirmer paiement espèces</h2>
+                <button type="button" class="modal-close" (click)="closeEspecesModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-600">
+                    Réservation de <strong>{{ selectedForEspeces()?.user?.first_name }}</strong> — Terrain: {{ selectedForEspeces()?.terrain?.name }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">Modalité: {{ selectedForEspeces()?.modalite_paiement || 'espèces' }}</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" (click)="closeEspecesModal()">Annuler</button>
+                    <button type="button" class="btn-manual" (click)="executeEspecesPayment()">Confirmer paiement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (showActivitePaymentModal()) {
+    <div class="modal-overlay" (click)="closeActivitePaymentModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Confirmer paiement activité</h2>
+                <button type="button" class="modal-close" (click)="closeActivitePaymentModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-600 mb-3">
+                    Réservation de <strong>{{ selectedActiviteReservationForPayment()?.user?.first_name }}</strong>
+                    — {{ selectedActiviteReservationForPayment()?.activite?.nom }}
+                </p>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" (click)="closeActivitePaymentModal()">Annuler</button>
+                    <button type="button" class="btn-manual" (click)="executeActivitePayment()">Confirmer paiement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (showConfirmPaymentModal()) {
+    <div class="modal-overlay" (click)="closeConfirmPaymentModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Confirmer paiement abonnement</h2>
+                <button type="button" class="modal-close" (click)="closeConfirmPaymentModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-600 mb-3">
+                    Abonnement de <strong>{{ selectedSubForPayment()?.user?.first_name }} {{ selectedSubForPayment()?.user?.last_name }}</strong>
+                </p>
+                <form [formGroup]="confirmPaymentForm" (ngSubmit)="executeAbonnementPayment()">
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Montant (TND) *</label>
+                            <input type="number" step="0.01" formControlName="montant" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Modalité</label>
+                            <select formControlName="modalite_paiement" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="especes">Espèces</option>
+                                <option value="carte">Carte</option>
+                            </select>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label class="block text-xs font-medium mb-1">Référence</label>
+                            <input type="text" formControlName="reference" placeholder="Optionnel" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" (click)="closeConfirmPaymentModal()">Annuler</button>
+                        <button type="submit" class="btn-manual" [disabled]="confirmPaymentForm.invalid">Confirmer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (showAssignGerantModal()) {
+    <div class="modal-overlay" (click)="closeAssignComplexeModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-head">
+                <h2>Assigner un complexe</h2>
+                <button type="button" class="modal-close" (click)="closeAssignComplexeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-600 mb-3">
+                    Gérant: <strong>{{ selectedGerantForAssign()?.first_name }} {{ selectedGerantForAssign()?.last_name }}</strong>
+                </p>
+
+                @if (assignComplexeError()) {
+                <div class="alert" style="margin-bottom: 0.75rem;">{{ assignComplexeError() }}</div>
+                }
+
+                <div class="form-group">
+                    <label class="block text-xs font-medium mb-1">Complexe</label>
+                    <select [ngModel]="selectedAssignComplexeId()" (ngModelChange)="selectedAssignComplexeId.set($event)" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option [ngValue]="null">— Aucun (libérer le complexe) —</option>
+                        @for (c of availableComplexesForAssign(); track c.id) {
+                        <option [ngValue]="c.id">{{ c.name }} ({{ c.address || 'Adresse non renseignée' }})</option>
+                        }
+                    </select>
+                    @if (availableComplexesForAssign().length === 0) {
+                    <p class="text-xs text-amber-600 mt-1">Aucun complexe disponible pour assignation.</p>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" (click)="closeAssignComplexeModal()">Annuler</button>
+                    <button type="button" class="btn-manual" (click)="submitAssignComplexe()" [disabled]="submittingAssignComplexe()">
+                        {{ submittingAssignComplexe() ? 'Enregistrement…' : 'Enregistrer' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</section>

@@ -1,0 +1,27 @@
+<div class="min-h-screen bg-gray-50 py-12">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Historique des réservations</h1>
+
+    <div *ngIf="loading()" class="space-y-4">
+      <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow-sm p-6 animate-pulse"></div>
+    </div>
+
+    <div *ngIf="!loading() && reservations().length === 0" class="bg-white rounded-3xl p-12 text-center shadow-sm">
+      <div class="text-6xl mb-4">🗄️</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Aucun historique</h3>
+      <p class="text-gray-500">Vous n'avez pas de réservations archivées pour le moment.</p>
+    </div>
+
+    <div *ngIf="!loading() && reservations().length > 0" class="space-y-4">
+      <div *ngFor="let r of reservations()" class="bg-white rounded-2xl shadow-sm p-6 border-l-4" [ngClass]="r.status === 'cancelled' ? 'border-red-400' : (r.status === 'expired' ? 'border-gray-300' : 'border-blue-400')">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="font-bold text-gray-900">{{ r.terrain?.name || r.activite?.nom || 'Événement' }}</div>
+            <div class="text-sm text-gray-500">{{ r.start_at || r.date_seance }}</div>
+          </div>
+          <div class="text-sm text-gray-600">{{ r.status }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+.landing-hero {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.hero-overlay {
+  background: rgba(0,0,0,0.55);
+}
+
+.feature-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.badge {
+  display: inline-block;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+/* ── How it works section ── */
+.how-section {
+  padding: 5rem 0;
+  background: #f9fafb;
+  color: #111827;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .how-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.how-step-card {
+  display: block;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.how-step-number {
+  display: block;
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #059669;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.how-step-title {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.how-step-desc {
+  display: block;
+  color: #6b7280;
+  line-height: 1.6;
+}

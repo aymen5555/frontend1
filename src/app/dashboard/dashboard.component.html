@@ -1,0 +1,145 @@
+<section class="page">
+    <header class="topbar">
+        <div>
+            <h1>Welcome, {{ auth.user()?.first_name }}!</h1>
+            <p>Browse complexes and book a court.</p>
+        </div>
+        <button type="button" class="btn-outline" (click)="auth.logout()">Se déconnecter</button>
+    </header>
+
+    @if (errorMessage()) { <div class="alert">{{ errorMessage() }}</div> }
+    @if (successMessage()) { <div class="alert success">{{ successMessage() }}</div> }
+
+    @if (loading()) {
+    <p class="muted">Loading…</p>
+    } @else {
+    <section class="panel full">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <h2>Recommandations pour vous</h2>
+                <p class="panel-desc" style="margin-bottom: 0;">Complexes recommandés basés sur votre profil fitness.
+                </p>
+            </div>
+            <a routerLink="/mon-profil-fitness" class="btn-outline" style="text-decoration: none;">Mon Profil
+                Fitness</a>
+        </div>
+
+        @if (recommendations().length > 0) {
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            @for (rec of recommendations(); track $index) {
+            <div class="panel" style="border-left: 4px solid #1D9E75;">
+                <h3>{{ rec.complexe.name }}</h3>
+                <p class="muted" style="font-size: 13px;">{{ rec.complexe.city || rec.complexe.address }}</p>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <span class="badge"
+                        style="background: #e8f8f2; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold;">
+                        Score: {{ rec.score }}/100
+                    </span>
+                </div>
+                <p style="font-size: 14px; margin-top: 1rem; color: #444;">{{ rec.explication }}</p>
+                <a [routerLink]="['/complexes', rec.complexe.id]" class="btn-sm"
+                    style="display: inline-block; margin-top: 1rem; text-decoration: none;">Voir le complexe</a>
+            </div>
+            }
+        </div>
+        } @else {
+        <div
+            style="background: #f9f9f9; padding: 2rem; text-align: center; border-radius: 8px; border: 1px dashed #ccc;">
+            <p style="margin-bottom: 1rem; color: #666;">Vous n'avez pas encore de recommandations.</p>
+            <a routerLink="/mon-profil-fitness" class="btn-sm" style="text-decoration: none;">Compléter mon profil
+                fitness</a>
+        </div>
+        }
+    </section>
+
+    <div class="grid">
+        <section class="panel">
+            <h2>Complexes</h2>
+            <ul class="list">
+                @for (c of complexes(); track c.id) {
+                <li [class.active]="c.id === selectedComplexId()" role="button" tabindex="0" (click)="selectComplex(c.id)" (keydown.enter)="selectComplex(c.id)">
+                    <strong>{{ c.name }}</strong>
+                    <span>{{ c.city || c.address }}</span>
+                </li>
+                } @empty {
+                <li class="empty">No complexes available yet.</li>
+                }
+            </ul>
+        </section>
+
+        <section class="panel">
+            <h2>Book a court — {{ selectedComplexName() || 'pick a complex' }}</h2>
+            <form [formGroup]="bookForm" (ngSubmit)="submitBooking()">
+                <label>
+                    Court
+                    <select formControlName="terrain_id">
+                        <option [ngValue]="null" disabled>Select court</option>
+                        @for (t of terrains(); track t.id) {
+                        <option [ngValue]="t.id">{{ t.name }} — {{ t.price_per_hour }} TND/h</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    Start
+                    <input type="datetime-local" formControlName="start_at" />
+                </label>
+                <label>
+                    End
+                    <input type="datetime-local" formControlName="end_at" />
+                </label>
+                <label>
+                    Notes (optional)
+                    <input type="text" formControlName="notes" placeholder="e.g. 4 players" />
+                </label>
+                <button type="submit" class="btn-primary" [disabled]="bookForm.invalid || booking()">
+                    {{ booking() ? 'Booking…' : 'Book court' }}
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <section class="panel full">
+        <h2>My reservations</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Complex / Court</th>
+                    <th>When</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (r of reservations(); track r.id) {
+                <tr>
+                    <td>{{ r.terrain?.complexe?.name }} — {{ r.terrain?.name }}</td>
+                    <td>{{ r.start_at | date:'short' }} → {{ r.end_at | date:'short' }}</td>
+                    <td><span class="status status-{{ r.status }}">{{ r.status }}</span></td>
+                    <td>
+                        @if (canPay(r)) {
+                        <button type="button" class="btn-xs" (click)="openPaymentModal(r.id)">Payer</button>
+                        }
+                        @if (r.status === 'pending' || r.status === 'confirmed') {
+                        <button type="button" class="btn-xs danger" (click)="cancelReservation(r)">Annuler</button>
+                        }
+                        @if (r.status === 'cancelled' || r.status === 'expired' || r.status === 'played') {
+                        <button type="button" class="btn-xs danger" (click)="deleteReservation(r)">Supprimer</button>
+                        }
+                    </td>
+                </tr>
+                } @empty {
+                <tr>
+                    <td colspan="4" class="empty">No bookings yet.</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    }
+</section>
+
+<!-- Payment modal -->
+@if (showPaymentModal()) {
+  <app-payment-modal [reservationId]="paymentReservationId()"
+      (paid)="onPaymentModalPaid($event)" (closed)="onPaymentModalCancelled()"></app-payment-modal>
+}

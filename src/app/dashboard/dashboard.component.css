@@ -1,0 +1,28 @@
+.page { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; font-family: system-ui, sans-serif; }
+.topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+.topbar h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+.topbar p { margin: 0; color: #666; }
+.grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+.panel { background: #fff; border: 1px solid #e8e8e3; border-radius: 14px; padding: 1.25rem; }
+.panel h2 { margin: 0 0 1rem; font-size: 1.1rem; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { padding: 0.75rem; border-radius: 8px; border: 1px solid #eee; margin-bottom: 0.5rem; cursor: pointer; }
+.list li.active { border-color: #1D9E75; background: #f0faf6; }
+.list li.empty { cursor: default; color: #888; border-style: dashed; }
+form label { display: block; margin-bottom: 0.75rem; font-size: 14px; color: #444; }
+form input, form select { width: 100%; margin-top: 4px; padding: 0.55rem 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+.btn-primary { width: 100%; margin-top: 0.5rem; padding: 0.7rem; border: none; border-radius: 10px; background: #1D9E75; color: #fff; cursor: pointer; font-size: 15px; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-outline { background: #fff; border: 1px solid #ddd; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 0.6rem; border-bottom: 1px solid #eee; }
+.status { text-transform: capitalize; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: #f0f0eb; }
+.status-confirmed { background: #d4f5e9; color: #0d6b4d; }
+.status-cancelled { background: #fde8e8; color: #a33; }
+.status-reserved { background: #fff3cd; color: #856404; }
+.btn-xs { background: #fde8e8; color: #a33; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 12px; }
+.alert { background: #fde8e8; color: #a33; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; }
+.alert.success { background: #d4f5e9; color: #0d6b4d; }
+.muted { color: #888; }
+.empty { color: #888; text-align: center; }

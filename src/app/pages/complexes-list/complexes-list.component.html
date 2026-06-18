@@ -1,0 +1,134 @@
+<div class="flex flex-col min-h-screen bg-gray-50">
+  <!-- Hero Section -->
+  <section class="relative h-80 flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg');"></div>
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="relative z-10 text-center px-4 w-full max-w-3xl">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">Nos Complexes Sportifs</h1>
+      <p class="text-lg md:text-xl text-gray-200 mb-8">Découvrez les meilleurs complexes près de chez vous</p>
+      
+      <!-- Search bar -->
+      <div class="relative max-w-2xl mx-auto">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <span class="text-gray-400 text-xl">🔍</span>
+        </div>
+        <input 
+          type="text" 
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white/20 transition-all shadow-lg"
+          placeholder="Rechercher un complexe..."
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+    
+    <!-- Loading State -->
+    <div *ngIf="loading()" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+        <div class="h-48 bg-gray-200 animate-pulse"></div>
+        <div class="p-4 space-y-4">
+          <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+          <div class="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+          <div class="pt-4 border-t border-gray-100 flex gap-2">
+            <div class="h-10 bg-gray-200 rounded-lg animate-pulse flex-1"></div>
+            <div class="h-10 bg-gray-200 rounded-lg animate-pulse flex-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading() && filteredComplexes().length === 0" class="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
+      <div class="text-6xl mb-4">🏟️</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Aucun complexe disponible</h3>
+      <p class="text-gray-500">Essayez de modifier votre recherche.</p>
+    </div>
+
+    <!-- Grid -->
+    <p class="text-gray-500 text-sm mb-4">{{ filteredComplexes().length }} complexes trouvés</p>
+    <div *ngIf="!loading() && filteredComplexes().length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div *ngFor="let complexe of visibleComplexes()" class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+        
+        <!-- Image Area -->
+        <div class="h-48 relative overflow-hidden bg-gray-200">
+          <img [src]="getComplexeImage(complexe)" alt="{{ complexe.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent"></div>
+          
+          <!-- Badges -->
+          <div class="absolute top-3 left-3 bg-white/20 backdrop-blur text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
+            {{ complexe.terrains?.[0]?.sport_type || 'Multisport' | titlecase }}
+          </div>
+          <div class="absolute top-3 right-3 bg-white/20 backdrop-blur text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
+            {{ getTerrainCount(complexe) }} terrain{{ getTerrainCount(complexe) > 1 ? 's' : '' }}
+          </div>
+          
+          <!-- Title -->
+          <div class="absolute bottom-4 left-4 right-4">
+            <h3 class="text-xl font-bold text-white line-clamp-1">{{ complexe.name }}</h3>
+            <p class="text-gray-300 text-xs mt-1 line-clamp-2">{{ complexe.description_c }}</p>
+          </div>
+        </div>
+
+        <!-- Info Area -->
+        <div class="p-5 flex-1 flex flex-col">
+          <div class="space-y-2 mb-4 flex-1">
+            <div class="flex items-start gap-2 text-sm text-gray-500">
+              <span class="mt-0.5">📍</span>
+              <span class="line-clamp-2">{{ complexe.address || 'Adresse non renseignée' }}, {{ complexe.city || '' }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+              <span>📞</span>
+              <span>{{ complexe.phone || 'Non renseigné' }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+              <span>🕐</span>
+              <span>Ouvert 7j/7</span>
+            </div>
+            
+            <!-- Rating -->
+            <div class="flex items-center gap-1 mt-2">
+              <div class="flex text-amber-400 text-sm">
+                ⭐⭐⭐⭐⭐
+              </div>
+              <span class="text-xs font-bold text-gray-700 ml-1">4.8</span>
+            </div>
+          </div>
+          
+          <hr class="border-gray-100 mb-4">
+          
+          <!-- Actions -->
+          <div class="flex gap-3">
+            <a [routerLink]="['/complexes', complexe.id]" class="flex-1 text-center border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-lg px-3 py-2 text-sm font-bold transition-colors">
+              Voir les détails
+            </a>
+            <a [routerLink]="['/terrains']" [queryParams]="{ complexe_id: complexe.id }" class="flex-1 text-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-3 py-2 text-sm font-bold transition-colors shadow-sm">
+              Réserver
+            </a>
+          </div>
+          
+          <div class="flex gap-3 mt-3 pt-3 border-t border-gray-100" *ngIf="complexe.website_c || complexe.facebook_c || complexe.instagram_c">
+            <a *ngIf="complexe.website_c" [href]="complexe.website_c" target="_blank" class="text-gray-400 hover:text-emerald-500 transition-colors text-xs flex items-center gap-1">
+              🌐 Site web
+            </a>
+            <a *ngIf="complexe.facebook_c" [href]="complexe.facebook_c" target="_blank" class="text-gray-400 hover:text-blue-500 transition-colors text-xs flex items-center gap-1">
+              📘 Facebook
+            </a>
+            <a *ngIf="complexe.instagram_c" [href]="complexe.instagram_c" target="_blank" class="text-gray-400 hover:text-pink-500 transition-colors text-xs flex items-center gap-1">
+              📸 Instagram
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="hasMore" class="col-span-full flex justify-center mt-8">
+        <button (click)="loadMore()" class="px-8 py-3 border-2 border-emerald-500 text-emerald-600 rounded-xl font-semibold hover:bg-emerald-500 hover:text-white transition-all duration-200">
+          Voir plus de complexes ({{ filteredComplexes().length - displayCount }} restants)
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

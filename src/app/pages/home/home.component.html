@@ -1,0 +1,263 @@
+<div class="flex flex-col min-h-screen">
+  <!-- Hero Section -->
+  <section class="min-h-screen relative overflow-hidden flex items-center justify-center">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg');"></div>
+    <div class="absolute inset-0 bg-black/50"></div>
+    @if (auth.isSuperAdmin()) {
+    <div class="relative z-10 text-center text-white px-4">
+      <p class="text-sm uppercase tracking-[0.3em] text-emerald-200">SUPER ADMIN</p>
+      <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">Bienvenue sur PlaySpace</h1>
+      <p class="text-xl md:text-2xl mb-10 font-medium text-gray-200">Supervision de la plateforme, des complexes, des activités et des abonnements.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a routerLink="/admin/dashboard" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Tableau de bord</a>
+        <a routerLink="/terrains" class="border-2 border-white hover:bg-white/10 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Réserver un terrain</a>
+      </div>
+    </div>
+    } @else if (auth.isGerant()) {
+    <div class="relative z-10 text-center text-white px-4">
+      <p class="text-sm uppercase tracking-[0.3em] text-blue-200">GÉRANT</p>
+      <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">Bienvenue sur PlaySpace</h1>
+      <p class="text-xl md:text-2xl mb-10 font-medium text-gray-200">Gérez vos complexes, terrains et réservations.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a routerLink="/admin/dashboard" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Tableau de bord</a>
+        <a routerLink="/complexes" class="border-2 border-white hover:bg-white/10 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Voir les complexes</a>
+      </div>
+    </div>
+    } @else {
+    <div class="relative z-10 text-center text-white px-4">
+      <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">Bienvenue sur PlaySpace</h1>
+      <p class="text-xl md:text-2xl mb-10 font-medium text-gray-200">Réservez votre terrain de sport en quelques clics</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a routerLink="/terrains" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Réserver maintenant</a>
+        <a routerLink="/complexes" class="border-2 border-white hover:bg-white/10 text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors w-full sm:w-auto text-center">Découvrir les complexes</a>
+      </div>
+    </div>
+    }
+  </section>
+
+  <!-- Dismissible banner for clients without fitness profile -->
+  <div *ngIf="auth.isLoggedIn() && auth.isClient() && hasFitnessProfile() === false && showFitnessBanner()" 
+       class="bg-gradient-to-r from-amber-400 to-orange-400 border-b-2 border-black">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <p class="text-black font-bold text-sm flex items-center gap-2">
+        <span>🎯</span>
+        <span>Complétez votre profil fitness pour recevoir des recommandations personnalisées !</span>
+        <a routerLink="/mon-profil-fitness" class="underline font-extrabold hover:no-underline">Mon Profil Fitness</a>
+      </p>
+      <button (click)="dismissFitnessBanner()" class="text-black/60 hover:text-black font-bold text-lg leading-none p-1" aria-label="Fermer">✕</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  SUPER ADMIN — Unified navigation section  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section *ngIf="auth.isLoggedIn() && auth.isSuperAdmin()" class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Supervision PlaySpace</h2>
+        <p class="text-sm text-gray-600">Accédez à toutes les sections de gestion et d'administration de la plateforme.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Dashboard général -->
+        <a [routerLink]="['/admin/dashboard']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-indigo-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">📊</div>
+          <h3 class="font-bold text-gray-900 mb-1">Tableau de bord</h3>
+          <p class="text-xs text-gray-500">Vue d'ensemble de la plateforme</p>
+        </a>
+
+        <!-- Complexes -->
+        <a [routerLink]="['/admin/dashboard']" fragment="section-complexes" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-emerald-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🏢</div>
+          <h3 class="font-bold text-gray-900 mb-1">Gérer les complexes</h3>
+          <p class="text-xs text-gray-500">Ajouter, modifier, supprimer</p>
+        </a>
+
+        <!-- Clients / Utilisateurs -->
+        <a [routerLink]="['/admin/dashboard']" fragment="section-clients" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-pink-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">👥</div>
+          <h3 class="font-bold text-gray-900 mb-1">Utilisateurs</h3>
+          <p class="text-xs text-gray-500">Clients, gérants et accès</p>
+        </a>
+
+        <!-- Gérants -->
+        <a [routerLink]="['/admin/dashboard']" fragment="section-gerants" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-amber-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🔑</div>
+          <h3 class="font-bold text-gray-900 mb-1">Gérants</h3>
+          <p class="text-xs text-gray-500">Créer et gérer les comptes</p>
+        </a>
+
+        <!-- Réservations -->
+        <a [routerLink]="['/admin/dashboard']" fragment="section-reservations" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-blue-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">📅</div>
+          <h3 class="font-bold text-gray-900 mb-1">Réservations</h3>
+          <p class="text-xs text-gray-500">Superviser et gérer</p>
+        </a>
+
+        <!-- Activités -->
+        <a [routerLink]="['/admin/dashboard']" fragment="section-activites" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-purple-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🎯</div>
+          <h3 class="font-bold text-gray-900 mb-1">Activités</h3>
+          <p class="text-xs text-gray-500">Créer et superviser</p>
+        </a>
+
+        <!-- Abonnements → page dédiée -->
+        <a [routerLink]="['/abonnements']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-emerald-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🎫</div>
+          <h3 class="font-bold text-gray-900 mb-1">Abonnements</h3>
+          <p class="text-xs text-gray-500">Gérer les formules</p>
+        </a>
+
+        <!-- Réserver un terrain (super admin peut aussi jouer) -->
+        <a [routerLink]="['/terrains']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-orange-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🎾</div>
+          <h3 class="font-bold text-gray-900 mb-1">Réserver un terrain</h3>
+          <p class="text-xs text-gray-500">Jouer sur un terrain</p>
+        </a>
+
+        <!-- Mes activités (super admin peut participer) -->
+        <a [routerLink]="['/mes-activites']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-teal-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🏃</div>
+          <h3 class="font-bold text-gray-900 mb-1">Mes activités</h3>
+          <p class="text-xs text-gray-500">Participer aux activités</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  GÉRANT — Navigation section                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div *ngIf="auth.isLoggedIn() && auth.isGerant()">
+    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold mb-2">Espace Gérant</h1>
+        <p class="text-blue-100">Gérez vos complexes, terrains, réservations et abonnements.</p>
+      </div>
+    </section>
+
+    <section class="py-12 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-complexes">
+            <div class="text-5xl mb-4">🏢</div>
+            <h3 class="font-bold text-gray-900 mb-2">Mon Complexe</h3>
+            <p class="text-sm text-gray-500">Gérer et modifier</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-complexes">
+            <div class="text-5xl mb-4">🎾</div>
+            <h3 class="font-bold text-gray-900 mb-2">Mes Terrains</h3>
+            <p class="text-sm text-gray-500">Ajouter et modifier</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-reservations">
+            <div class="text-5xl mb-4">📅</div>
+            <h3 class="font-bold text-gray-900 mb-2">Réservations</h3>
+            <p class="text-sm text-gray-500">Gérer et confirmer</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-clients">
+            <div class="text-5xl mb-4">👥</div>
+            <h3 class="font-bold text-gray-900 mb-2">Clients</h3>
+            <p class="text-sm text-gray-500">Consulter les joueurs</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Client/Subscriber Upcoming Reservations -->
+  <section *ngIf="auth.isLoggedIn() && !auth.isAdmin() && !auth.isGerant()" class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Vos prochaines réservations</h2>
+        <a routerLink="/reservations" class="text-emerald-600 font-medium hover:text-emerald-700">Voir tout &rarr;</a>
+      </div>
+      
+      <div *ngIf="loading()" class="flex gap-4 overflow-x-auto pb-4">
+        <div *ngFor="let i of [1,2,3]" class="min-w-[300px] bg-gray-100 animate-pulse h-32 rounded-2xl"></div>
+      </div>
+      
+      <div *ngIf="!loading() && upcomingReservations().length > 0" class="flex gap-6 overflow-x-auto pb-4 snap-x">
+        <div *ngFor="let res of upcomingReservations()" class="min-w-[300px] bg-white border border-gray-100 rounded-2xl shadow-sm p-5 border-l-4 border-emerald-500 snap-start">
+          <p class="font-bold text-gray-900">{{ res.terrain?.name }}</p>
+          <p class="text-sm text-gray-500 mb-3">{{ res.terrain?.complexe?.name }}</p>
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <span>📅 {{ res.start_at | date:'mediumDate' }}</span>
+            <span>🕐 {{ res.start_at | date:'shortTime' }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="!loading() && upcomingReservations().length === 0" class="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+        <p class="text-gray-500">Vous n'avez aucune réservation à venir.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Client/Subscriber Upcoming Activities -->
+  <section *ngIf="auth.isClient()" class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Vos prochaines activités</h2>
+        <a routerLink="/mes-activites" class="text-emerald-600 font-medium hover:text-emerald-700">Voir tout &rarr;</a>
+      </div>
+      
+      <div *ngIf="loading()" class="flex gap-4 overflow-x-auto pb-4">
+        <div *ngFor="let i of [1,2,3]" class="min-w-[300px] bg-gray-100 animate-pulse h-32 rounded-2xl"></div>
+      </div>
+      
+      <div *ngIf="!loading() && upcomingActivities().length > 0" class="flex gap-6 overflow-x-auto pb-4 snap-x">
+        <div *ngFor="let res of upcomingActivities()" class="min-w-[300px] bg-white border border-gray-100 rounded-2xl shadow-sm p-5 border-l-4 border-[#16a34a] snap-start">
+          <p class="font-bold text-gray-900">{{ res.activite?.nom }}</p>
+          <p class="text-sm text-gray-500 mb-3">{{ res.activite?.complexe?.name }}</p>
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <span>📅 {{ res.date_seance | date:'mediumDate' }}</span>
+            <span>🕐 {{ (res.activite?.heure_debut || '') | slice:0:5 }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="!loading() && upcomingActivities().length === 0" class="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200">
+        <p class="text-gray-500">Vous n'avez aucune activité à venir.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nearby complexes row -->
+  <section *ngIf="auth.isClient()" class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">Complexes recommandés</h2>
+      
+      <div *ngIf="loading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let i of [1,2,3,4]" class="bg-gray-200 animate-pulse h-64 rounded-2xl"></div>
+      </div>
+      
+      <div *ngIf="!loading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let complexe of complexes()" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer flex flex-col justify-between" [routerLink]="['/complexes', complexe.id]">
+          <div>
+            <div class="h-40 bg-gray-200 relative overflow-hidden">
+              <img [src]="complexe.image_c || 'https://images.pexels.com/photos/32897040/pexels-photo-32897040.jpeg'" alt="Complexe" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-emerald-700 flex items-center gap-1">
+                ⭐ {{ complexe.moyenne_notation_c || '4.5' }}
+              </div>
+            </div>
+            <div class="p-5 pb-0">
+              <h3 class="font-bold text-gray-900 mb-1">{{ complexe.name }}</h3>
+              <p class="text-sm text-gray-500 line-clamp-1">{{ complexe.address }}, {{ complexe.city }}</p>
+              <p *ngIf="complexe.terrains_count" class="text-xs text-gray-400 mt-2">{{ complexe.terrains_count }} terrains</p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <div *ngIf="getRecommendationForComplexe(complexe.id) as rec" class="mt-3 pt-3 border-t border-gray-100">
+              <p class="text-xs text-emerald-700 font-medium flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span class="line-clamp-2">{{ rec.explication }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

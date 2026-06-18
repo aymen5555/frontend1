@@ -1,0 +1,239 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- SECTION 1 — Mon Profil Fitness              -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="bg-white rounded-3xl shadow-sm border-2 border-black overflow-hidden">
+      <div class="bg-emerald-500 px-6 py-6 text-white border-b-2 border-black">
+        <h1 class="text-2xl font-extrabold">💪 Mon Profil Fitness</h1>
+        <p class="text-emerald-50 text-sm mt-1">Complétez votre profil pour recevoir des recommandations personnalisées</p>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <!-- Loading skeleton -->
+        @if (loading()) {
+          <div class="animate-pulse space-y-6">
+            <div class="h-10 bg-gray-200 rounded w-full"></div>
+            <div class="h-10 bg-gray-200 rounded w-full"></div>
+            <div class="h-10 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-10 bg-gray-200 rounded w-full"></div>
+          </div>
+        }
+
+        @if (!loading()) {
+          <form [formGroup]="fitnessForm" (ngSubmit)="saveProfile()" class="space-y-6">
+
+          <!-- Row: Taille & Poids -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1.5">Taille</label>
+              <div class="relative">
+                <input type="number" formControlName="taille"
+                  class="w-full px-4 py-3 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  placeholder="175">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">cm</span>
+              </div>
+              <p *ngIf="fitnessForm.get('taille')?.touched && fitnessForm.get('taille')?.errors?.['required']" class="text-red-500 text-xs mt-1">La taille est requise</p>
+              <p *ngIf="fitnessForm.get('taille')?.touched && (fitnessForm.get('taille')?.errors?.['min'] || fitnessForm.get('taille')?.errors?.['max'])" class="text-red-500 text-xs mt-1">La taille doit être entre 100 et 250 cm</p>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1.5">Poids</label>
+              <div class="relative">
+                <input type="number" step="0.1" formControlName="poids"
+                  class="w-full px-4 py-3 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  placeholder="72">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">kg</span>
+              </div>
+              <p *ngIf="fitnessForm.get('poids')?.touched && fitnessForm.get('poids')?.errors?.['required']" class="text-red-500 text-xs mt-1">Le poids est requis</p>
+              <p *ngIf="fitnessForm.get('poids')?.touched && (fitnessForm.get('poids')?.errors?.['min'] || fitnessForm.get('poids')?.errors?.['max'])" class="text-red-500 text-xs mt-1">Le poids doit être entre 30 et 300 kg</p>
+            </div>
+          </div>
+
+          <!-- IMC Display (read-only from backend) -->
+          <div *ngIf="imcDisplay() as imc" class="bg-gray-50 border-2 border-black rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-gray-700">Votre IMC</span>
+              <span class="text-lg font-extrabold text-emerald-600">{{ imc.value }}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              <span class="font-semibold text-gray-700">{{ imc.category }}</span>
+              — 
+              <span class="text-gray-400">Insuffisance pondérale <18.5 · Poids normal 18.5–24.9 · Surpoids 25–29.9 · Obésité ≥30</span>
+            </p>
+          </div>
+
+          <!-- Poids cible -->
+          <div>
+            <label for="poids_cible" class="block text-sm font-bold text-gray-700 mb-1.5">Poids cible <span class="font-normal text-gray-400">(optionnel)</span></label>
+            <div class="relative max-w-xs">
+              <input id="poids_cible" type="number" step="0.1" formControlName="poids_cible"
+                class="w-full px-4 py-3 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                placeholder="68">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">kg</span>
+            </div>
+          </div>
+
+          <!-- Objectif sportif — clickable cards -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Objectif sportif</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button type="button" *ngFor="let obj of objectifs"
+                (click)="selectObjectif(obj.key)"
+                class="px-4 py-3 border-2 rounded-xl font-bold text-sm transition-all text-center"
+                [class.border-emerald-500]="fitnessForm.get('objectif_sportif')?.value === obj.key"
+                [class.bg-emerald-50]="fitnessForm.get('objectif_sportif')?.value === obj.key"
+                [class.border-gray-200]="fitnessForm.get('objectif_sportif')?.value !== obj.key"
+                [class.hover:border-gray-300]="fitnessForm.get('objectif_sportif')?.value !== obj.key">
+                {{ obj.label }}
+              </button>
+            </div>
+            <p *ngIf="fitnessForm.get('objectif_sportif')?.touched && fitnessForm.get('objectif_sportif')?.errors?.['required']" class="text-red-500 text-xs mt-1">Sélectionnez un objectif</p>
+          </div>
+
+          <!-- Niveau sportif — clickable cards -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Niveau sportif</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button type="button" *ngFor="let niv of niveaux"
+                (click)="selectNiveau(niv.key)"
+                class="px-4 py-3 border-2 rounded-xl font-bold text-sm transition-all text-center"
+                [class.border-emerald-500]="fitnessForm.get('niveau_sportif')?.value === niv.key"
+                [class.bg-emerald-50]="fitnessForm.get('niveau_sportif')?.value === niv.key"
+                [class.border-gray-200]="fitnessForm.get('niveau_sportif')?.value !== niv.key"
+                [class.hover:border-gray-300]="fitnessForm.get('niveau_sportif')?.value !== niv.key">
+                {{ niv.label }}
+              </button>
+            </div>
+            <p *ngIf="fitnessForm.get('niveau_sportif')?.touched && fitnessForm.get('niveau_sportif')?.errors?.['required']" class="text-red-500 text-xs mt-1">Sélectionnez votre niveau</p>
+          </div>
+
+          <!-- Sport préféré — badge grid -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Sport préféré</label>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" *ngFor="let sport of sports"
+                (click)="selectSport(sport.key)"
+                class="px-4 py-2 border-2 rounded-xl text-sm font-semibold transition-all"
+                [class.border-emerald-500]="fitnessForm.get('sport_prefere')?.value === sport.key"
+                [class.bg-emerald-50]="fitnessForm.get('sport_prefere')?.value === sport.key"
+                [class.border-gray-200]="fitnessForm.get('sport_prefere')?.value !== sport.key"
+                [class.hover:border-gray-300]="fitnessForm.get('sport_prefere')?.value !== sport.key">
+                {{ sport.label }}
+              </button>
+            </div>
+            <p *ngIf="fitnessForm.get('sport_prefere')?.touched && fitnessForm.get('sport_prefere')?.errors?.['required']" class="text-red-500 text-xs mt-1">Sélectionnez un sport</p>
+          </div>
+
+          <!-- Budget mensuel — side by side -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Budget mensuel <span class="font-normal text-gray-400">(optionnel)</span></label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="relative">
+                <input type="number" formControlName="budget_mensuel_min"
+                  class="w-full px-4 py-3 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  placeholder="Min">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">TND</span>
+              </div>
+              <div class="relative">
+                <input type="number" formControlName="budget_mensuel_max"
+                  class="w-full px-4 py-3 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  placeholder="Max">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">TND</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save button -->
+          <div class="pt-4 border-t-2 border-gray-100">
+            <button type="submit" [disabled]="fitnessForm.invalid || submitting()"
+              class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white font-bold py-3 px-10 rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base">
+              {{ submitting() ? 'Enregistrement...' : 'Enregistrer mon profil' }}
+            </button>
+          </div>
+
+          </form>
+        }
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- SECTION 2 — Mes Recommandations             -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="bg-white rounded-3xl shadow-sm border-2 border-black overflow-hidden">
+      <div class="bg-emerald-600 px-6 py-6 text-white border-b-2 border-black">
+        <h2 class="text-2xl font-extrabold">🎯 Mes Recommandations</h2>
+        <p class="text-emerald-50 text-sm mt-1">Complexes sportifs adaptés à votre profil</p>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <!-- Loading -->
+        @if (loadingRecs()) {
+          <div class="animate-pulse space-y-4">
+            <div class="h-32 bg-gray-200 rounded-2xl w-full"></div>
+            <div class="h-32 bg-gray-200 rounded-2xl w-full"></div>
+            <div class="h-32 bg-gray-200 rounded-2xl w-full"></div>
+          </div>
+        }
+
+        <!-- No profile banner -->
+        @if (!loadingRecs() && !hasProfile()) {
+          <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 text-center">
+            <div class="text-4xl mb-3">🎯</div>
+            <p class="text-amber-800 font-bold text-lg">Remplissez votre profil fitness ci-dessus pour obtenir des recommandations personnalisées</p>
+          </div>
+        }
+
+        <!-- Recommendations cards -->
+        @if (!loadingRecs() && hasProfile()) {
+          <div class="space-y-4">
+            @if (recommendations().length === 0) {
+              <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center">
+                <p class="text-gray-500">Aucune recommandation disponible pour le moment.</p>
+              </div>
+            }
+
+          @for (rec of recommendations(); track rec.complexe.id; let i = $index) {
+            <div
+            class="border-2 border-black rounded-2xl overflow-hidden transition-all hover:shadow-md">
+            <!-- Card header with image placeholder -->
+            <div class="bg-emerald-500 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 class="text-white font-extrabold text-lg">{{ rec.complexe.name }}</h3>
+                <p class="text-white/80 text-sm">{{ rec.complexe.address }}{{ rec.complexe.city ? ', ' + rec.complexe.city : '' }}</p>
+                @if (rec.complexe.terrains_count) {
+                  <p class="text-emerald-100 text-xs mt-2">{{ rec.complexe.terrains_count }} terrains</p>
+                }
+              </div>
+              <!-- Score badge -->
+              <div class="bg-white border-2 border-black rounded-xl px-3 py-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span class="text-emerald-600 font-extrabold text-sm">Score: {{ rec.score }}/100</span>
+              </div>
+            </div>
+            <!-- Card body -->
+            <div class="p-5 bg-white">
+              <!-- Sport badge -->
+              <div class="flex items-center gap-2 mb-3">
+                <span class="bg-gray-100 border border-gray-200 rounded-lg px-3 py-1 text-xs font-bold text-gray-600">
+                  {{ rec.matched_sport || rec.complexe.terrains?.[0]?.sport_type || 'Sport' }}
+                </span>
+                <span class="text-sm">{{ stars(rec.complexe.moyenne_notation_c || 0) }}</span>
+                <span class="text-xs text-gray-400 font-medium">({{ rec.complexe.moyenne_notation_c || '—' }}/5)</span>
+              </div>
+              <!-- Explication -->
+              <p class="text-gray-600 text-sm italic mb-4">"{{ rec.explication }}"</p>
+              <!-- Action button -->
+              <a [routerLink]="['/complexes', rec.complexe.id]"
+                class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm">
+                Voir le complexe
+              </a>
+            </div>
+            </div>
+          }
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

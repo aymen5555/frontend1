@@ -1,0 +1,195 @@
+<div class="min-h-screen bg-gray-50 pb-12">
+  <ng-container *ngIf="loading(); else loaded">
+    <div class="h-96 bg-gray-200 animate-pulse w-full"></div>
+  </ng-container>
+
+  <ng-template #loaded>
+    <ng-container *ngIf="complexe() as c; else notFound">
+      <!-- Hero Banner -->
+      <div class="relative h-96 w-full overflow-hidden">
+        <img [src]="c.image_c || 'https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg'" alt="Complexe Cover" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+
+        <div class="absolute bottom-0 left-0 right-0 p-8 max-w-5xl mx-auto">
+          <span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4 inline-block shadow-sm">
+            {{ c.is_active ? 'OUVERT' : 'FERMÉ' }}
+          </span>
+          <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-2">{{ c.name }}</h1>
+          <div class="flex flex-wrap items-center gap-4 text-gray-200 text-sm font-medium">
+            <span class="flex items-center gap-1">📍 {{ c.address }}, {{ c.city }}</span>
+            <span class="flex items-center gap-1" *ngIf="c.phone">📞 {{ c.phone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+        <div class="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">À propos</h2>
+          <p class="text-gray-600 leading-relaxed max-w-3xl">
+            Découvrez notre complexe sportif haut de gamme. Nous proposons des installations modernes et bien entretenues pour vous garantir la meilleure expérience de jeu.
+          </p>
+        </div>
+
+        <!-- Subscription Section -->
+        <div *ngIf="subscriptionTypes().length > 0" class="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-950">Abonnements Adhérents</h2>
+              <p class="text-sm text-gray-500 mt-1">Devenez adhérent et économisez 20% sur toutes vos réservations de terrains et d'activités dans ce complexe.</p>
+            </div>
+            <div *ngIf="activeSubscription()" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl border border-emerald-100 font-semibold text-sm flex items-center gap-2">
+              <span>✨</span> Adhérent Actif (Remise 20% active)
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div *ngFor="let type of subscriptionTypes()" 
+                 class="border border-gray-100 hover:border-emerald-100 rounded-3xl p-6 bg-gray-50/50 hover:bg-emerald-50/10 transition-all flex flex-col justify-between group">
+              <div>
+                <div class="flex justify-between items-start">
+                  <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">{{ type.nom }}</h3>
+                  <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full">
+                    {{ type.nb_mois }} mois
+                  </span>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 line-clamp-2">{{ type.description }}</p>
+                
+                <div class="my-4 flex items-baseline gap-1">
+                  <span class="text-3xl font-black text-gray-950">{{ type.tarif }}</span>
+                  <span class="text-xs font-bold text-gray-400 ml-1">TND</span>
+                </div>
+
+                <!-- Advantages list -->
+                <div *ngIf="type.avantages && type.avantages.length > 0" class="space-y-1.5 mb-6">
+                  <div *ngFor="let adv of type.avantages" class="flex items-center gap-2 text-xs text-gray-600">
+                    <span class="text-emerald-500 font-bold">✓</span> {{ adv }}
+                  </div>
+                </div>
+              </div>
+
+              <button *ngIf="!activeSubscription()"
+                      (click)="openSubModal(type)"
+                      class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors shadow-sm">
+                S'abonner
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">Terrains du complexe</h2>
+        </div>
+
+        <div *ngIf="terrains().length === 0" class="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-300">
+          <div class="text-5xl mb-4">🏜️</div>
+          <p class="text-gray-500 font-medium">Ce complexe n'a pas encore de terrains.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let t of terrains()" class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all group border border-gray-100">
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl shadow-inner">
+                    {{ getSportIcon(t.sport_type) }}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-900 text-lg">{{ t.name }}</h3>
+                    <p class="text-sm text-gray-500 capitalize">{{ t.sport_type }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                <div class="text-xl font-black text-emerald-600">{{ t.price_per_hour }} <span class="text-xs text-gray-400">TND/h</span></div>
+                <button (click)="onBook(c.id, t.id, t.sport_type, $event)" class="text-sm font-bold text-emerald-500 hover:text-emerald-700 transition-colors bg-transparent">Réserver →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #notFound>
+    <div class="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
+      <div class="text-6xl mb-4">🏢</div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Complexe introuvable</h2>
+      <p class="text-gray-500 mb-6">Le complexe que vous recherchez n'existe pas ou a été supprimé.</p>
+      <a routerLink="/complexes" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">Retour aux complexes</a>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Payment modal for card subscriptions -->
+<app-payment-modal *ngIf="showPaymentModal()" (paid)="onPaymentModalPaid($event)" (closed)="onPaymentModalCancelled()"></app-payment-modal>
+
+<!-- Subscription Modal -->
+<div *ngIf="showSubModal() && selectedType() as type" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
+    
+    <!-- Modal Header -->
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <div>
+        <h3 class="text-lg font-bold text-gray-950">Confirmer l'abonnement</h3>
+        <p class="text-xs text-gray-400 mt-1">Complexe : {{ complexe()?.name }}</p>
+      </div>
+      <button (click)="closeSubModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold p-1 bg-white hover:bg-gray-100 rounded-xl transition-all">✕</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4">
+      <!-- Selected Plan Card -->
+      <div class="bg-emerald-50/40 border border-emerald-100/50 rounded-2xl p-4 flex justify-between items-center">
+        <div>
+          <span class="text-xs font-semibold text-emerald-700">Formule choisie</span>
+          <h4 class="font-bold text-gray-900 text-base mt-0.5">{{ type.nom }}</h4>
+          <p class="text-xs text-gray-400">{{ type.nb_mois }} mois de validité</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xl font-black text-emerald-600">{{ type.tarif }} TND</span>
+        </div>
+      </div>
+
+      <!-- Date Debut -->
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date de début de l'abonnement</label>
+        <input type="date" 
+               [value]="dateDebut()" 
+               (change)="onDateChange($event)"
+               [min]="todayStr"
+               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none text-sm transition-colors bg-white font-medium">
+      </div>
+
+      <!-- Modalite Paiement -->
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Modalité de Paiement</label>
+        <select [value]="modalitePaiement()" 
+                (change)="onModaliteChange($event)"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none text-sm transition-colors bg-white font-medium">
+          <option value="carte">Paiement par carte (En ligne)</option>
+          <option value="especes">Paiement en espèces (Au complexe)</option>
+        </select>
+        <p class="text-xs text-gray-400 mt-2">
+          <span *ngIf="modalitePaiement() === 'carte'">Votre abonnement sera activé dès la confirmation bancaire.</span>
+          <span *ngIf="modalitePaiement() === 'especes'">Votre abonnement sera créé en attente et devra être validé sur place par l'accueil.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-6 bg-gray-50/50 border-t border-gray-100 flex gap-3">
+      <button (click)="closeSubModal()" 
+              class="flex-1 border border-gray-200 hover:bg-gray-100 text-gray-600 font-semibold py-3 rounded-xl text-sm transition-all">
+        Annuler
+      </button>
+      <button (click)="confirmSubscription()" 
+              [disabled]="submitting()"
+              class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+        <span *ngIf="submitting()" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+        {{ submitting() ? 'Traitement...' : 'Confirmer' }}
+      </button>
+    </div>
+
+  </div>
+</div>

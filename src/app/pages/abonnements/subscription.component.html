@@ -1,0 +1,95 @@
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-bold mb-4">Gestion de l'abonnement</h1>
+
+  <div *ngIf="successMessage()" class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+    {{ successMessage() }}
+  </div>
+  <div *ngIf="errorMessage()" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+    {{ errorMessage() }}
+  </div>
+
+  <section class="mb-10 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+      <h2 class="text-xl font-semibold mb-4">Souscrire un abonnement</h2>
+      <p class="text-sm text-gray-600 mb-4">Découvrez nos formules d'abonnement adhérent pour bénéficier de tarifs préférentiels.</p>
+      <a routerLink="/abonnements/parcourir" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">Découvrir les offres</a>
+    </div>
+
+    <div class="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+      <h2 class="text-xl font-semibold mb-4">Avantages abonnés</h2>
+      <ul class="space-y-3 text-gray-700">
+        <li>⭐ 20% de réduction sur toutes vos réservations</li>
+        <li>📅 Accès prioritaire aux meilleurs créneaux</li>
+        <li>💰 Tarifs préférentiels dans votre complexe</li>
+        <li>📣 Notifications exclusives</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-semibold">Mes abonnements adhérents</h2>
+        <p class="text-sm text-gray-500">Historique et gestion de vos abonnements dans les complexes.</p>
+      </div>
+    </div>
+
+    <div *ngIf="loading()" class="space-y-4">
+      <div class="h-28 animate-pulse rounded-3xl bg-gray-100"></div>
+      <div class="h-28 animate-pulse rounded-3xl bg-gray-100"></div>
+    </div>
+
+    <div *ngIf="!loading() && abonnements().length === 0" class="rounded-3xl border border-dashed border-gray-200 p-10 text-center text-gray-500">
+      Vous n'avez encore aucun abonnement.
+    </div>
+
+    <div *ngIf="!loading() && abonnements().length > 0" class="space-y-4">
+      <div *ngFor="let ab of abonnements()" class="rounded-3xl border border-gray-200 p-6 shadow-sm">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-bold text-emerald-600">{{ ab.type_abonnement?.nom || 'Abonnement' }}</p>
+            <p class="text-sm text-gray-500">{{ ab.complexe?.name }}</p>
+            <div class="flex gap-2 mt-2">
+              <span class="rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="statutBadge(ab.statut).class">
+                {{ statutBadge(ab.statut).label }}
+              </span>
+              <span class="rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="paiementBadge(ab.paye, ab.reste_a_payer).class">
+                {{ paiementBadge(ab.paye, ab.reste_a_payer).label }}
+              </span>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-2xl font-black text-gray-900">{{ ab.montant_apres_remise }} <span class="text-sm font-normal text-gray-400">TND</span></p>
+            <p class="text-sm text-gray-500">{{ ab.type_abonnement?.nb_mois }} mois</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <p class="text-sm text-gray-500">Débute le</p>
+            <p class="font-medium">{{ formatDate(ab.date_debut) }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Expire le</p>
+            <p class="font-medium">{{ formatDate(ab.date_fin) }}</p>
+          </div>
+        </div>
+
+        <!-- Payment confirmation for card payments pending -->
+        <div *ngIf="!ab.paye && ab.reste_a_payer > 0 && ab.modalite_paiement === 'carte'" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p class="font-semibold text-amber-700 mb-3">Paiement en attente ({{ ab.reste_a_payer }} DT)</p>
+          <label class="block text-sm font-medium text-gray-700 mb-2" [for]="'reference-' + ab.id">Référence de paiement</label>
+          <div class="flex gap-3 flex-col sm:flex-row">
+            <input [id]="'reference-' + ab.id" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-3" placeholder="123456789" [(ngModel)]="ab.reference" [name]="'reference-' + ab.id" />
+            <button type="button" class="btn-secondary w-full sm:w-auto" (click)="confirmPayment(ab, ab.reference || '')">Confirmer paiement</button>
+          </div>
+          <p *ngIf="referenceErrors()[ab.id]" class="mt-2 text-sm text-red-600">{{ referenceErrors()[ab.id] }}</p>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button *ngIf="canCancel(ab)" type="button" class="btn-danger" (click)="cancelSubscription(ab)">Annuler l'abonnement</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

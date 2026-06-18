@@ -1,0 +1,133 @@
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex items-center">
+        <a [routerLink]="getHomeRoute()" class="flex items-center gap-2">
+          <svg class="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span class="font-bold text-xl text-gray-900 tracking-tight">PlaySpace</span>
+        </a>
+        <div class="hidden md:ml-8 md:flex md:space-x-6">
+          <!-- Client links grouped into Mon Espace -->
+          @if (auth.isClient()) {
+            <a [routerLink]="getHomeRoute()" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" [routerLinkActiveOptions]="{exact: true}" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🏠</span>Accueil</a>
+            <a routerLink="/complexes" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🏢</span>Complexes</a>
+            <a routerLink="/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🎯</span>Activités</a>
+            <a routerLink="/terrains" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">📅</span>Réserver</a>
+            <a routerLink="/abonnements/parcourir" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🎫</span>Abonnements</a>
+
+            <!-- Mon Espace dropdown -->
+            <div class="relative">
+              <button class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleEspace()">
+                Mon Espace <span class="ml-2">▾</span>
+              </button>
+              <div *ngIf="showEspace" class="absolute mt-2 w-52 bg-white border border-gray-100 rounded-lg shadow-lg py-2">
+                <a routerLink="/reservations" (click)="closeEspace()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Mes Réservations</a>
+                <a routerLink="/mes-activites" (click)="closeEspace()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Mes Activités</a>
+                <a routerLink="/abonnements/mes-abonnements" (click)="closeEspace()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Mes Abonnements</a>
+                <a routerLink="/mon-profil-fitness" (click)="closeEspace()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profil Fitness</a>
+              </div>
+            </div>
+          }
+
+          <!-- Gerant links -->
+          @if (auth.isGerant()) {
+            <a routerLink="/admin/dashboard" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🏢</span>Mon Complexe</a>
+            <a routerLink="/admin/reservations" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">📅</span>Réservations</a>
+            <a routerLink="/admin/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🎯</span>Activités</a>
+            <a routerLink="/admin/abonnements" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200"><span class="mr-2">🎫</span>Abonnements</a>
+          }
+
+          <!-- Super Admin links -->
+          @if (auth.isSuperAdmin()) {
+            <a routerLink="/home" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Accueil</a>
+            <a routerLink="/complexes" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Complexes</a>
+            <a routerLink="/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Activités</a>
+            <a routerLink="/super-admin/dashboard" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Administration</a>
+            <a routerLink="/admin/abonnements" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Abonnements</a>
+          }
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        @if (auth.isLoggedIn()) {
+          <div class="hidden md:flex items-center gap-4">
+            <div class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold shadow-sm text-sm">
+              {{ initials }}
+            </div>
+            <button (click)="logout()" class="text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors cursor-pointer">Déconnexion</button>
+          </div>
+        } @else {
+          <div class="hidden md:flex items-center gap-4">
+            <a routerLink="/auth/login" class="inline-flex items-center px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium text-sm transition-colors">Connexion</a>
+          </div>
+        }
+        
+        <!-- Mobile hamburger -->
+        <button (click)="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors" aria-label="Menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            @if (!mobileMenuOpen()) {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            } @else {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            }
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  @if (mobileMenuOpen()) {
+    <div class="md:hidden bg-white border-b border-gray-100 shadow-lg animate-fade-in">
+      <div class="px-4 py-3 space-y-1">
+        @if (auth.isClient()) {
+          <a [routerLink]="getHomeRoute()" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🏠</span>Accueil</a>
+          <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🏢</span>Complexes</a>
+          <a routerLink="/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🎯</span>Activités</a>
+          <a routerLink="/terrains" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">📅</span>Réserver</a>
+          <a routerLink="/abonnements/parcourir" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🎫</span>Abonnements</a>
+
+          <button (click)="toggleEspace()" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Mon Espace ▾</button>
+          <div *ngIf="showEspace" class="pl-4">
+            <a routerLink="/reservations" (click)="closeMobileMenu(); closeEspace()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Réservations</a>
+            <a routerLink="/mes-activites" (click)="closeMobileMenu(); closeEspace()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Activités</a>
+            <a routerLink="/abonnements/mes-abonnements" (click)="closeMobileMenu(); closeEspace()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Abonnements</a>
+            <a routerLink="/mon-profil-fitness" (click)="closeMobileMenu(); closeEspace()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Profil Fitness</a>
+          </div>
+        }
+
+        @if (auth.isGerant()) {
+          <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🏢</span>Mon Complexe</a>
+          <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">📅</span>Réservations</a>
+          <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🎯</span>Activités</a>
+          <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors"><span class="mr-2">🎫</span>Abonnements</a>
+        }
+
+        @if (auth.isSuperAdmin()) {
+          <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Accueil</a>
+          <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Complexes</a>
+          <a routerLink="/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Activités</a>
+          <a routerLink="/super-admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Administration</a>
+          <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Abonnements</a>
+        }
+        
+        <hr class="my-2 border-gray-100">
+        
+        @if (auth.isLoggedIn()) {
+          <div class="px-3 py-2">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold shadow-sm text-sm">{{ initials }}</div>
+              <span class="text-sm font-medium text-gray-700">Bonjour {{ auth.currentUser()?.first_name }}</span>
+            </div>
+            <button (click)="logout()" class="w-full text-left px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 font-medium transition-colors text-sm">Déconnexion</button>
+          </div>
+        } @else {
+          <div class="px-3 py-2">
+            <a routerLink="/auth/login" (click)="closeMobileMenu()" class="block w-full text-center px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium text-sm transition-colors">Connexion</a>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</nav>

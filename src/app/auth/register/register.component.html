@@ -1,0 +1,194 @@
+<section class="auth-page">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <i class="ti ti-ball-football"></i>
+        </div>
+        <h1>Create your account</h1>
+        <p class="subtitle">Join PlaySpace — book padel courts in seconds</p>
+
+        @if (errorMessage()) {
+        <div class="alert alert-error" role="alert">
+            <i class="ti ti-alert-circle"></i>
+            {{ errorMessage() }}
+        </div>
+        }
+
+        <!-- Role selector -->
+        <div class="role-row">
+            <button type="button" class="role-btn" [class.active]="selectedRole() === 'CLIENT'"
+                (click)="selectRole('CLIENT')">
+                <div class="role-icon"><i class="ti ti-user"></i></div>
+                <div>
+                    <div class="role-label">Player</div>
+                    <div class="role-desc">Book courts &amp; train</div>
+                </div>
+            </button>
+            <!-- Subscriber role removed: only Player and Gerant self-registration allowed -->
+            <button type="button" class="role-btn" [class.active]="selectedRole() === 'GERANT'"
+                (click)="selectRole('GERANT')">
+                <div class="role-icon"><i class="ti ti-building-community"></i></div>
+                <div>
+                    <div class="role-label">Gerant de complexe</div>
+                    <div class="role-desc">Gérez vos installations</div>
+                </div>
+            </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+            <div class="row-2">
+                <div class="form-group">
+                    <label for="first_name">First name</label>
+                    <div class="input-wrap">
+                        <i class="ti ti-user"></i>
+                        <input id="first_name" type="text" formControlName="first_name" placeholder="Ahmed"
+                            autocomplete="given-name" />
+                    </div>
+                    @if (firstName.invalid && firstName.touched) {
+                    <span class="field-error">Min. 2 characters required.</span>
+                    }
+                    @if (fieldError('first_name')) {
+                    <span class="field-error">{{ fieldError('first_name') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Last name</label>
+                    <div class="input-wrap">
+                        <i class="ti ti-user"></i>
+                        <input id="last_name" type="text" formControlName="last_name" placeholder="Ben Ali"
+                            autocomplete="family-name" />
+                    </div>
+                    @if (lastName.invalid && lastName.touched) {
+                    <span class="field-error">Min. 2 characters required.</span>
+                    }
+                    @if (fieldError('last_name')) {
+                    <span class="field-error">{{ fieldError('last_name') }}</span>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-wrap">
+                    <i class="ti ti-mail"></i>
+                    <input id="email" type="email" formControlName="email" placeholder="ahmed@example.com"
+                        autocomplete="email" />
+                </div>
+                @if (email.invalid && email.touched) {
+                <span class="field-error">{{ email.errors?.['required'] ? 'Email is required.' : 'Enter a valid email.'
+                    }}</span>
+                }
+                @if (fieldError('email')) {
+                <span class="field-error">{{ fieldError('email') }}</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <div class="input-wrap">
+                    <i class="ti ti-phone"></i>
+                    <input id="phone" type="tel" formControlName="phone" placeholder="+216 XX XXX XXX"
+                        autocomplete="tel" />
+                </div>
+                @if (fieldError('phone')) {
+                <span class="field-error">{{ fieldError('phone') }}</span>
+                }
+            </div>
+
+            @if (selectedRole() === 'GERANT') {
+            <div class="form-group">
+                <label for="complexe_id">Sélectionnez votre complexe</label>
+                <div class="input-wrap">
+                    <i class="ti ti-building-community"></i>
+                    <select id="complexe_id" formControlName="complexe_id">
+                        <option value="" disabled>Choisir un complexe</option>
+                        @for (complexe of availableComplexes(); track complexe.id) {
+                            <option [value]="complexe.id">{{ complexe.name }} — {{ complexe.city || complexe.address }}</option>
+                        }
+                    </select>
+                </div>
+                @if (complexeId.invalid && complexeId.touched) {
+                <span class="field-error">Please select a complexe.</span>
+                }
+                @if (fieldError('complexe_id')) {
+                <span class="field-error">{{ fieldError('complexe_id') }}</span>
+                }
+                @if (selectedRole() === 'GERANT' && availableComplexes().length === 0) {
+                <span class="field-error">Aucun complexe disponible actuellement. Contactez l'administrateur.</span>
+                }
+            </div>
+            }
+
+            <hr class="divider" />
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <i class="ti ti-lock"></i>
+                    <input id="password" [type]="showPwd() ? 'text' : 'password'" formControlName="password"
+                        placeholder="Min. 8 characters" autocomplete="new-password" />
+                    <button type="button" class="eye-btn" (click)="showPwd.update(v => !v)">
+                        <i [class]="showPwd() ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                    </button>
+                </div>
+                <div class="strength-bar">
+                    <div class="strength-seg" [class]="'seg-' + passwordStrength"></div>
+                    <div class="strength-seg" [class]="passwordStrength >= 2 ? 'seg-' + passwordStrength : ''"></div>
+                    <div class="strength-seg" [class]="passwordStrength >= 3 ? 'seg-' + passwordStrength : ''"></div>
+                    <div class="strength-seg" [class]="passwordStrength >= 4 ? 'seg-' + passwordStrength : ''"></div>
+                </div>
+                @if (strengthLabel) {
+                <span class="strength-text strength-{{ strengthClass }}">{{ strengthLabel }}</span>
+                }
+                @if (password.invalid && password.touched) {
+                <span class="field-error">Min. 8 characters required.</span>
+                }
+                @if (fieldError('password')) {
+                <span class="field-error">{{ fieldError('password') }}</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation">Confirm password</label>
+                <div class="input-wrap">
+                    <i class="ti ti-lock"></i>
+                    <input id="password_confirmation" [type]="showPwd2() ? 'text' : 'password'"
+                        formControlName="password_confirmation" placeholder="Repeat your password"
+                        autocomplete="new-password" />
+                    <button type="button" class="eye-btn" (click)="showPwd2.update(v => !v)">
+                        <i [class]="showPwd2() ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                    </button>
+                </div>
+                @if (form.errors?.['mismatch'] && password2.touched) {
+                <span class="field-error">Passwords do not match.</span>
+                }
+                @if (fieldError('password_confirmation')) {
+                <span class="field-error">{{ fieldError('password_confirmation') }}</span>
+                }
+            </div>
+
+            <button type="submit" class="btn-primary" [disabled]="loading()">
+                @if (loading()) {
+                <i class="ti ti-loader-2 spin"></i> Creating account...
+                } @else {
+                    <i class="ti ti-user-plus"></i> Créer un compte
+                }
+            </button>
+
+        </form>
+
+        <p class="footer-link">
+            Vous avez déjà un compte ? <a routerLink="/auth/login">Se connecter</a>
+        </p>
+        <p class="footer-link mt-4">
+            <a routerLink="/">Retour à l'accueil</a>
+        </p>
+        <p class="terms-note">
+            En créant un compte, vous acceptez nos
+            <a href="#">Conditions</a> et notre <a href="#">Politique de confidentialité</a>
+        </p>
+
+    </div>
+</section>

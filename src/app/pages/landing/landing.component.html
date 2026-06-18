@@ -1,0 +1,96 @@
+<div class="min-h-screen bg-white text-gray-900">
+  <!-- Hero -->
+  <header class="relative landing-hero h-screen flex items-center">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('assets/images/hero-landing.webp'); background-attachment: scroll;"></div>
+    <div class="absolute inset-0" style="background: rgba(0,0,0,0.55);"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 lg:py-32">
+      <div class="max-w-3xl text-white">
+        <div class="inline-block bg-emerald-600 px-3 py-1 rounded-full text-xs font-bold">PLAYSPACE</div>
+        <h1 class="mt-6 text-3xl md:text-5xl font-extrabold leading-tight">Réservez votre terrain de sport en ligne, sans complication</h1>
+        <p class="mt-4 text-lg text-gray-200">Explorez des complexes, comparez les terrains et préparez votre prochaine partie avant même de créer un compte.</p>
+        <div class="mt-8 flex gap-4 flex-wrap">
+          <a routerLink="/complexes" class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-500">Découvrir les complexes</a>
+          <a routerLink="/auth/login" class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20">Se connecter</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <section class="bg-white py-20">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">📅</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Réservation en ligne</h3>
+          <p class="mt-2 text-gray-600">Réservez en quelques clics et gérez vos créneaux.</p>
+        </div>
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">🛡️</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Paiement sécurisé</h3>
+          <p class="mt-2 text-gray-600">Paiement en ligne ou sur place, simple et sécurisé.</p>
+        </div>
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">📍</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Complexes partenaires</h3>
+          <p class="mt-2 text-gray-600">Des lieux sélectionnés avec soin près de chez vous.</p>
+        </div>
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">👤</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Profil Fitness</h3>
+          <p class="mt-2 text-gray-600">Personnalisez vos recommandations selon vos objectifs.</p>
+        </div>
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">🏃</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Activités encadrées</h3>
+          <p class="mt-2 text-gray-600">Yoga, fitness, natation — rejoignez des séances avec des coachs qualifiés.</p>
+        </div>
+        <div class="feature-card p-6 rounded-2xl bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+          <div class="text-2xl text-emerald-600">🎫</div>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">Abonnements</h3>
+          <p class="mt-2 text-gray-600">Devenez adhérent de vos complexes et profitez de -20% sur tout.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="py-24 bg-[#f9fafb] text-gray-900" style="background-color: #f9fafb;">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <h2 class="text-3xl font-extrabold text-center mb-16 text-gray-900">Comment ça marche ?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="flex flex-col p-8 bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 min-h-[220px]">
+          <div class="text-5xl font-extrabold text-emerald-600 mb-4 leading-none">1</div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Parcourez les complexes</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Recherchez par sport, ville ou complexe.</p>
+        </div>
+        <div class="flex flex-col p-8 bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 min-h-[220px]">
+          <div class="text-5xl font-extrabold text-emerald-600 mb-4 leading-none">2</div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Choisissez votre créneau</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Consultez les disponibilités en temps réel.</p>
+        </div>
+        <div class="flex flex-col p-8 bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 min-h-[220px]">
+          <div class="text-5xl font-extrabold text-emerald-600 mb-4 leading-none">3</div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Réservez et payez</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Payez en ligne par carte ou en espèces sur place.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA banner -->
+  <section class="py-16 bg-emerald-600 text-white">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold">Prêt à jouer ?</h2>
+      <p class="mt-2">Créez votre compte gratuitement et réservez votre premier terrain.</p>
+      <div class="mt-6">
+        <a routerLink="/auth/register" class="inline-flex items-center px-6 py-3 rounded-full bg-white text-emerald-600 font-semibold">S'inscrire maintenant</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 bg-emerald-700 text-white text-center">
+    <div class="max-w-7xl mx-auto px-6">© 2026 PlaySpace — Tous droits réservés</div>
+  </footer>
+</div>

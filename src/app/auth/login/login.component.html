@@ -1,0 +1,86 @@
+<section class="auth-page">
+  <div class="auth-card">
+
+      <div class="auth-header">
+      <div class="auth-logo">
+        <i class="ti ti-ball-football"></i>
+      </div>
+      <h1>Bienvenue</h1>
+      <p class="subtitle">Connectez-vous pour réserver votre terrain</p>
+    </div>
+
+    <!-- Error alert -->
+    @if (errorMessage()) {
+      <div class="alert alert-error" role="alert">
+        <i class="ti ti-alert-circle"></i>
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Adresse e-mail</label>
+        <div class="input-wrap">
+          <i class="ti ti-mail"></i>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+        </div>
+        @if (email?.invalid && email?.touched) {
+          <span class="field-error">
+            {{ email?.errors?.['required'] ? 'Email is required.' : 'Enter a valid email address.' }}
+          </span>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrap">
+          <i class="ti ti-lock"></i>
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Your password"
+            autocomplete="current-password"
+          />
+          <button type="button" class="eye-btn" (click)="togglePassword()" aria-label="Toggle password">
+            <i [class]="showPassword() ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+          </button>
+        </div>
+        @if (password?.invalid && password?.touched) {
+          <span class="field-error">Password is required.</span>
+        }
+      </div>
+
+      <div class="forgot-link">
+        <a href="#">Mot de passe oublié ?</a>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="loading()">
+        @if (loading()) {
+          <i class="ti ti-loader-2 spin"></i> Connexion en cours...
+        } @else {
+          <i class="ti ti-login"></i> Se connecter
+        }
+      </button>
+
+    </form>
+
+    <p class="footer-link">
+      Vous n'avez pas de compte ?
+      <a routerLink="/auth/register">Créez-en un</a>
+    </p>
+    <p class="footer-link mt-4">
+      <a routerLink="/">Retour à l'accueil</a>
+    </p>
+
+  </div>
+</section>
