@@ -63,4 +63,8 @@ export class GerantService {
   assignComplexe(gerantId: number, complexeId: number | null): Observable<Gerant> {
     return this.http.put<ApiItem<Gerant>>(`${this.api}/${gerantId}/complexe`, { complexe_id: complexeId }).pipe(map(r => r.data));
   }
+  /** DELETE /admin/gerants/{id} */
+  deleteGerant(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${id}`);
+  }
 }

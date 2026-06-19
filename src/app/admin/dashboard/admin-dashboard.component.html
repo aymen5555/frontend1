@@ -168,7 +168,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-medium mb-1">Prix/h *</label>
-                                <input type="number" formControlName="price_per_hour" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                                <input type="number" formControlName="price_per_hour" class="w-full border border-gray-300 rounded-md px-3 py-2"/>
                             </div>
                         </div>
                         <div class="flex justify-end gap-2 pt-2">
@@ -318,6 +318,8 @@
                     </button>
                 </div>
             </form>
+            <div>
+            </div>
         </div>
         }
 
@@ -359,6 +361,7 @@
                                 @if (!g.is_active) {
                                 <button type="button" class="btn-xs" (click)="activateGerant(g.id)">Activer</button>
                                 }
+                                <button type="button" class="btn-xs danger" (click)="deleteGerant(g.id)">Supprimer</button>
                             </div>
                         </td>
                     </tr>

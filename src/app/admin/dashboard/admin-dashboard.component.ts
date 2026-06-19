@@ -169,6 +169,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         password: ['', [Validators.required, Validators.minLength(8)]],
         complexe_id: [null as number | null, Validators.required],
         phone: [''],
+    
     });
 
     confirmPaymentForm = this.fb.group({
@@ -275,6 +276,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.toastSvc.success('Gérant activé.');
             },
             error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'activation.'),
+        });
+    }
+
+    deleteGerant(id: number): void {
+        if (!confirm('Supprimer ce gérant ?')) return;
+        this.gerantSvc.deleteGerant(id).subscribe({
+            next: () => {
+                this.loadGerants();
+                this.toastSvc.success('Gérant supprimé avec succès.');
+            },
+            error: (err: any) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la suppression.'),
         });
     }
 
