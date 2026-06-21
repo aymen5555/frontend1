@@ -1,0 +1,98 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Fournisseurs</h1>
+      <p class="text-slate-600 mt-2">Gérez vos fournisseurs de produits et d'équipements.</p>
+    </div>
+    <button (click)="openCreateForm()" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition cursor-pointer">
+      + Nouveau Fournisseur
+    </button>
+  </header>
+
+  <!-- Inline Form -->
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-lg text-slate-900 mb-4">{{ editing() ? 'Modifier le fournisseur' : 'Nouveau fournisseur' }}</h2>
+    <form [formGroup]="supplierForm" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Complexe *</label>
+        <select formControlName="complexe_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option value="" disabled>Sélectionner</option>
+          <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nom *</label>
+        <input type="text" formControlName="nom" placeholder="Nom du fournisseur" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact</label>
+        <input type="text" formControlName="contact" placeholder="Personne de contact" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
+        <input type="text" formControlName="telephone" placeholder="+216 XX XXX XXX" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
+        <input type="email" formControlName="email" placeholder="contact@fournisseur.com" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5 md:col-span-2">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Adresse</label>
+        <textarea formControlName="adresse" rows="2" placeholder="Adresse postale du fournisseur" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"></textarea>
+      </div>
+      <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
+        <button type="submit" [disabled]="supplierForm.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
+          {{ submitting() ? 'Enregistrement...' : (editing() ? 'Mettre à jour' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && suppliers().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">🏭</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucun fournisseur enregistré</h3>
+    <p class="text-slate-500 mt-2">Créez votre premier fournisseur pour gérer vos approvisionnements.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && suppliers().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Nom</th>
+            <th class="py-4 px-3">Contact</th>
+            <th class="py-4 px-3">Téléphone</th>
+            <th class="py-4 px-3">Email</th>
+            <th class="py-4 px-3">Adresse</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          @for (s of suppliers(); track s.id) {
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="py-4 px-3 font-bold text-slate-900">{{ s.nom }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ s.contact || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ s.telephone || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ s.email || '—' }}</td>
+              <td class="py-4 px-3 text-slate-500 text-xs">{{ s.adresse || '—' }}</td>
+              <td class="py-4 px-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openEditForm(s)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>
+                  <button (click)="deactivate(s)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Désactiver</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

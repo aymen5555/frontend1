@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ComplexeService } from '../../services/complexe.service';
 import { TerrainService } from '../../services/terrain.service';
 import { ReservationService } from '../../services/reservation.service';
@@ -14,7 +15,7 @@ import { Client } from '../../models/client.model';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -44,6 +45,7 @@ export class AdminComponent implements OnInit {
     address: ['', Validators.required],
     city: [''],
     phone: [''],
+    image_url: [''],
   });
 
   terrainForm = this.fb.group({
@@ -51,6 +53,7 @@ export class AdminComponent implements OnInit {
     name: ['', Validators.required],
     sport_type: ['padel'],
     price_per_hour: [45, Validators.required],
+    image_url: [''],
   });
 
   ngOnInit(): void {
@@ -95,6 +98,7 @@ export class AdminComponent implements OnInit {
       address: complexe.address || '',
       city: complexe.city || '',
       phone: complexe.phone || '',
+      image_url: complexe.image_c || complexe.image_url || '',
     });
     this.showComplexModal.set(true);
   }
@@ -107,23 +111,24 @@ export class AdminComponent implements OnInit {
   updateComplexe() {
     if (this.complexForm.invalid) return;
     const formValue = this.complexForm.value;
-    const payload = {
+    const payload: any = {
       name: formValue.name || '',
       address: formValue.address || '',
       city: formValue.city || '',
       phone: formValue.phone || '',
+      image_url: formValue.image_url || null,
     };
     const existing = this.editingComplexe();
 
     if (existing) {
-      this.complexeSvc.update(existing.id, payload).subscribe(() => {
-        this.closeComplexModal();
-        this.loadData();
+      this.complexeSvc.update(existing.id, payload).subscribe({
+        next: () => { this.closeComplexModal(); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la mise à jour.')
       });
     } else {
-      this.complexeSvc.create(payload).subscribe(() => {
-        this.closeComplexModal();
-        this.loadData();
+      this.complexeSvc.create(payload).subscribe({
+        next: () => { this.closeComplexModal(); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la création.')
       });
     }
   }
@@ -148,6 +153,7 @@ export class AdminComponent implements OnInit {
       name: terrain.name,
       sport_type: terrain.sport_type,
       price_per_hour: Number(terrain.price_per_hour),
+      image_url: terrain.image_t || terrain.image_url || '',
     });
     this.showTerrainModal.set(true);
   }
@@ -160,23 +166,24 @@ export class AdminComponent implements OnInit {
   updateTerrain() {
     if (this.terrainForm.invalid) return;
     const formValue = this.terrainForm.value;
-    const payload = {
+    const payload: any = {
       complexe_id: formValue.complexe_id || 0,
       name: formValue.name || '',
       sport_type: formValue.sport_type || 'padel',
       price_per_hour: formValue.price_per_hour || 45,
+      image_url: formValue.image_url || null,
     };
     const existing = this.editingTerrain();
 
     if (existing) {
-      this.terrainSvc.update(existing.id, payload).subscribe(() => {
-        this.closeTerrainModal();
-        this.loadData();
+      this.terrainSvc.update(existing.id, payload).subscribe({
+        next: () => { this.closeTerrainModal(); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la mise à jour.')
       });
     } else {
-      this.terrainSvc.create(payload).subscribe(() => {
-        this.closeTerrainModal();
-        this.loadData();
+      this.terrainSvc.create(payload).subscribe({
+        next: () => { this.closeTerrainModal(); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la création.')
       });
     }
   }

@@ -21,6 +21,7 @@ export interface Terrain {
     heure_fermeture?: string;
     nbheures_seance?: number;
     nbminute_seance?: number;
+    image_url?: string;
 }
 
 export interface TerrainPayload {
@@ -29,4 +30,5 @@ export interface TerrainPayload {
     sport_type?: string;
     price_per_hour: number;
     is_active?: boolean;
+    image_url?: string;
 }

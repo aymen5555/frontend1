@@ -1,4 +1,76 @@
-/* You can add global styles to this file, and also import other style files */
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  background-color: #F8FAF8;
+  color: #1A301D;
+  font-family: 'Inter', 'Outfit', sans-serif;
+  margin: 0;
+}
+
+/* Custom premium styling classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(26, 107, 48, 0.05);
+}
+
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(26, 107, 48, 0.15);
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F8FAF8;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3d9c7;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1A6B30;
+}
+
+/* Cart badge subtle bounce */
+@keyframes bounceSlight {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.animate-bounce-subtle {
+  animation: bounceSlight 1.5s ease-in-out infinite;
+}
+
+/* Primary color shortcuts for non-Tailwind usage */
+.text-primary { color: #1A6B30; }
+.bg-primary { background-color: #1A6B30; }
+.bg-primary-hover:hover { background-color: #155826; }
+.border-primary { border-color: #1A6B30; }
+.ring-primary { --tw-ring-color: #1A6B30; }
+.focus\:border-primary:focus { border-color: #1A6B30; }
+.focus\:ring-primary\/20:focus { box-shadow: 0 0 0 3px rgba(26,107,48,0.2); }
+.bg-primary\/10 { background-color: rgba(26,107,48,0.10); }
+.bg-primary\/5 { background-color: rgba(26,107,48,0.05); }
+.text-primary-hover:hover { color: #155826; }

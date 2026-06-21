@@ -1,0 +1,89 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Catégories de Produits</h1>
+      <p class="text-slate-600 mt-2">Gérez les catégories utilisées pour filtrer et organiser les produits de la boutique.</p>
+    </div>
+    <button (click)="openCreateForm()" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition cursor-pointer">
+      + Nouvelle Catégorie
+    </button>
+  </header>
+
+  <!-- Inline Form -->
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-lg text-slate-900 mb-4">{{ editing() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
+    <form [formGroup]="categoryForm" (ngSubmit)="save()" class="grid grid-cols-1 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nom *</label>
+        <input type="text" formControlName="nom" placeholder="Nom de la catégorie (ex: Équipements, Vêtements...)" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</label>
+        <textarea formControlName="description" rows="3" placeholder="Description de la catégorie..." class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"></textarea>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" formControlName="active" id="activeCheckbox" class="rounded border-slate-300 text-primary focus:ring-primary" />
+        <label for="activeCheckbox" class="text-sm font-semibold text-slate-700">Catégorie active (visible dans la boutique)</label>
+      </div>
+      
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
+        <button type="submit" [disabled]="categoryForm.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
+          {{ submitting() ? 'Enregistrement...' : (editing() ? 'Mettre à jour' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && categories().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">📂</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucune catégorie enregistrée</h3>
+    <p class="text-slate-500 mt-2">Créez votre première catégorie pour organiser les produits.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && categories().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Nom</th>
+            <th class="py-4 px-3">Description</th>
+            <th class="py-4 px-3">Slug</th>
+            <th class="py-4 px-3">Statut</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let c of categories()" class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-4 px-3 font-bold text-slate-900">{{ c.nom }}</td>
+            <td class="py-4 px-3 text-slate-600">{{ c.description || '—' }}</td>
+            <td class="py-4 px-3 text-slate-500 text-xs">{{ c.slug }}</td>
+            <td class="py-4 px-3">
+              <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" 
+                    [ngClass]="c.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+                {{ c.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="py-4 px-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button (click)="openEditForm(c)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>
+                <button (click)="toggleActive(c)" class="px-2.5 py-1.5 font-bold text-xs rounded-lg transition cursor-pointer"
+                        [ngClass]="c.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'">
+                  {{ c.active ? 'Désactiver' : 'Activer' }}
+                </button>
+                <button (click)="deleteCategory(c)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Supprimer</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

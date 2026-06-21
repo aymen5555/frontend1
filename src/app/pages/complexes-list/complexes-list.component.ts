@@ -53,6 +53,7 @@ export class ComplexesListComponent implements OnInit {
   }
 
   getComplexeImage(complexe: Complexe): string {
+    if (complexe.image_url) return complexe.image_url;
     if (complexe.image_c) return complexe.image_c;
     const terrains = complexe.terrains || [];
     let sport = '';

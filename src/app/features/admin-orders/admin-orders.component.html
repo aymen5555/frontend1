@@ -1,0 +1,99 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestion des Commandes</h1>
+      <p class="text-slate-600 mt-2">Suivez et mettez à jour le statut des commandes de vos clients.</p>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="glass-panel p-5 rounded-2xl mb-6">
+    <form [formGroup]="filterForm" class="flex flex-wrap gap-4 items-end">
+      <div class="flex flex-col gap-1.5 min-w-[200px]">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Statut Commande</label>
+        <select formControlName="statut" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5 min-w-[180px]">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Statut Paiement</label>
+        <select formControlName="statut_paiement" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option *ngFor="let p of paymentStatuses" [value]="p.value">{{ p.label }}</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && orders().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">📋</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucune commande trouvée</h3>
+    <p class="text-slate-500 mt-2">Aucune commande ne correspond aux filtres sélectionnés.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && orders().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">#</th>
+            <th class="py-4 px-3">Client</th>
+            <th class="py-4 px-3">Produits</th>
+            <th class="py-4 px-3">Montant</th>
+            <th class="py-4 px-3">Date</th>
+            <th class="py-4 px-3">Statut</th>
+            <th class="py-4 px-3">Paiement</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let order of orders()" class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-4 px-3 font-bold text-slate-700">#{{ order.id }}</td>
+            <td class="py-4 px-3">
+              <span class="font-semibold text-slate-900 block">{{ order.client_nom || '—' }}</span>
+              <span class="text-xs text-slate-400">{{ order.client_email }}</span>
+            </td>
+            <td class="py-4 px-3 max-w-[200px]">
+              <div class="flex flex-wrap gap-1">
+                <span *ngFor="let ligne of order.lignes | slice:0:2" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md font-medium">
+                  x{{ ligne.quantite }} {{ ligne.produit_nom || ('Prod. #' + ligne.produit_id) }}
+                </span>
+                <span *ngIf="order.lignes.length > 2" class="text-xs text-slate-400 font-medium">+{{ order.lignes.length - 2 }} autres</span>
+              </div>
+            </td>
+            <td class="py-4 px-3 font-bold text-primary">{{ order.montant_total | number:'1.2-2' }} TND</td>
+            <td class="py-4 px-3 text-slate-500 text-xs">{{ order.created_at | date:'dd/MM/yy HH:mm' }}</td>
+            <td class="py-4 px-3">
+              <span class="inline-block border px-2.5 py-1 text-xs font-bold rounded-lg" [ngClass]="getStatusBadgeClass(order.statut)">
+                {{ getStatusLabel(order.statut) }}
+              </span>
+            </td>
+            <td class="py-4 px-3">
+              <span class="inline-block border px-2.5 py-1 text-xs font-bold rounded-lg" [ngClass]="getPaymentBadgeClass(order.statut_paiement)">
+                {{ order.statut_paiement === 'paye' ? '✓ Payé' : 'Non Payé' }}
+              </span>
+            </td>
+            <td class="py-4 px-3 text-right">
+              <div class="flex items-center justify-end gap-2 flex-wrap">
+                <button *ngIf="order.statut !== 'annulee' && order.statut !== 'livree'" (click)="openStatusDialog(order)"
+                  class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">
+                  Statut
+                </button>
+                <button *ngIf="order.statut_paiement !== 'paye'" (click)="openPaymentDialog(order)"
+                  class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-lg transition cursor-pointer">
+                  ✓ Payer
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

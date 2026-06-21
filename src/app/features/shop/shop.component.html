@@ -1,0 +1,160 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <!-- Header -->
+  <header class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Boutique PlaySpace</h1>
+      <p class="text-slate-600 mt-2">Équipez-vous pour vos sports préférés et achetez dans vos complexes.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a routerLink="/cart" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-medium rounded-xl shadow-sm transition-colors duration-150 gap-2">
+        <span>🛒</span>
+        Voir le Panier
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+    <!-- Sidebar Filters -->
+    <aside class="glass-panel p-6 rounded-2xl h-fit">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+        <h2 class="font-bold text-lg text-slate-900">Filtres</h2>
+        <button (click)="resetFilters()" class="text-xs text-primary hover:underline font-semibold cursor-pointer">
+          Réinitialiser
+        </button>
+      </div>
+
+      <form [formGroup]="filterForm" class="space-y-6">
+        <!-- Search -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Recherche</label>
+          <div class="relative">
+            <input type="text" formControlName="search" placeholder="Nom ou description..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
+          </div>
+        </div>
+
+        <!-- Complexes -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Complexe</label>
+          <select formControlName="complexe_id" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150">
+            <option value="">Tous les complexes</option>
+            @for (comp of complexes(); track comp.id) {
+              <option [value]="comp.id">{{ comp.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Categories -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Catégorie</label>
+          <select formControlName="categorie_id" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150">
+            <option value="">Toutes les catégories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Sports -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Sport</label>
+          <select formControlName="sport_cible" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150">
+            <option value="">Tous les sports</option>
+            @for (sport of sports; track sport.value) {
+              <option [value]="sport.value">{{ sport.label }}</option>
+            }
+          </select>
+        </div>
+      </form>
+    </aside>
+
+    <!-- Product Grid Section -->
+    <main>
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="flex justify-center items-center py-20">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading() && products().length === 0" class="glass-panel text-center py-16 px-4 rounded-3xl">
+        <span class="text-5xl block mb-4">📦</span>
+        <h3 class="font-bold text-xl text-slate-900">Aucun produit trouvé</h3>
+        <p class="text-slate-500 mt-2 max-w-sm mx-auto">Nous n'avons pas pu trouver de produits correspondants à vos filtres. Essayez d'élargir votre recherche.</p>
+        <button (click)="resetFilters()" class="mt-6 inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-xl shadow-sm transition-colors duration-150">
+          Effacer les filtres
+        </button>
+      </div>
+
+      <!-- Grid -->
+      @if (!loading() && products().length > 0) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          @for (p of products(); track p.id) {
+            <div [routerLink]="['/shop/products', p.id]" class="glass-panel hover-lift rounded-2xl overflow-hidden cursor-pointer flex flex-col justify-between h-[450px]">
+              <div>
+                <!-- Image Area -->
+                <div class="h-48 w-full bg-slate-100 border-b border-slate-100 relative flex items-center justify-center overflow-hidden aspect-square">
+                  <!-- Loading Skeleton -->
+                  <div *ngIf="(p.image_url || p.image) && !isImageLoaded(p.id) && !isImageFailed(p.id)" class="absolute inset-0 bg-slate-200 animate-pulse"></div>
+
+                  <!-- Image tag -->
+                  <img *ngIf="(p.image_url || p.image) && !isImageFailed(p.id)" 
+                       [src]="p.image_url || p.image" 
+                       [alt]="p.nom" 
+                       (load)="onImageLoad(p.id)"
+                       (error)="onImageError(p.id)"
+                       class="w-full h-full object-cover transition-opacity duration-300"
+                       [class.opacity-0]="!isImageLoaded(p.id)" />
+
+                  <!-- Fallback gray placeholder with category icon -->
+                  <div *ngIf="(!p.image_url && !p.image) || isImageFailed(p.id)" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
+                    <i [class]="getCategoryIcon(p.categorie?.nom)" class="text-4xl text-slate-300"></i>
+                    <span class="text-xs text-slate-400 font-medium">Photo non ajoutée</span>
+                  </div>
+
+                  <!-- Badges -->
+                  <span class="absolute top-3 left-3 bg-white/95 backdrop-blur px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-700 shadow-sm border border-slate-100 z-10">
+                    {{ p.categorie?.nom }}
+                  </span>
+
+                  <span class="absolute top-3 right-3 border px-2.5 py-1 text-xs font-semibold rounded-lg shadow-sm z-10" [ngClass]="getStockBadgeClass(p)">
+                    {{ getStockLabel(p) }}
+                  </span>
+                </div>
+
+                <!-- Description & details -->
+                <div class="p-5">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-primary/10 text-primary tracking-wider">
+                      {{ p.sport_cible }}
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">
+                      • {{ p.niveau_cible }}
+                    </span>
+                  </div>
+                  <h3 class="font-bold text-slate-900 text-lg leading-tight line-clamp-1 mb-2">
+                    {{ p.nom }}
+                  </h3>
+                  <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                    {{ p.description || 'Aucune description disponible pour ce produit.' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Bottom Price & Cart Actions -->
+              <div class="p-5 pt-0 flex items-center justify-between border-t border-slate-50 mt-auto">
+                <div>
+                  <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Prix</p>
+                  <p class="text-xl font-extrabold text-primary">{{ p.prix | number:'1.2-2' }} TND</p>
+                </div>
+                <button (click)="addToCart(p, $event)" [disabled]="!p.stock || p.stock.quantite_disponible <= 0" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white text-sm font-semibold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer">
+                  <span>🛒</span>
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </main>
+  </div>
+</div>

@@ -26,36 +26,127 @@ import { AdminActivitesComponent } from './admin/activites/admin-activites.compo
 import { authGuard, gerantGuard, superAdminGuard, guestGuard } from './auth/guards/auth.guard';
 
 export const routes: Routes = [
+  // ── Auth ──────────────────────────────────────────────────────────────────
   { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'login', redirectTo: '/auth/login', pathMatch: 'full' },
   { path: 'auth/verify-email', component: VerifyEmailComponent },
   { path: 'auth/verify-pending', component: VerifyPendingComponent },
-  
+
+  // ── Public ────────────────────────────────────────────────────────────────
   { path: '', component: LandingComponent, canActivate: [guestGuard] },
   { path: 'home', component: HomeComponent, canActivate: [authGuard], data: { redirectAdmin: true } },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'complexes', component: ComplexesListComponent },
   { path: 'terrains', component: TerrainsComponent },
-  { path: 'reservations', component: ReservationsComponent, canActivate: [authGuard] },
   { path: 'complexes/:id', component: ComplexeProfileComponent },
+  { path: 'activites', component: ActivitesComponent },
+  { path: 'abonnements/parcourir', component: BrowseSubscriptionsComponent },
+
+  // ── Client (auth required) ────────────────────────────────────────────────
+  { path: 'reservations', component: ReservationsComponent, canActivate: [authGuard] },
   { path: 'abonnements', component: SubscriptionComponent, canActivate: [authGuard] },
   { path: 'mes-abonnements', component: MesAbonnementsComponent, canActivate: [authGuard] },
-  { path: 'abonnements/parcourir', component: BrowseSubscriptionsComponent },
   { path: 'abonnements/mes-abonnements', redirectTo: '/mes-abonnements', pathMatch: 'full' },
+  { path: 'mon-profil-fitness', component: ProfilFitnessComponent, canActivate: [authGuard] },
+  { path: 'mes-activites', component: MesActivitesComponent, canActivate: [authGuard] },
+  { path: 'historique/reservations', component: HistoriqueReservationsComponent, canActivate: [authGuard] },
+  { path: 'historique/abonnements', component: HistoriqueAbonnementsComponent, canActivate: [authGuard] },
+
+  // ── Sprint 7: Client Shop & Orders (lazy-loaded) ──────────────────────────
+  {
+    path: 'shop',
+    loadComponent: () =>
+      import('./features/shop/shop.component').then(m => m.ShopComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'shop/products/:id',
+    loadComponent: () =>
+      import('./features/shop/product-detail/product-detail.component').then(m => m.ProductDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./features/orders/cart/cart.component').then(m => m.CartComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./features/orders/checkout/checkout.component').then(m => m.CheckoutComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'my-orders',
+    loadComponent: () =>
+      import('./features/orders/my-orders/my-orders.component').then(m => m.MyOrdersComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'my-orders/:id',
+    loadComponent: () =>
+      import('./features/orders/order-detail/order-detail.component').then(m => m.OrderDetailComponent),
+    canActivate: [authGuard]
+  },
+
+  // ── Admin / Gérant ────────────────────────────────────────────────────────
   { path: 'admin', redirectTo: '/admin/dashboard', pathMatch: 'full' },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [authGuard] },
   { path: 'admin/reservations', component: AdminReservationsComponent, canActivate: [authGuard, gerantGuard] },
   { path: 'admin/activites', component: AdminActivitesComponent, canActivate: [authGuard, gerantGuard] },
   { path: 'admin/abonnements', component: SubscriptionAdminComponent, canActivate: [authGuard, gerantGuard] },
+
+  // ── Sprint 7: Admin Shop Management (lazy-loaded) ─────────────────────────
+  {
+    path: 'admin/products',
+    loadComponent: () =>
+      import('./features/admin-products/product-list/product-list.component').then(m => m.ProductListComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/products/create',
+    loadComponent: () =>
+      import('./features/admin-products/product-create/product-create.component').then(m => m.ProductCreateComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/products/edit/:id',
+    loadComponent: () =>
+      import('./features/admin-products/product-create/product-create.component').then(m => m.ProductCreateComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/orders',
+    loadComponent: () =>
+      import('./features/admin-orders/admin-orders.component').then(m => m.AdminOrdersComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/suppliers',
+    loadComponent: () =>
+      import('./features/admin-suppliers/admin-suppliers.component').then(m => m.AdminSuppliersComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/sales',
+    loadComponent: () =>
+      import('./features/admin-sales/admin-sales.component').then(m => m.AdminSalesComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+
+  // ── Super Admin ───────────────────────────────────────────────────────────
+  {
+    path: 'admin/categories',
+    loadComponent: () =>
+      import('./features/admin-categories/admin-categories.component').then(m => m.AdminCategoriesComponent),
+    canActivate: [authGuard, superAdminGuard]
+  },
   { path: 'super-admin', redirectTo: '/super-admin/dashboard', pathMatch: 'full' },
   { path: 'super-admin/dashboard', component: AdminDashboardComponent, canActivate: [authGuard, superAdminGuard] },
-  { path: 'mon-profil-fitness', component: ProfilFitnessComponent, canActivate: [authGuard] },
-  { path: 'activites', component: ActivitesComponent },
-  { path: 'mes-activites', component: MesActivitesComponent, canActivate: [authGuard] },
-  { path: 'historique/reservations', component: HistoriqueReservationsComponent, canActivate: [authGuard] },
-  { path: 'historique/abonnements', component: HistoriqueAbonnementsComponent, canActivate: [authGuard] },
-  
+
+  // ── Fallback ──────────────────────────────────────────────────────────────
   { path: '404', component: NotFoundComponent },
   { path: '**', component: NotFoundComponent },
 ];

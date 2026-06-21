@@ -23,6 +23,10 @@ export interface Complexe {
     latitude_c?: number;
     longitude_c?: number;
     moyenne_notation_c?: number;
+    image_url?: string;
+    website_url?: string;
+    facebook_url?: string;
+    instagram_url?: string;
 }
 
 export interface ComplexePayload {
@@ -42,4 +46,8 @@ export interface ComplexePayload {
     latitude_c?: number;
     longitude_c?: number;
     moyenne_notation_c?: number;
+    image_url?: string;
+    website_url?: string;
+    facebook_url?: string;
+    instagram_url?: string;
 }

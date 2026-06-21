@@ -35,6 +35,29 @@
     </div>
     }
 
+    <!-- ═══════ BOUTIQUE SUMMARY OVERVIEW ═══════ -->
+    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
+        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">Boutique & Ventes</h3>
+        <div class="summary-grid">
+            <div class="stat-card">
+                <p class="stat-label">Produits Actifs</p>
+                <p class="stat-value">{{ totalProducts() }}</p>
+            </div>
+            <div class="stat-card" [style.background]="lowStockProducts() > 0 ? '#fff5f5' : '#f5fdf8'" [style.border-color]="lowStockProducts() > 0 ? '#feb2b2' : '#d8f4e5'">
+                <p class="stat-label" [style.color]="lowStockProducts() > 0 ? '#9b2c2c' : '#0f766e'">Alerte Stock Bas</p>
+                <p class="stat-value" [style.color]="lowStockProducts() > 0 ? '#c53030' : '#0f5c52'">{{ lowStockProducts() }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Commandes Aujourd'hui</p>
+                <p class="stat-value">{{ ordersToday() }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Ventes Directes Aujourd'hui</p>
+                <p class="stat-value">{{ directSalesToday() }}</p>
+            </div>
+        </div>
+    </div>
+
     <div class="grid gap-6 lg:grid-cols-[1.7fr_1fr]" id="section-complexes">
         <!-- SUPER ADMIN: Complexe Selection Panel -->
         @if (auth.isSuperAdmin()) {
@@ -75,6 +98,36 @@
                         <label class="block text-xs font-medium mb-1">Description</label>
                         <input type="text" formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Courte description" />
                     </div>
+                    <!-- Image & Social Links -->
+                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; margin-top: 0.25rem;">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Photo &amp; Liens</p>
+                        <div class="grid gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">URL de la photo</label>
+                                <input type="url" formControlName="image_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                                @if (complexForm.get('image_url')?.value) {
+                                <div class="mt-2 relative rounded-md overflow-hidden border border-gray-200" style="height: 80px;">
+                                    <img [src]="complexForm.get('image_url')?.value" alt="Aperçu" class="w-full h-full object-cover" (load)="$any($event.target).style.display='block'" (error)="$any($event.target).style.display='none'" />
+                                    <button type="button" (click)="complexForm.get('image_url')?.setValue('')" class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/80">✕</button>
+                                </div>
+                                }
+                            </div>
+                            <div class="grid gap-2 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">🌐 Site web</label>
+                                    <input type="url" formControlName="website_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://monsite.com" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">📘 Facebook</label>
+                                    <input type="url" formControlName="facebook_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://facebook.com/..." />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">📸 Instagram</label>
+                                    <input type="url" formControlName="instagram_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://instagram.com/..." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" class="btn-outline" (click)="cancelComplexForm()">Annuler</button>
                         <button type="submit" class="btn-manual" [disabled]="complexForm.invalid || submittingComplex()">
@@ -114,12 +167,82 @@
         <section class="panel">
             <div class="panel-head">
                 <h2>Mon Complexe</h2>
+                <button type="button" class="btn-sm" (click)="openComplexForm(complexes()[0])">
+                    ✏️ Modifier la fiche
+                </button>
             </div>
+            @if (showComplexForm() && editingComplex()) {
+            <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
+                <h3 class="font-semibold mb-3">Modifier mon complexe</h3>
+                <form [formGroup]="complexForm" (ngSubmit)="saveComplex()" class="grid gap-4">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Nom *</label>
+                            <input type="text" formControlName="name" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Téléphone</label>
+                            <input type="text" formControlName="phone" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Adresse</label>
+                        <input type="text" formControlName="address" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Description</label>
+                        <input type="text" formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Courte description" />
+                    </div>
+                    <!-- Image & Social Links -->
+                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Photo &amp; Liens</p>
+                        <div class="grid gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">URL de la photo</label>
+                                <input type="url" formControlName="image_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                                @if (complexForm.get('image_url')?.value) {
+                                <div class="mt-2 relative rounded-md overflow-hidden border border-gray-200" style="height: 80px;">
+                                    <img [src]="complexForm.get('image_url')?.value" alt="Aperçu" class="w-full h-full object-cover" (load)="$any($event.target).style.display='block'" (error)="$any($event.target).style.display='none'" />
+                                    <button type="button" (click)="complexForm.get('image_url')?.setValue('')" class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/80">✕</button>
+                                </div>
+                                }
+                            </div>
+                            <div class="grid gap-2 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">🌐 Site web</label>
+                                    <input type="url" formControlName="website_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://monsite.com" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">📘 Facebook</label>
+                                    <input type="url" formControlName="facebook_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://facebook.com/..." />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">📸 Instagram</label>
+                                    <input type="url" formControlName="instagram_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://instagram.com/..." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" class="btn-outline" (click)="cancelComplexForm()">Annuler</button>
+                        <button type="submit" class="btn-manual" [disabled]="complexForm.invalid || submittingComplex()">
+                            {{ submittingComplex() ? 'Enregistrement…' : 'Mettre à jour' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            }
             <div class="panel-card">
                 <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Complexe attribué</p>
                 <h3 class="font-semibold text-xl text-slate-900">{{ complexes()[0]?.name }}</h3>
                 <p class="text-sm text-slate-600 mt-2">{{ complexes()[0]?.address }}</p>
                 <p class="text-xs text-slate-500 mt-1">{{ complexes()[0]?.terrains?.length ?? 0 }} courts</p>
+                <!-- Show current image thumbnail if any -->
+                @if (complexes()[0]?.image_url || complexes()[0]?.image_c) {
+                <div class="mt-3 rounded-lg overflow-hidden border border-gray-100" style="height: 70px; width: 120px;">
+                    <img [src]="complexes()[0]?.image_url || complexes()[0]?.image_c" alt="Photo" class="w-full h-full object-cover" />
+                </div>
+                }
             </div>
         </section>
         }
@@ -170,6 +293,16 @@
                                 <label class="block text-xs font-medium mb-1">Prix/h *</label>
                                 <input type="number" formControlName="price_per_hour" class="w-full border border-gray-300 rounded-md px-3 py-2"/>
                             </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">URL de la photo</label>
+                            <input type="url" formControlName="image_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                            @if (terrainForm.get('image_url')?.value) {
+                            <div class="mt-2 relative rounded-md overflow-hidden border border-gray-200" style="height: 70px;">
+                                <img [src]="terrainForm.get('image_url')?.value" alt="Aperçu" class="w-full h-full object-cover" (load)="$any($event.target).style.display='block'" (error)="$any($event.target).style.display='none'" />
+                                <button type="button" (click)="terrainForm.get('image_url')?.setValue('')" class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/80">✕</button>
+                            </div>
+                            }
                         </div>
                         <div class="flex justify-end gap-2 pt-2">
                             <button type="button" class="btn-outline" (click)="cancelTerrainForm()">Annuler</button>

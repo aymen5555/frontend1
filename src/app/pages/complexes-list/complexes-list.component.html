@@ -110,14 +110,14 @@
             </a>
           </div>
           
-          <div class="flex gap-3 mt-3 pt-3 border-t border-gray-100" *ngIf="complexe.website_c || complexe.facebook_c || complexe.instagram_c">
-            <a *ngIf="complexe.website_c" [href]="complexe.website_c" target="_blank" class="text-gray-400 hover:text-emerald-500 transition-colors text-xs flex items-center gap-1">
+          <div class="flex gap-3 mt-3 pt-3 border-t border-gray-100" *ngIf="(complexe.website_url || complexe.website_c) || (complexe.facebook_url || complexe.facebook_c) || (complexe.instagram_url || complexe.instagram_c)">
+            <a *ngIf="complexe.website_url || complexe.website_c" [href]="complexe.website_url || complexe.website_c" target="_blank" class="text-gray-400 hover:text-emerald-500 transition-colors text-xs flex items-center gap-1">
               🌐 Site web
             </a>
-            <a *ngIf="complexe.facebook_c" [href]="complexe.facebook_c" target="_blank" class="text-gray-400 hover:text-blue-500 transition-colors text-xs flex items-center gap-1">
+            <a *ngIf="complexe.facebook_url || complexe.facebook_c" [href]="complexe.facebook_url || complexe.facebook_c" target="_blank" class="text-gray-400 hover:text-blue-500 transition-colors text-xs flex items-center gap-1">
               📘 Facebook
             </a>
-            <a *ngIf="complexe.instagram_c" [href]="complexe.instagram_c" target="_blank" class="text-gray-400 hover:text-pink-500 transition-colors text-xs flex items-center gap-1">
+            <a *ngIf="complexe.instagram_url || complexe.instagram_c" [href]="complexe.instagram_url || complexe.instagram_c" target="_blank" class="text-gray-400 hover:text-pink-500 transition-colors text-xs flex items-center gap-1">
               📸 Instagram
             </a>
           </div>

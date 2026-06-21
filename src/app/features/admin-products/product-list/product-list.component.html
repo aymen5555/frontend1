@@ -1,0 +1,122 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestion des Produits</h1>
+      <p class="text-slate-600 mt-2">Gérez le catalogue des produits, mettez à jour les stocks et activez/désactivez les ventes.</p>
+    </div>
+    <div>
+      <a routerLink="/admin/products/create" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition duration-150 gap-2 cursor-pointer">
+        + Nouveau Produit
+      </a>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && products().length === 0" class="glass-panel text-center py-16 px-4 rounded-3xl">
+    <span class="text-5xl block mb-4">📦</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucun produit dans le catalogue</h3>
+    <p class="text-slate-500 mt-2 max-w-sm mx-auto">Créez votre premier produit pour commencer à vendre des équipements ou accessoires.</p>
+    <a routerLink="/admin/products/create" class="mt-6 inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-xl shadow-sm transition-colors duration-150">
+      Créer un produit
+    </a>
+  </div>
+
+  <!-- Product Table -->
+  <div *ngIf="!loading() && products().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Image</th>
+            <th class="py-4 px-3">Nom / Réf</th>
+            <th class="py-4 px-3">Catégorie</th>
+            <th class="py-4 px-3">Complexe</th>
+            <th class="py-4 px-3">Prix Vente</th>
+            <th class="py-4 px-3">Stock disponible</th>
+            <th class="py-4 px-3">Statut</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 text-slate-700 font-medium">
+          @for (p of products(); track p.id) {
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <!-- Image -->
+              <td class="py-4 px-3">
+                <div class="w-12 h-12 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img *ngIf="p.image" [src]="p.image" [alt]="p.nom" class="w-full h-full object-cover" />
+                  <span *ngIf="!p.image" class="text-xl">📦</span>
+                </div>
+              </td>
+
+              <!-- Name / Ref -->
+              <td class="py-4 px-3">
+                <span class="font-bold text-slate-900 block leading-tight">{{ p.nom }}</span>
+                <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Ref: {{ p.reference || '—' }}</span>
+              </td>
+
+              <!-- Category -->
+              <td class="py-4 px-3">
+                <span class="inline-block px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700">
+                  {{ p.categorie?.nom }}
+                </span>
+              </td>
+
+              <!-- Complexe -->
+              <td class="py-4 px-3 text-slate-500">
+                {{ p.complexe?.name }}
+              </td>
+
+              <!-- Price -->
+              <td class="py-4 px-3 font-bold text-slate-900">
+                {{ p.prix | number:'1.2-2' }} TND
+              </td>
+
+              <!-- Stock -->
+              <td class="py-4 px-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900">
+                    {{ p.stock?.quantite_disponible ?? 0 }}
+                  </span>
+                  <!-- Red badge warning if stock falls below minimum -->
+                  <span *ngIf="isLowStock(p)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase">
+                    Alerte Stock
+                  </span>
+                </div>
+                <span class="text-[10px] text-slate-400 block">Min: {{ p.stock?.quantite_minimale ?? 5 }}</span>
+              </td>
+
+              <!-- Status -->
+              <td class="py-4 px-3">
+                <span class="inline-block px-2 py-0.5 rounded-lg text-xs font-bold"
+                  [ngClass]="p.actif ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-400'">
+                  {{ p.actif ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-4 px-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openStockDialog(p)" class="inline-flex items-center px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-lg transition-colors cursor-pointer" title="Ajuster le stock">
+                    📦 Stock
+                  </button>
+                  <button (click)="editProduct(p)" class="inline-flex items-center px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-colors cursor-pointer">
+                    Modifier
+                  </button>
+                  <button (click)="toggleActive(p)" class="inline-flex items-center px-2.5 py-1.5 font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                    [ngClass]="p.actif ? 'bg-red-50 hover:bg-red-100 text-red-600' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'">
+                    {{ p.actif ? 'Désactiver' : 'Activer' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

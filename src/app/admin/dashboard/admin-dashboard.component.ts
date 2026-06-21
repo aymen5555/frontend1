@@ -13,6 +13,9 @@ import { ClientService } from '../../services/client.service';
 import { ToastService } from '../../services/toast.service';
 import { AbonnementService } from '../../services/abonnement.service';
 import { GerantService, Gerant, CreateGerantPayload } from '../../services/gerant.service';
+import { ProductService } from '../../services/product.service';
+import { OrderService } from '../../services/order.service';
+import { SaleService } from '../../services/sale.service';
 import { Complexe } from '../../models/complexe.model';
 import { Terrain } from '../../models/terrain.model';
 import { Reservation } from '../../models/reservation.model';
@@ -41,6 +44,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     private readonly abonnementSvc = inject(AbonnementService);
     private readonly gerantSvc = inject(GerantService);
     private readonly fb = inject(FormBuilder);
+    private readonly productSvc = inject(ProductService);
+    private readonly orderSvc = inject(OrderService);
+    private readonly saleSvc = inject(SaleService);
+
+    totalProducts = signal<number>(0);
+    lowStockProducts = signal<number>(0);
+    ordersToday = signal<number>(0);
+    directSalesToday = signal<number>(0);
 
     complexes = signal<Complexe[]>([]);
     terrains = signal<Terrain[]>([]);
@@ -111,12 +122,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         city: [''],
         phone: [''],
         description: [''],
+        image_url: [''],
+        facebook_url: [''],
+        instagram_url: [''],
+        website_url: [''],
     });
 
     terrainForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(2)]],
         sport_type: ['padel'],
         price_per_hour: [45, [Validators.required, Validators.min(0)]],
+        image_url: [''],
     });
 
     editReservationForm = this.fb.group({
@@ -437,9 +453,50 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         requestAnimationFrame(() => requestAnimationFrame(tryScroll));
     }
 
+    loadShopMetrics(): void {
+        const today = new Date();
+        const isToday = (dateStr: string) => {
+            if (!dateStr) return false;
+            const d = new Date(dateStr);
+            return d.getDate() === today.getDate() &&
+                   d.getMonth() === today.getMonth() &&
+                   d.getFullYear() === today.getFullYear();
+        };
+
+        this.productSvc.adminList().subscribe({
+            next: (res) => {
+                if (res && res.success && res.data) {
+                    const products = res.data;
+                    this.totalProducts.set(products.filter(p => p.actif).length);
+                    this.lowStockProducts.set(products.filter(p => p.stock && p.stock.quantite_disponible <= p.stock.quantite_minimale).length);
+                }
+            },
+            error: () => {}
+        });
+
+        this.orderSvc.adminList().subscribe({
+            next: (res) => {
+                if (res && res.success && res.data) {
+                    this.ordersToday.set(res.data.filter(o => isToday(o.created_at)).length);
+                }
+            },
+            error: () => {}
+        });
+
+        this.saleSvc.list().subscribe({
+            next: (res) => {
+                if (res && res.success && res.data) {
+                    this.directSalesToday.set(res.data.filter(s => isToday(s.created_at)).length);
+                }
+            },
+            error: () => {}
+        });
+    }
+
     reload(): void {
         this.loading.set(true);
         this.errorMessage.set('');
+        this.loadShopMetrics();
 
         const gerantComplexe = this.auth.user()?.complexe;
         if (this.auth.isGerant() && gerantComplexe) {
@@ -831,6 +888,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 city: complexe.city ?? '',
                 phone: complexe.phone ?? '',
                 description: complexe.description ?? '',
+                image_url: complexe.image_url ?? complexe.image_c ?? '',
+                facebook_url: complexe.facebook_url ?? complexe.facebook_c ?? '',
+                instagram_url: complexe.instagram_url ?? complexe.instagram_c ?? '',
+                website_url: complexe.website_url ?? complexe.website_c ?? '',
             });
         } else {
             this.complexForm.reset();
@@ -903,6 +964,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 name: terrain.name,
                 sport_type: terrain.sport_type,
                 price_per_hour: Number(terrain.price_per_hour),
+                image_url: terrain.image_url ?? (terrain as any).image_t ?? '',
             });
         } else {
             this.terrainForm.reset({ sport_type: 'padel', price_per_hour: 45 });

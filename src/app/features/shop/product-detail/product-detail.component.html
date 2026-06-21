@@ -1,0 +1,105 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+  <!-- Back navigation link -->
+  <div class="mb-6">
+    <a routerLink="/shop" class="inline-flex items-center text-sm font-semibold text-primary hover:underline gap-1.5 cursor-pointer">
+      ← Retour à la boutique
+    </a>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Main Card -->
+  <div *ngIf="!loading() && product()" class="glass-panel rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+    <!-- Image section (Left) -->
+    <div class="bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center min-h-[300px] md:min-h-[400px] overflow-hidden relative aspect-square">
+      <!-- Loading Skeleton -->
+      <div *ngIf="(product()?.image_url || product()?.image) && !imageLoaded() && !imageFailed()" class="absolute inset-0 bg-slate-200 animate-pulse"></div>
+
+      <!-- Image tag -->
+      <img *ngIf="(product()?.image_url || product()?.image) && !imageFailed()" 
+           [src]="product()?.image_url || product()?.image" 
+           [alt]="product()?.nom" 
+           (load)="imageLoaded.set(true)"
+           (error)="imageFailed.set(true)"
+           class="w-full h-full object-cover transition-opacity duration-300"
+           [class.opacity-0]="!imageLoaded()" />
+
+      <!-- Fallback gray placeholder with category icon -->
+      <div *ngIf="(!product()?.image_url && !product()?.image) || imageFailed()" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
+        <i [class]="getCategoryIcon(product()?.categorie?.nom)" class="text-6xl text-slate-300"></i>
+        <span class="text-sm text-slate-400 font-medium">Photo non ajoutée</span>
+      </div>
+
+      <span class="absolute top-4 left-4 bg-white/95 px-3 py-1 text-xs font-bold rounded-lg text-slate-700 shadow-sm border border-slate-100 z-10">
+        {{ product()?.categorie?.nom }}
+      </span>
+    </div>
+
+    <!-- Product Meta & Actions (Right) -->
+    <div class="flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2.5 py-0.5 text-xs font-bold uppercase rounded bg-primary/10 text-primary tracking-wider">
+            {{ product()?.sport_cible }}
+          </span>
+          <span class="px-2.5 py-0.5 text-xs font-bold uppercase rounded bg-slate-100 text-slate-600 tracking-wider">
+            {{ product()?.niveau_cible }}
+          </span>
+        </div>
+
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          {{ product()?.nom }}
+        </h1>
+
+        <div class="mb-4">
+          <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Complexe d'origine</p>
+          <p class="text-sm font-semibold text-slate-700">{{ product()?.complexe?.name }} ({{ product()?.complexe?.city }})</p>
+        </div>
+
+        <p class="text-2xl font-extrabold text-primary mb-6">
+          {{ product()?.prix | number:'1.2-2' }} TND
+        </p>
+
+        <div class="border-t border-slate-100 pt-6 mb-6">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</h3>
+          <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+            {{ product()?.description || 'Aucune description disponible pour ce produit.' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions Panel -->
+      <div class="border-t border-slate-100 pt-6">
+        <!-- Stock status -->
+        <div class="inline-block border px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs mb-4" [ngClass]="getStockClass()">
+          {{ getStockLabel() }}
+        </div>
+
+        <!-- Add to cart and quantity tools -->
+        <div class="flex flex-wrap items-center gap-4">
+          <!-- Quantity controls -->
+          <div *ngIf="product()?.stock && product()!.stock!.quantite_disponible > 0" class="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-1">
+            <button (click)="decrementQuantity()" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-slate-600 font-bold transition cursor-pointer">
+              -
+            </button>
+            <span class="w-12 text-center text-sm font-bold text-slate-800">
+              {{ quantity() }}
+            </span>
+            <button (click)="incrementQuantity()" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-slate-600 font-bold transition cursor-pointer">
+              +
+            </button>
+          </div>
+
+          <!-- Add to Cart CTA -->
+          <button (click)="addToCart()" [disabled]="!product()?.stock || product()!.stock!.quantite_disponible <= 0" class="flex-1 min-w-[200px] inline-flex justify-center items-center px-6 py-3 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold rounded-xl transition shadow-sm gap-2 cursor-pointer">
+            <span>🛒</span>
+            Ajouter au panier
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

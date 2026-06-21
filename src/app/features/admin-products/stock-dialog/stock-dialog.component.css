@@ -1,0 +1,5 @@
+/* Styles specific to stock dialog */
+mat-dialog-content {
+  display: block;
+  margin-top: 10px;
+}

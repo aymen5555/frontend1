@@ -1,0 +1,120 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8">
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mon Panier</h1>
+    <p class="text-slate-600 mt-2">Vérifiez vos articles avant de finaliser votre commande.</p>
+  </header>
+
+  <!-- Empty State -->
+  <div *ngIf="cartItems().length === 0" class="glass-panel text-center py-20 px-4 rounded-3xl">
+    <span class="text-6xl block mb-6">🛒</span>
+    <h2 class="font-bold text-2xl text-slate-900">Votre panier est vide</h2>
+    <p class="text-slate-500 mt-2 max-w-sm mx-auto">Ajoutez des articles de notre boutique pour commencer vos achats.</p>
+    <a routerLink="/shop" class="mt-8 inline-flex items-center px-5 py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer">
+      Retourner à la boutique
+    </a>
+  </div>
+
+  <!-- Cart Content -->
+  <div *ngIf="cartItems().length > 0" class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+    <!-- Items Table/List -->
+    <div class="space-y-4">
+      <div class="glass-panel p-6 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+          <h2 class="font-bold text-lg text-slate-900">Articles ({{ cartCount() }})</h2>
+          <button (click)="clearCart()" class="text-sm text-red-500 hover:text-red-600 font-semibold cursor-pointer">
+            Vider le panier
+          </button>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+          <div *ngFor="let item of cartItems()" class="py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <!-- Product Info -->
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                <img *ngIf="item.product.image" [src]="item.product.image" [alt]="item.product.nom" class="w-full h-full object-cover" />
+                <span *ngIf="!item.product.image" class="text-2xl">📦</span>
+              </div>
+              <div>
+                <a [routerLink]="['/shop/products', item.product.id]" class="font-bold text-slate-900 hover:text-primary transition-colors block text-base">
+                  {{ item.product.nom }}
+                </a>
+                <span class="text-xs text-slate-400 font-medium">
+                  Complexe : {{ item.product.complexe?.name }}
+                </span>
+                <div class="mt-1 flex items-center gap-2">
+                  <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-primary/10 text-primary">
+                    {{ item.product.sport_cible }}
+                  </span>
+                  <span class="text-xs font-semibold text-slate-700">
+                    {{ item.product.prix | number:'1.2-2' }} TND
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quantity & Subtotal controls -->
+            <div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-10">
+              <!-- Quantity Adjuster -->
+              <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-1">
+                  <button (click)="updateQuantity(item.product.id, item.quantity - 1, item.product.stock?.quantite_disponible ?? 1)" class="w-7 h-7 flex items-center justify-center hover:bg-white rounded-lg text-slate-600 font-bold transition cursor-pointer">
+                    -
+                  </button>
+                  <span class="w-10 text-center text-sm font-bold text-slate-800">
+                    {{ item.quantity }}
+                  </span>
+                  <button (click)="updateQuantity(item.product.id, item.quantity + 1, item.product.stock?.quantite_disponible ?? 1)" class="w-7 h-7 flex items-center justify-center hover:bg-white rounded-lg text-slate-600 font-bold transition cursor-pointer">
+                    +
+                  </button>
+                </div>
+                <span class="text-[10px] text-slate-400">Stock max: {{ item.product.stock?.quantite_disponible }}</span>
+              </div>
+
+              <!-- Price Subtotal -->
+              <div class="text-right min-w-[90px]">
+                <p class="text-sm text-slate-400 font-semibold uppercase tracking-wider">Sous-total</p>
+                <p class="text-base font-extrabold text-slate-900">
+                  {{ (item.product.prix * item.quantity) | number:'1.2-2' }} TND
+                </p>
+              </div>
+
+              <!-- Remove -->
+              <button (click)="removeItem(item.product.id)" class="text-slate-400 hover:text-red-500 transition-colors p-1.5 hover:bg-red-50 rounded-lg cursor-pointer" aria-label="Supprimer">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary sidebar -->
+    <div class="glass-panel p-6 rounded-2xl h-fit">
+      <h3 class="font-bold text-lg text-slate-900 mb-4 border-b border-slate-100 pb-3">Résumé</h3>
+
+      <div class="space-y-4 mb-6">
+        <div class="flex justify-between text-sm text-slate-500">
+          <span>Articles</span>
+          <span class="font-medium text-slate-800">{{ cartCount() }}</span>
+        </div>
+        <div class="flex justify-between text-sm text-slate-500">
+          <span>TVA (Incluse)</span>
+          <span class="font-medium text-slate-800">0.00 TND</span>
+        </div>
+        <div class="border-t border-slate-100 pt-4 flex justify-between text-base">
+          <span class="font-bold text-slate-900">Montant Total</span>
+          <span class="font-extrabold text-primary text-xl">
+            {{ cartTotal() | number:'1.2-2' }} TND
+          </span>
+        </div>
+      </div>
+
+      <button (click)="proceedToCheckout()" class="w-full inline-flex justify-center items-center px-6 py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition duration-150 gap-2 cursor-pointer">
+        Finaliser la commande
+      </button>
+      <a routerLink="/shop" class="w-full text-center block text-xs font-semibold text-primary hover:underline mt-4 cursor-pointer">
+        Continuer mes achats
+      </a>
+    </div>
+  </div>
+</div>
