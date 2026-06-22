@@ -29,7 +29,7 @@ export class MesActivitesComponent implements OnInit {
         return (res.statut === 'reservee' || res.statut === 'confirmee') && seanceAt >= now;
       }
       if (this.activeTab() === 'past') {
-        return res.statut === 'confirmee' && seanceAt < now;
+        return (res.statut === 'confirmee' || res.statut === 'reservee') && seanceAt < now;
       }
       return res.statut === 'annulee';
     });

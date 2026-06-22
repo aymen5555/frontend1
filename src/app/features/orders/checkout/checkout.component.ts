@@ -33,6 +33,24 @@ export class CheckoutComponent implements OnInit {
     if (this.cartItems().length === 0) {
       this.toastSvc.warning('Votre panier est vide.');
       this.router.navigate(['/shop']);
+      return;
+    }
+
+    // Validate all items belong to the same complexe
+    const complexeIds = new Set<number | undefined>();
+    this.cartItems().forEach(item => complexeIds.add(item.product.complexe?.id));
+    complexeIds.delete(undefined);
+
+    if (complexeIds.size === 0) {
+      this.toastSvc.error('Impossible de passer commande : certains produits n\'ont pas de complexe associé.');
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    if (complexeIds.size > 1) {
+      this.toastSvc.error('Votre panier contient des produits de plusieurs complexes. Veuillez passer des commandes séparées par complexe.');
+      this.router.navigate(['/cart']);
+      return;
     }
   }
 
@@ -41,9 +59,8 @@ export class CheckoutComponent implements OnInit {
 
     this.submitting.set(true);
 
-    // Get complexe_id from the first item
+    // Get complexe_id from the first item (all items share the same complexe — validated in ngOnInit)
     const firstItem = this.cartItems()[0];
-    // In our Product interface, complexe is an object which may contain id. Let's handle it safely.
     const complexeId = firstItem.product.complexe?.id;
 
     if (!complexeId) {

@@ -50,6 +50,11 @@ export class ProductService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.adminApi}/${id}`);
   }
 
+  // Admin: Delete product (which will check for order history on the backend)
+  delete(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.adminApi}/${id}`);
+  }
+
   // Admin: Update product stock
   updateStock(id: number, payload: { quantite_disponible: number; quantite_minimale?: number }): Observable<{ success: boolean; data: any }> {
     return this.http.put<{ success: boolean; data: any }>(`${this.adminApi}/${id}/stock`, payload);

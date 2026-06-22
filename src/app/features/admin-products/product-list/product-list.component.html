@@ -108,8 +108,11 @@
                     Modifier
                   </button>
                   <button (click)="toggleActive(p)" class="inline-flex items-center px-2.5 py-1.5 font-bold text-xs rounded-lg transition-colors cursor-pointer"
-                    [ngClass]="p.actif ? 'bg-red-50 hover:bg-red-100 text-red-600' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'">
+                    [ngClass]="p.actif ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'">
                     {{ p.actif ? 'Désactiver' : 'Activer' }}
+                  </button>
+                  <button (click)="deleteProduct(p)" class="inline-flex items-center px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition-colors cursor-pointer" title="Supprimer le produit">
+                    Supprimer
                   </button>
                 </div>
               </td>

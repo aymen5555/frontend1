@@ -40,7 +40,7 @@ export class AdminCategoriesComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
-    this.categorySvc.list().subscribe({
+    this.categorySvc.adminList().subscribe({
       next: (res) => {
         this.categories.set(res.data);
         this.loading.set(false);

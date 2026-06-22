@@ -17,6 +17,11 @@ export class CategoryService {
     return this.http.get<{ success: boolean; data: Category[] }>(this.publicApi);
   }
 
+  // Admin: List all categories (active & inactive)
+  adminList(): Observable<{ success: boolean; data: Category[] }> {
+    return this.http.get<{ success: boolean; data: Category[] }>(this.adminApi);
+  }
+
   // Super Admin: Create a new category
   create(payload: { nom: string; description?: string }): Observable<{ success: boolean; data: Category }> {
     return this.http.post<{ success: boolean; data: Category }>(this.adminApi, payload);

@@ -41,16 +41,15 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  deactivateProduct(product: Product): void {
-    if (!product.actif) return; // Already inactive
-    if (confirm(`Voulez-vous vraiment désactiver le produit "${product.nom}" ?`)) {
-      this.productSvc.deactivate(product.id).subscribe({
-        next: () => {
-          this.toastSvc.success('Produit désactivé avec succès.');
+  deleteProduct(product: Product): void {
+    if (confirm(`Voulez-vous vraiment supprimer le produit "${product.nom}" ?`)) {
+      this.productSvc.delete(product.id).subscribe({
+        next: (res) => {
+          this.toastSvc.success(res.message || 'Produit supprimé avec succès.');
           this.loadProducts();
         },
         error: (err) => {
-          this.toastSvc.error(err?.error?.message || 'Erreur lors de la désactivation.');
+          this.toastSvc.error(err?.error?.message || 'Erreur lors de la suppression.');
         }
       });
     }

@@ -34,7 +34,7 @@ function fetchUrl(url, headers = {}) {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
     const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weightsArg}&display=${display}`;
     console.log('Fetching CSS from', cssUrl);
-    const cssBuf = await fetchUrl(cssUrl, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
+    const cssBuf = await fetchUrl(cssUrl, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' });
     const css = cssBuf.toString('utf8');
 
     const blocks = css.split('@font-face');
@@ -48,7 +48,7 @@ function fetchUrl(url, headers = {}) {
         const filename = `Inter-${weight}.woff2`;
         const outPath = path.join(outDir, filename);
         console.log(`Downloading weight ${weight} -> ${filename}`);
-        const data = await fetchUrl(url, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
+        const data = await fetchUrl(url, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' });
         fs.writeFileSync(outPath, data);
         count++;
       }
