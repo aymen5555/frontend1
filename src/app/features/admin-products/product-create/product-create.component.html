@@ -55,15 +55,21 @@
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Complexe *</label>
           <!-- Preselected/Readonly for Gerant, dropdown for Super Admin -->
-          <select formControlName="complexe_id"
-            class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150">
-            <option value="" disabled>Sélectionner un complexe</option>
-            @for (comp of complexes(); track comp.id) {
-              <option [value]="comp.id">
-                {{ comp.name }}
-              </option>
-            }
-          </select>
+          <ng-container *ngIf="!isGerant(); else gerantComplexe">
+            <select formControlName="complexe_id"
+              class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150">
+              <option value="" disabled>Sélectionner un complexe</option>
+              @for (comp of complexes(); track comp.id) {
+                <option [value]="comp.id">
+                  {{ comp.name }}
+                </option>
+              }
+            </select>
+          </ng-container>
+          <ng-template #gerantComplexe>
+            <input type="hidden" formControlName="complexe_id" />
+            <div class="px-3 py-2 bg-slate-50 rounded-xl text-sm text-slate-700">{{ complexes()[0]?.name }}</div>
+          </ng-template>
         </div>
 
         <!-- Price (Vente) -->
@@ -102,30 +108,37 @@
           </select>
         </div>
 
-        <!-- Image Preview / Placeholder -->
-        <div class="flex flex-col gap-1.5 md:col-span-2 items-center justify-center py-2">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider self-start w-full">Aperçu de la Photo</label>
-          <div class="w-48 h-48 rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center relative">
-            <img *ngIf="productForm.get('image')?.value" [src]="productForm.get('image')?.value" class="w-full h-full object-cover" />
-            <div *ngIf="!productForm.get('image')?.value" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
-              <i [class]="getCategoryIconById(productForm.get('categorie_id')?.value)" class="text-4xl text-slate-300"></i>
-              <span class="text-xs text-slate-400 font-medium">Photo non ajoutée</span>
+        <!-- Image URL (URL-only, same pattern as complexe form) -->
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Photo du Produit (URL)</label>
+          <div class="flex gap-3 items-start">
+            <!-- Preview thumbnail -->
+            <div class="w-20 h-20 flex-shrink-0 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+              <img *ngIf="productForm.get('image')?.value" [src]="productForm.get('image')?.value" alt="Aperçu" class="w-full h-full object-cover" (error)="onImagePreviewError($event)" />
+              <span *ngIf="!productForm.get('image')?.value" class="text-2xl text-slate-300">🖼</span>
+            </div>
+            <!-- URL Input -->
+            <div class="flex-1 flex flex-col gap-1">
+              <input type="url" formControlName="image" [placeholder]="imagePlaceholder"
+                class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
+              <p class="text-[11px] text-slate-400 leading-relaxed">Collez l'URL directe d'une image (JPG, PNG, WEBP). L'aperçu s'affiche à gauche.</p>
             </div>
           </div>
         </div>
 
-        <!-- Image URL -->
-        <div class="flex flex-col gap-1.5 md:col-span-2">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">URL de l'image</label>
-          <input type="text" formControlName="image" [placeholder]="imagePlaceholder"
-            class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
-        </div>
-
-        <!-- Reference -->
+        <!-- Reference (auto-generated, editable) -->
         <div class="flex flex-col gap-1.5 md:col-span-2">
           <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Référence du Produit</label>
-          <input type="text" formControlName="reference" placeholder="Ex: REF-PAD-019"
-            class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
+          <div class="flex gap-2">
+            <input type="text" formControlName="reference"
+              placeholder="Ex: PRD-PAD-001"
+              class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150 uppercase" />
+            <button type="button" (click)="generateReference()"
+              class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-colors cursor-pointer whitespace-nowrap">
+              ⚡ Générer
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">Format : PRD-SPORT-XXX — généré automatiquement, modifiable.</p>
         </div>
 
         <!-- CREATE MODE ONLY: Stocks initial & minimal -->

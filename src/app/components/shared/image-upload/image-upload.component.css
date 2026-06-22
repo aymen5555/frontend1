@@ -1,0 +1,5 @@
+/* Self-contained styling for the image upload component */
+.backdrop-blur-xs {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}

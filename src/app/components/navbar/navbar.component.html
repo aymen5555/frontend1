@@ -71,6 +71,17 @@
             <a routerLink="/super-admin/dashboard" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Administration</a>
             <a routerLink="/admin/abonnements" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Abonnements</a>
             <a routerLink="/admin/categories" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏷️ Catégories</a>
+            <div class="relative">
+              <button class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
+                🛒 Boutique <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showGerantBoutique()" class="absolute mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/products" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Produits</a>
+                <a routerLink="/admin/orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🧾 Commandes</a>
+                <a routerLink="/admin/suppliers" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs</a>
+                <a routerLink="/admin/sales" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💰 Ventes Directes</a>
+              </div>
+            </div>
           }
         </div>
       </div>
@@ -173,6 +184,10 @@
           <a routerLink="/super-admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Administration</a>
           <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Abonnements</a>
           <a routerLink="/admin/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Catégories</a>
+          <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
+          <a routerLink="/admin/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🧾 Commandes</a>
+          <a routerLink="/admin/suppliers" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs</a>
+          <a routerLink="/admin/sales" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💰 Ventes Directes</a>
         }
 
         <hr class="my-2 border-gray-100">

@@ -55,9 +55,10 @@ export class AdminSalesComponent implements OnInit {
       complexe_id: ['', Validators.required],
       client_nom: [''],
       modalite_paiement: ['especes', Validators.required],
-      reference: [''],
       lignes: this.fb.array([])
     });
+    // Require reference only when carte
+    // Reference is generated server-side; no client-side input required
     this.addLigne();
   }
 
@@ -122,8 +123,9 @@ export class AdminSalesComponent implements OnInit {
     this.submitting.set(true);
     const raw = this.saleForm.getRawValue();
     this.saleSvc.create(raw).subscribe({
-      next: () => {
-        this.toastSvc.success('Vente directe enregistrée.');
+      next: (res) => {
+        const ref = res?.data?.reference;
+        this.toastSvc.success(ref ? `Vente enregistrée — Réf: ${ref}` : 'Vente directe enregistrée.');
         this.submitting.set(false);
         this.closeForm();
         this.loadData();
@@ -133,6 +135,12 @@ export class AdminSalesComponent implements OnInit {
         this.submitting.set(false);
       }
     });
+  }
+
+  generateRef(): void {
+    const year = new Date().getFullYear();
+    const seq = Date.now().toString().slice(-5);
+    this.saleForm.get('reference')!.setValue(`TXN-${year}-${seq}`);
   }
 
   getProductName(id: number): string {

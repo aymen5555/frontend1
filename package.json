@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "download:fonts": "node ./scripts/download-inter-fonts.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

@@ -41,7 +41,7 @@ export class AdminSuppliersComponent implements OnInit {
       complexe_id: ['', [Validators.required]],
       nom: ['', [Validators.required, Validators.minLength(2)]],
       contact: [''],
-      telephone: [''],
+      telephone: ['', [Validators.pattern(/^\+216\d{8}$/)]],
       email: ['', [Validators.email]],
       adresse: ['']
     });

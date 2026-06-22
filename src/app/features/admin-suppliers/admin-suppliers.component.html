@@ -31,6 +31,7 @@
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
         <input type="text" formControlName="telephone" placeholder="+216 XX XXX XXX" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+        <span *ngIf="supplierForm.get('telephone')?.invalid && supplierForm.get('telephone')?.touched" class="text-xs text-red-500 font-semibold">Format attendu : +216XXXXXXXX (ex: +21612345678)</span>
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>

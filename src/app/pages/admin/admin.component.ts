@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ComplexeService } from '../../services/complexe.service';
+import { AuthService } from '../../services/auth.service';
 import { TerrainService } from '../../services/terrain.service';
 import { ReservationService } from '../../services/reservation.service';
 import { ClientService } from '../../services/client.service';
@@ -21,6 +22,7 @@ import { Client } from '../../models/client.model';
 })
 export class AdminComponent implements OnInit {
   private complexeSvc = inject(ComplexeService);
+  public auth = inject(AuthService);
   private terrainSvc = inject(TerrainService);
   private reservationSvc = inject(ReservationService);
   private clientSvc = inject(ClientService);
@@ -142,7 +144,13 @@ export class AdminComponent implements OnInit {
   // ----- Terrains -----
   openTerrainModal() {
     this.editingTerrain.set(null);
-    this.terrainForm.reset({ sport_type: 'padel', price_per_hour: 45 });
+    // Pre-set complexe for gerant users and avoid showing selector in template
+    const user = this.auth.currentUser();
+    if (this.auth.isGerant() && user?.complexe?.id) {
+      this.terrainForm.reset({ complexe_id: user.complexe.id, sport_type: 'padel', price_per_hour: 45 });
+    } else {
+      this.terrainForm.reset({ complexe_id: null, sport_type: 'padel', price_per_hour: 45 });
+    }
     this.showTerrainModal.set(true);
   }
 
@@ -232,7 +240,8 @@ export class AdminComponent implements OnInit {
   }
 
   // ----- Helpers -----
-  getComplexeName(id: number): string {
+  getComplexeName(id?: number | null): string {
+    if (!id) return 'Inconnu';
     return this.complexes().find(c => c.id === id)?.name || 'Inconnu';
   }
 }

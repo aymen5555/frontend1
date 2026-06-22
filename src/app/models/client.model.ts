@@ -6,6 +6,6 @@ export interface Client {
     phone?: string;
     is_active: boolean;
     email_verified_at?: string | null;
-    bookings_on_my_courts_count: number;
+    bookings_on_my_courts_count?: number;
     created_at: string;
 }

@@ -109,7 +109,7 @@ export class ProductCreateComponent implements OnInit {
 
     // For complexes: if user is Gérant, show only their assigned complexe
     const user = this.authSvc.currentUser();
-    if (user && user.role === 'GERANT') {
+    if (user && (user.role || '').toLowerCase() === 'gerant') {
       const gerantComplexe = user.complexe;
       if (gerantComplexe) {
         this.complexes.set([gerantComplexe as any]);
@@ -123,6 +123,11 @@ export class ProductCreateComponent implements OnInit {
         error: () => this.toastSvc.error('Erreur lors du chargement des complexes.')
       });
     }
+  }
+
+  isGerant(): boolean {
+    const u = this.authSvc.currentUser();
+    return !!u && ((u.role || '').toLowerCase() === 'gerant');
   }
 
   loadProductForEdit(id: number): void {
@@ -224,6 +229,18 @@ export class ProductCreateComponent implements OnInit {
         }
       });
     }
+  }
+
+  onImagePreviewError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  generateReference(): void {
+    const sport = (this.productForm.get('sport_cible')?.value || 'GEN') as string;
+    const sportCode = sport.substring(0, 3).toUpperCase();
+    const timestamp = Date.now().toString().slice(-5);
+    const ref = `PRD-${sportCode}-${timestamp}`;
+    this.productForm.get('reference')?.setValue(ref);
   }
 
   generateSlug(name: string): string {

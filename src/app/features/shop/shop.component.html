@@ -107,13 +107,13 @@
 
                   <!-- Fallback gray placeholder with category icon -->
                   <div *ngIf="(!p.image_url && !p.image) || isImageFailed(p.id)" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
-                    <i [class]="getCategoryIcon(p.categorie?.nom)" class="text-4xl text-slate-300"></i>
+                    <i [class]="getCategoryIcon(p.categorie?.nom || '')" class="text-4xl text-slate-300"></i>
                     <span class="text-xs text-slate-400 font-medium">Photo non ajoutée</span>
                   </div>
 
                   <!-- Badges -->
                   <span class="absolute top-3 left-3 bg-white/95 backdrop-blur px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-700 shadow-sm border border-slate-100 z-10">
-                    {{ p.categorie?.nom }}
+                    {{ p.categorie?.nom || 'Sans catégorie' }}
                   </span>
 
                   <span class="absolute top-3 right-3 border px-2.5 py-1 text-xs font-semibold rounded-lg shadow-sm z-10" [ngClass]="getStockBadgeClass(p)">

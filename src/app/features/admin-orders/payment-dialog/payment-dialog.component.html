@@ -27,11 +27,18 @@
         Référence de transaction *
         <span class="text-red-500 ml-1">(obligatoire pour carte)</span>
       </label>
-      <input type="text" formControlName="reference" placeholder="Ex: TXN-2026-00123"
-        class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150"
-        [ngClass]="paymentForm.get('reference')?.invalid && paymentForm.get('reference')?.touched ? 'border-red-400' : ''" />
+      <div class="flex gap-2">
+        <input type="text" formControlName="reference" placeholder="TXN-2026-00123"
+          class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150"
+          [ngClass]="paymentForm.get('reference')?.invalid && paymentForm.get('reference')?.touched ? 'border-red-400' : ''" />
+        <button type="button" (click)="generateRef()"
+          class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition cursor-pointer whitespace-nowrap">
+          ⚡ Générer
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400">Format : TXN-AAAA-NNNNN (ex: TXN-2026-00123) — numéro du terminal de paiement.</p>
       <span *ngIf="paymentForm.get('reference')?.invalid && paymentForm.get('reference')?.touched"
-        class="text-xs text-red-500 font-semibold">La référence est obligatoire pour les paiements par carte.</span>
+        class="text-xs text-red-500 font-semibold">Format requis : TXN-AAAA-NNNNN (ex: TXN-2026-00123)</span>
     </div>
 
     <!-- Summary info -->

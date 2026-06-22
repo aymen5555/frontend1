@@ -74,7 +74,7 @@ export class ProfilFitnessComponent implements OnInit {
   ];
 
   fitnessForm = this.fb.group({
-    taille: [null as number | null, [Validators.required, Validators.min(100), Validators.max(250)]],
+    taille: [null as number | null, [Validators.required, Validators.min(100), Validators.max(250), Validators.pattern(/^[0-9]+$/)]],
     poids: [null as number | null, [Validators.required, Validators.min(30), Validators.max(300)]],
     poids_cible: [null as number | null],
     objectif_sportif: ['', Validators.required],
@@ -157,7 +157,7 @@ export class ProfilFitnessComponent implements OnInit {
     };
 
     const payload = {
-      taille: Number(raw.taille),
+      taille: parseInt(String(raw.taille), 10),
       poids: Number(raw.poids),
       poids_cible: raw.poids_cible ? Number(raw.poids_cible) : undefined,
       objectif_sportif: raw.objectif_sportif,

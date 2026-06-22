@@ -1,5 +1,15 @@
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
 
+/* 
+  Inter @font-face declarations are commented out because the woff2 files
+  are not yet available. To restore self-hosted fonts:
+  1. Run: npm run download:fonts
+  2. This will download Inter woff2 files to src/assets/fonts/
+  3. Uncomment the @font-face rules below
+  
+  For now, using system font fallback (Segoe UI, etc.)
+*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,8 +17,12 @@
 body {
   background-color: #F8FAF8;
   color: #1A301D;
-  font-family: 'Inter', 'Outfit', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Custom premium styling classes */

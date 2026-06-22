@@ -23,11 +23,12 @@ import { Activite, ReservationActivite } from '../../models/activite.model';
 import { Client } from '../../models/client.model';
 import { Slot } from '../../models/slot.model';
 import { TypeAbonnement, AbonnementAdherent } from '../../models/abonnement-adherent.model';
+import { ImageUploadComponent } from '../../components/shared/image-upload/image-upload.component';
 
 @Component({
     selector: 'app-admin-dashboard',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, ImageUploadComponent],
     templateUrl: './admin-dashboard.component.html',
     styleUrl: './admin-dashboard.component.css',
 })
@@ -120,7 +121,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         name: ['', [Validators.required, Validators.minLength(2)]],
         address: ['', Validators.required],
         city: [''],
-        phone: [''],
+        phone: ['', [Validators.pattern(/^\+216\d{8}$/)]],
         description: [''],
         image_url: [''],
         facebook_url: [''],

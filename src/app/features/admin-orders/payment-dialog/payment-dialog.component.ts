@@ -22,14 +22,14 @@ export class PaymentDialogComponent implements OnInit {
   ngOnInit(): void {
     this.paymentForm = this.fb.group({
       modalite_paiement: [this.data.order.modalite_paiement || 'especes', [Validators.required]],
-      reference: ['']
+      reference: ['', [Validators.pattern(/^TXN-\d{4}-\d{3,8}$/i)]]
     });
 
     // Dynamically add/remove required validator on `reference` based on payment method
     this.paymentForm.get('modalite_paiement')!.valueChanges.subscribe(method => {
       const refCtrl = this.paymentForm.get('reference')!;
       if (method === 'carte') {
-        refCtrl.setValidators([Validators.required]);
+        refCtrl.setValidators([Validators.required, Validators.pattern(/^TXN-\d{4}-\d{3,8}$/i)]);
       } else {
         refCtrl.clearValidators();
       }
@@ -38,13 +38,22 @@ export class PaymentDialogComponent implements OnInit {
 
     // Trigger initial state
     if (this.data.order.modalite_paiement === 'carte') {
-      this.paymentForm.get('reference')!.setValidators([Validators.required]);
+      this.paymentForm.get('reference')!.setValidators([Validators.required, Validators.pattern(/^TXN-\d{4}-\d{3,8}$/i)]);
+      this.paymentForm.get('reference')!.updateValueAndValidity();
+    } else {
+      this.paymentForm.get('reference')!.clearValidators();
       this.paymentForm.get('reference')!.updateValueAndValidity();
     }
   }
 
   get isCarte(): boolean {
     return this.paymentForm.get('modalite_paiement')?.value === 'carte';
+  }
+
+  generateRef(): void {
+    const year = new Date().getFullYear();
+    const seq = Date.now().toString().slice(-5);
+    this.paymentForm.get('reference')!.setValue(`TXN-${year}-${seq}`);
   }
 
   save(): void {

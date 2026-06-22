@@ -62,13 +62,13 @@
               <!-- Category -->
               <td class="py-4 px-3">
                 <span class="inline-block px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700">
-                  {{ p.categorie?.nom }}
+                  {{ p.categorie?.nom || 'Sans catégorie' }}
                 </span>
               </td>
 
               <!-- Complexe -->
               <td class="py-4 px-3 text-slate-500">
-                {{ p.complexe?.name }}
+                {{ p.complexe?.name || '—' }}
               </td>
 
               <!-- Price -->
