@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { ProfilFitnessService } from '../../services/profil-fitness.service';
 import { RecommandationService } from '../../services/recommandation.service';
 import { ToastService } from '../../services/toast.service';
-import { ProfilFitness, RecommendationItem } from '../../models/profil-fitness.model';
+import { ProfilFitness, RecommendationItem, ProductRecommendationItem, ActivityRecommendationItem } from '../../models/profil-fitness.model';
 
 @Component({
   selector: 'app-profil-fitness',
@@ -34,6 +34,8 @@ export class ProfilFitnessComponent implements OnInit {
   // Recommendations
   hasProfile = signal(false);
   recommendations = signal<RecommendationItem[]>([]);
+  productRecs = signal<ProductRecommendationItem[]>([]);
+  activityRecs = signal<ActivityRecommendationItem[]>([]);
 
   // IMC display helpers
   imcDisplay = computed(() => {
@@ -121,6 +123,22 @@ export class ProfilFitnessComponent implements OnInit {
       next: (result) => {
         this.hasProfile.set(result.has_profile);
         this.recommendations.set(result.recommendations.slice(0, 3));
+
+        if (result.has_profile) {
+          this.recommandationSvc.getProduits().subscribe({
+            next: (prodRes) => this.productRecs.set(prodRes.recommendations.slice(0, 3)),
+            error: () => {}
+          });
+
+          this.recommandationSvc.getActivites().subscribe({
+            next: (actRes) => this.activityRecs.set(actRes.recommendations.slice(0, 3)),
+            error: () => {}
+          });
+        } else {
+          this.productRecs.set([]);
+          this.activityRecs.set([]);
+        }
+
         this.loadingRecs.set(false);
       },
       error: () => {

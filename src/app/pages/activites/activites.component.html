@@ -146,9 +146,9 @@
 
           <!-- Actions -->
           <div class="flex gap-3">
-            <a [routerLink]="['/complexes', act.complexe_id]"
+            <a [routerLink]="['/complexes', act.complexe_id]" [fragment]="'activites'"
               class="flex-1 text-center border border-[#16a34a] text-[#16a34a] hover:bg-green-50 rounded-lg px-3 py-2 text-sm font-bold transition-colors">
-              Voir détails
+              Voir le complexe
             </a>
             <button (click)="openPanel(act)"
               class="flex-1 text-center bg-[#16a34a] hover:bg-[#15803d] text-white rounded-lg px-3 py-2 text-sm font-bold transition-colors shadow-sm">

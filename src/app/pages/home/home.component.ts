@@ -11,7 +11,7 @@ import { TerrainService } from '../../services/terrain.service';
 import { Reservation } from '../../models/reservation.model';
 import { ReservationActivite } from '../../models/activite.model';
 import { Complexe } from '../../models/complexe.model';
-import { RecommendationItem } from '../../models/profil-fitness.model';
+import { RecommendationItem, ProductRecommendationItem, ActivityRecommendationItem } from '../../models/profil-fitness.model';
 import { AbonnementAdherent } from '../../models/abonnement-adherent.model';
 import { Terrain } from '../../models/terrain.model';
 import { CommonModule } from '@angular/common';
@@ -39,6 +39,8 @@ export class HomeComponent implements OnInit {
   allTerrains = signal<Terrain[]>([]);
   complexes = signal<Complexe[]>([]);
   recommendations = signal<RecommendationItem[]>([]);
+  productRecs = signal<ProductRecommendationItem[]>([]);
+  activityRecs = signal<ActivityRecommendationItem[]>([]);
   mesAbonnements = signal<AbonnementAdherent[]>([]);
   hasProfile = signal(false);
   loading = signal(true);
@@ -123,6 +125,19 @@ export class HomeComponent implements OnInit {
         } else {
           this.loadPublicComplexes();
         }
+
+        if (result.has_profile) {
+          this.recommandationSvc.getProduits().subscribe({
+            next: (prodRes) => this.productRecs.set(prodRes.recommendations.slice(0, 3)),
+            error: () => {}
+          });
+
+          this.recommandationSvc.getActivites().subscribe({
+            next: (actRes) => this.activityRecs.set(actRes.recommendations.slice(0, 3)),
+            error: () => {}
+          });
+        }
+
         this.loading.set(false);
       },
       error: () => {

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { RecommendationResponse, RecommendationItem } from '../models/profil-fitness.model';
+import { RecommendationResponse, RecommendationItem, ProductRecommendationItem, ActivityRecommendationItem } from '../models/profil-fitness.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +21,24 @@ export class RecommandationService {
         has_profile: r.has_profile,
         recommendations: r.recommendations || [],
       }))
+    );
+  }
+
+  /**
+   * GET /api/recommendations/produits
+   */
+  getProduits(): Observable<{ has_profile: boolean; recommendations: ProductRecommendationItem[] }> {
+    return this.http.get<{ success: boolean; has_profile: boolean; recommendations: ProductRecommendationItem[] }>(
+      `${this.api}/produits`
+    );
+  }
+
+  /**
+   * GET /api/recommendations/activites
+   */
+  getActivites(): Observable<{ has_profile: boolean; recommendations: ActivityRecommendationItem[] }> {
+    return this.http.get<{ success: boolean; has_profile: boolean; recommendations: ActivityRecommendationItem[] }>(
+      `${this.api}/activites`
     );
   }
 }

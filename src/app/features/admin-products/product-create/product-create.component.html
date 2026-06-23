@@ -108,20 +108,23 @@
           </select>
         </div>
 
-        <!-- Image URL (URL-only, same pattern as complexe form) -->
+        <!-- Image Upload (same pattern as complexe/terrain forms) -->
         <div class="flex flex-col gap-2 md:col-span-2">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Photo du Produit (URL)</label>
-          <div class="flex gap-3 items-start">
-            <!-- Preview thumbnail -->
-            <div class="w-20 h-20 flex-shrink-0 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
-              <img *ngIf="productForm.get('image')?.value" [src]="productForm.get('image')?.value" alt="Aperçu" class="w-full h-full object-cover" (error)="onImagePreviewError($event)" />
-              <span *ngIf="!productForm.get('image')?.value" class="text-2xl text-slate-300">🖼</span>
-            </div>
-            <!-- URL Input -->
-            <div class="flex-1 flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Photo du Produit</label>
+          <div class="space-y-2">
+            <app-image-upload
+              [imageUrl]="productForm.get('image')?.value ?? null"
+              (imageUploaded)="productForm.get('image')?.setValue($event)">
+            </app-image-upload>
+            <label class="block text-xs font-medium text-slate-500 mt-2">URL de la photo (Alternative)</label>
+            <div class="flex gap-3 items-start">
+              <!-- Preview thumbnail -->
+              <div class="w-14 h-14 flex-shrink-0 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                <img *ngIf="productForm.get('image')?.value" [src]="productForm.get('image')?.value" alt="Aperçu" class="w-full h-full object-cover" (error)="onImagePreviewError($event)" />
+                <span *ngIf="!productForm.get('image')?.value" class="text-2xl text-slate-300">🖼</span>
+              </div>
               <input type="url" formControlName="image" [placeholder]="imagePlaceholder"
-                class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
-              <p class="text-[11px] text-slate-400 leading-relaxed">Collez l'URL directe d'une image (JPG, PNG, WEBP). L'aperçu s'affiche à gauche.</p>
+                class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
             </div>
           </div>
         </div>

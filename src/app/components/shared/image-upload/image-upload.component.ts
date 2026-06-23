@@ -49,14 +49,14 @@ export class ImageUploadComponent {
   }
  
   private uploadFile(file: File): void {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      this.toastSvc.error('Format invalide. Formats acceptés : JPG, PNG, WEBP.');
+    // 1. Validate MIME type before anything else
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.toastSvc.error('Seuls les fichiers JPG, PNG et WEBP sont acceptés.');
       return;
     }
- 
-    // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+
+    // 2. Validate file size (5 MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       this.toastSvc.error('Le fichier est trop lourd. Maximum : 5 Mo.');

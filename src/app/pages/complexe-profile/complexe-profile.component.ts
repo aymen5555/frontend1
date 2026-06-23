@@ -10,11 +10,14 @@ import { AuthService } from '../../services/auth.service';
 import { AbonnementService } from '../../services/abonnement.service';
 import { ToastService } from '../../services/toast.service';
 import { TypeAbonnement, AbonnementAdherent } from '../../models/abonnement-adherent.model';
+import { ReviewService, Review } from '../../services/review.service';
+import { StarRatingComponent } from '../../components/shared/star-rating/star-rating.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-complexe-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, PaymentModalComponent, StarRatingComponent, FormsModule],
   templateUrl: './complexe-profile.component.html',
   styleUrl: './complexe-profile.component.css'
 })
@@ -31,6 +34,15 @@ export class ComplexeProfileComponent implements OnInit {
   complexe = signal<Complexe | null>(null);
   terrains = signal<Terrain[]>([]);
   loading = signal(true);
+
+  // Reviews features
+  private readonly reviewSvc = inject(ReviewService);
+  reviews = signal<Review[]>([]);
+  isEligible = signal(false);
+  alreadyRated = signal(false);
+  newRating = signal(0);
+  newCommentaire = signal('');
+  submittingReview = signal(false);
 
   // Subscription features
   subscriptionTypes = signal<TypeAbonnement[]>([]);
@@ -73,6 +85,9 @@ export class ComplexeProfileComponent implements OnInit {
           });
           // Fetch active subscription if logged in
           this.checkSubscriptionStatus(id);
+          // Fetch reviews and eligibility
+          this.loadReviews(id);
+          this.checkEligibility(id);
         },
         error: () => this.loading.set(false)
       });
@@ -213,5 +228,62 @@ export class ComplexeProfileComponent implements OnInit {
         this.toastSvc.error(err.error?.message || 'Erreur lors de la souscription.');
       }
     });
+  }
+
+  loadReviews(id: number): void {
+    this.reviewSvc.getComplexReviews(id).subscribe({
+      next: (reviews) => this.reviews.set(reviews),
+      error: () => console.error('Error fetching complex reviews')
+    });
+  }
+
+  checkEligibility(id: number): void {
+    if (this.auth.isLoggedIn()) {
+      this.reviewSvc.getEligibility({ complexe_id: id }).subscribe({
+        next: (res) => {
+          this.isEligible.set(res.eligible);
+          this.alreadyRated.set(res.already_rated);
+        },
+        error: () => console.error('Error checking rating eligibility')
+      });
+    }
+  }
+
+  submitReview(): void {
+    const rating = this.newRating();
+    if (rating < 1 || rating > 5 || this.submittingReview()) return;
+    this.submittingReview.set(true);
+    const id = this.complexe()?.id;
+    if (!id) return;
+    this.reviewSvc.submitComplexReview(id, rating, this.newCommentaire()).subscribe({
+      next: () => {
+        this.toastSvc.success('Votre avis a été enregistré.');
+        this.newRating.set(0);
+        this.newCommentaire.set('');
+        this.submittingReview.set(false);
+        this.loadReviews(id);
+        this.checkEligibility(id);
+      },
+      error: (err) => {
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'enregistrement de votre avis');
+        this.submittingReview.set(false);
+      }
+    });
+  }
+
+  deleteReview(reviewId: number): void {
+    if (confirm('Voulez-vous supprimer cet avis ?')) {
+      this.reviewSvc.deleteComplexReview(reviewId).subscribe({
+        next: () => {
+          this.toastSvc.success('Avis supprimé.');
+          const id = this.complexe()?.id;
+          if (id) {
+            this.loadReviews(id);
+            this.checkEligibility(id);
+          }
+        },
+        error: () => this.toastSvc.error('Erreur lors de la suppression de l\'avis.')
+      });
+    }
   }
 }

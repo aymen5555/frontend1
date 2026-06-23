@@ -10,11 +10,12 @@ import { ToastService } from '../../../services/toast.service';
 import { Category } from '../../../models/category.interface';
 import { Complexe } from '../../../models/complexe.model';
 import { Product } from '../../../models/product.interface';
+import { ImageUploadComponent } from '../../../components/shared/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './product-create.component.html',
   styleUrls: ['./product-create.component.css']
 })

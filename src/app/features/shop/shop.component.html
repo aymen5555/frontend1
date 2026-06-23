@@ -134,7 +134,24 @@
                   <h3 class="font-bold text-slate-900 text-lg leading-tight line-clamp-1 mb-2">
                     {{ p.nom }}
                   </h3>
-                  <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+
+                  <!-- Star Rating Badge -->
+                  @if (p.average_rating) {
+                    <div class="flex items-center gap-1 mt-1 mb-2">
+                      @for (star of getStars(p.average_rating); track $index) {
+                        <span class="text-sm leading-none" [class.text-amber-400]="star === 'full'" [class.text-amber-300]="star === 'half'" [class.text-slate-200]="star === 'empty'">
+                          {{ star === 'empty' ? '★' : '★' }}
+                        </span>
+                      }
+                      <span class="text-xs font-bold text-slate-600 ml-1">{{ p.average_rating }}</span>
+                    </div>
+                  } @else {
+                    <div class="flex items-center gap-1 mt-1 mb-2">
+                      <span class="text-xs text-slate-300 font-medium">Aucun avis</span>
+                    </div>
+                  }
+
+                  <p class="text-slate-500 text-sm line-clamp-2 leading-relaxed">
                     {{ p.description || 'Aucune description disponible pour ce produit.' }}
                   </p>
                 </div>

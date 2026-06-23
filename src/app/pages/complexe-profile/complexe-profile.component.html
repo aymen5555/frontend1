@@ -127,6 +127,86 @@
             </div>
           </div>
         </div>
+
+        <!-- Section: Notations / Avis -->
+        <div class="bg-white rounded-3xl shadow-xl p-8 mt-8 border border-gray-100">
+          <h2 class="text-2xl font-bold text-gray-950 mb-6 flex items-center gap-2">
+            ⭐ Avis des membres 
+            <span class="text-sm font-semibold text-gray-400">({{ reviews().length }} avis)</span>
+          </h2>
+
+          <!-- Add review section -->
+          @if (isEligible()) {
+            <div class="bg-emerald-50/30 border border-emerald-100 rounded-2xl p-6 mb-8">
+              <h3 class="font-bold text-gray-900 text-base mb-2">Laisser un avis</h3>
+              <p class="text-xs text-gray-500 mb-4">Partagez votre expérience avec la communauté.</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Note</label>
+                  <app-star-rating [rating]="newRating" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
+                </div>
+                
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Commentaire</label>
+                  <textarea [(ngModel)]="newCommentaire" rows="3" placeholder="Votre avis sur ce complexe..."
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none text-sm transition-colors bg-white font-medium resize-none"></textarea>
+                </div>
+
+                <button (click)="submitReview()" [disabled]="newRating() === 0 || submittingReview()"
+                  class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm">
+                  <span *ngIf="submittingReview()" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Soumettre l'avis
+                </button>
+              </div>
+            </div>
+          } @else if (alreadyRated()) {
+            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-8 text-center">
+              <p class="text-sm text-gray-500 font-medium">Vous avez déjà laissé un avis pour ce complexe.</p>
+            </div>
+          }
+
+          <!-- Reviews list -->
+          <div class="space-y-6">
+            @if (reviews().length === 0) {
+              <div class="text-center py-8 text-gray-400">
+                <p class="text-sm">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
+              </div>
+            }
+
+            @for (rev of reviews(); track rev.id) {
+              <div class="pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-500 bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      @if (rev.user?.image_url) {
+                        <img [src]="rev.user?.image_url" alt="Avatar" class="w-full h-full object-cover">
+                      } @else {
+                        <span class="text-sm text-gray-400">👤</span>
+                      }
+                    </div>
+                    <div>
+                      <p class="font-bold text-gray-900 text-sm">{{ rev.user?.first_name }} {{ rev.user?.last_name }}</p>
+                      <p class="text-[10px] text-gray-400">{{ rev.created_at | date:'mediumDate' }}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center gap-2">
+                    <app-star-rating [rating]="rev.note" [readonly]="true" sizeClass="text-sm"></app-star-rating>
+                    @if (auth.isLoggedIn() && (auth.isAdmin() || rev.user_id === auth.user()?.id)) {
+                      <button (click)="deleteReview(rev.id)" class="text-red-500 hover:text-red-700 text-xs font-bold p-1 bg-red-50 rounded hover:bg-red-100 transition-colors">
+                        Supprimer
+                      </button>
+                    }
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 pl-13 font-medium" *ngIf="rev.commentaire">
+                  {{ rev.commentaire }}
+                </p>
+              </div>
+            }
+          </div>
+        </div>
       </div>
     </ng-container>
   </ng-template>

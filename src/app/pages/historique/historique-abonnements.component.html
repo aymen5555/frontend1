@@ -1,6 +1,11 @@
 <div class="min-h-screen bg-gray-50 py-12">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">Historique des abonnements</h1>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Historique des abonnements</h1>
+      <a routerLink="/mes-abonnements" class="text-sm font-semibold text-emerald-600 hover:underline flex items-center gap-1">
+        ← Retour aux abonnements
+      </a>
+    </div>
 
     <div *ngIf="loading()" class="space-y-4">
       <div *ngFor="let i of [1,2]" class="bg-white rounded-2xl shadow-sm p-6 animate-pulse"></div>

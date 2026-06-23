@@ -25,4 +25,5 @@ export interface Product {
   complexe: Complexe;
   disponible: boolean;
   alerte_stock?: boolean;
+  average_rating?: number | null;
 }

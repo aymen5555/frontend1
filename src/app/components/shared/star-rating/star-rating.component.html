@@ -1,0 +1,20 @@
+<div class="flex items-center gap-1">
+  @for (star of stars; track star) {
+    <button
+      type="button"
+      [disabled]="readonly()"
+      (click)="onStarClick(star)"
+      (mouseenter)="onStarHover(star)"
+      (mouseleave)="onStarLeave()"
+      class="transition-all duration-100 focus:outline-none"
+      [class.cursor-pointer]="!readonly()"
+      [class.cursor-default]="readonly()"
+      [class.scale-110]="!readonly() && hoveredRating === star"
+      [class.text-amber-400]="isStarred(star)"
+      [class.text-gray-300]="!isStarred(star)"
+      [ngClass]="sizeClass()"
+    >
+      ★
+    </button>
+  }
+</div>

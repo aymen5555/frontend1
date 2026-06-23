@@ -89,13 +89,21 @@
               <span>Ouvert 7j/7</span>
             </div>
             
-            <!-- Rating -->
-            <div class="flex items-center gap-1 mt-2">
-              <div class="flex text-amber-400 text-sm">
-                ⭐⭐⭐⭐⭐
+            <!-- Rating (real data) -->
+            @if (complexe.moyenne_notation_c && complexe.moyenne_notation_c > 0) {
+              <div class="flex items-center gap-1 mt-2">
+                <div class="flex text-amber-400 text-sm">
+                  @for (star of getStars(complexe.moyenne_notation_c); track $index) {
+                    <span [class.text-amber-400]="star === 'full'" [class.text-amber-300]="star === 'half'" [class.text-gray-200]="star === 'empty'">★</span>
+                  }
+                </div>
+                <span class="text-xs font-bold text-gray-700 ml-1">{{ complexe.moyenne_notation_c }}</span>
               </div>
-              <span class="text-xs font-bold text-gray-700 ml-1">4.8</span>
-            </div>
+            } @else {
+              <div class="mt-2">
+                <span class="text-xs text-gray-300 font-medium">Aucun avis pour l'instant</span>
+              </div>
+            }
           </div>
           
           <hr class="border-gray-100 mb-4">

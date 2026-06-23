@@ -12,6 +12,11 @@ export interface User {
     created_at: string;
     complexe_id?: number;
     complexe?: { id: number; name: string } | null;
+    address?: string;
+    date_naissance?: string | null;
+    sexe?: 'homme' | 'femme' | 'autre';
+    profession?: string;
+    image_url?: string | null;
 }
 
 export interface AuthResponse {

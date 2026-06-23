@@ -1,14 +1,69 @@
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
 
-/* 
-  Inter @font-face declarations are commented out because the woff2 files
-  are not yet available. To restore self-hosted fonts:
-  1. Run: npm run download:fonts
-  2. This will download Inter woff2 files to src/assets/fonts/
-  3. Uncomment the @font-face rules below
-  
-  For now, using system font fallback (Segoe UI, etc.)
-*/
+/* ── Self-hosted fonts ──────────────────────────────────────────────────────
+   Inter: variable font — a single file covers all weights (300-800)
+   Path: /assets/Inter/Inter-VariableFont_opsz,wght.ttf
+   ────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 300 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── Outfit: static files per weight ───────────────────────────────────────
+   Paths: /assets/Outfit/static/Outfit-{Weight}.ttf
+   ────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit/static/Outfit-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;

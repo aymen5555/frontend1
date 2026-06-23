@@ -21,23 +21,23 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
             <h1 class="mt-3 text-4xl font-extrabold">Tableau de bord des abonnements</h1>
             <p class="mt-3 max-w-2xl text-sm text-emerald-100/90">Gérez les formules d'abonnement et suivez les abonnements actifs des clients. Les formules sont les plans que vous proposez ; les abonnements sont les clients qui se sont inscrits.</p>
           </div>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
-              <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Formules</p>
-              <p class="mt-3 text-3xl font-bold">{{ loadingTypes ? '...' : types.length }}</p>
-              <p class="mt-2 text-xs text-emerald-100/60">Plans disponibles</p>
-            </div>
-            <div class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
-              <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Actifs</p>
-              <p class="mt-3 text-3xl font-bold">{{ loadingAbonnements ? '...' : abonnements.length }}</p>
-              <p class="mt-2 text-xs text-emerald-100/60">Abonnements actuels</p>
-            </div>
-            <div class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
-              <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Complexes</p>
-              <p class="mt-3 text-3xl font-bold">{{ loadingComplexes ? '...' : complexes.length }}</p>
-              <p class="mt-2 text-xs text-emerald-100/60">Lieux</p>
-            </div>
-          </div>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+             <div class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
+               <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Formules</p>
+               <p class="mt-3 text-3xl font-bold">{{ loadingTypes ? '...' : types.length }}</p>
+               <p class="mt-2 text-xs text-emerald-100/60">Plans disponibles</p>
+             </div>
+             <div class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
+               <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Actifs</p>
+               <p class="mt-3 text-3xl font-bold">{{ loadingAbonnements ? '...' : abonnements.length }}</p>
+               <p class="mt-2 text-xs text-emerald-100/60">Abonnements actuels</p>
+             </div>
+             <div *ngIf="!auth.isGerant()" class="rounded-3xl bg-white/10 p-5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-colors">
+               <p class="text-sm uppercase tracking-[0.3em] text-emerald-100/70">Complexes</p>
+               <p class="mt-3 text-3xl font-bold">{{ loadingComplexes ? '...' : complexes.length }}</p>
+               <p class="mt-2 text-xs text-emerald-100/60">Lieux</p>
+             </div>
+           </div>
         </div>
       </section>
 

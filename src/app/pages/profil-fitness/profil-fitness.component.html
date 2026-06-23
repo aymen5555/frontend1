@@ -236,5 +236,121 @@
       </div>
     </div>
 
+    <!-- SECTION 3 — Activités Recommandées -->
+    <div class="bg-white rounded-3xl shadow-sm border-2 border-black overflow-hidden" *ngIf="hasProfile()">
+      <div class="bg-emerald-600 px-6 py-6 text-white border-b-2 border-black">
+        <h2 class="text-2xl font-extrabold">⚡ Activités Recommandées</h2>
+        <p class="text-emerald-50 text-sm mt-1">Séances collectives adaptées à votre profil</p>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        @if (loadingRecs()) {
+          <div class="animate-pulse space-y-4">
+            <div class="h-32 bg-gray-200 rounded-2xl w-full"></div>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            @if (activityRecs().length === 0) {
+              <div class="col-span-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center">
+                <p class="text-gray-500">Aucune activité recommandée pour le moment.</p>
+              </div>
+            }
+
+            @for (rec of activityRecs(); track rec.activite.id) {
+              <div class="border-2 border-black rounded-2xl overflow-hidden transition-all hover:shadow-md flex flex-col bg-white">
+                <div class="bg-emerald-500 px-4 py-3 flex items-center justify-between border-b-2 border-black">
+                  <h3 class="text-white font-extrabold text-sm truncate" [title]="rec.activite.nom">{{ rec.activite.nom }}</h3>
+                  <div class="bg-white border-2 border-black rounded-lg px-2 py-0.5 text-xs font-extrabold text-emerald-600">
+                    {{ rec.score }}/100
+                  </div>
+                </div>
+                <div class="p-4 flex-grow flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center gap-1.5 mb-2">
+                      <span class="bg-gray-100 border border-gray-200 rounded px-2 py-0.5 text-xs font-bold text-gray-600">
+                        {{ rec.activite.sport }}
+                      </span>
+                      <span class="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded px-2 py-0.5 text-xs font-bold">
+                        {{ rec.activite.niveau }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2 font-medium">📍 {{ rec.activite.complexe?.name }}</p>
+                    <p class="text-gray-600 text-xs italic mb-4">"{{ rec.explication }}"</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                    <span class="font-extrabold text-emerald-600 text-sm">{{ rec.activite.prix }} TND</span>
+                    <a routerLink="/activites"
+                      class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all text-xs">
+                      Réserver
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- SECTION 4 — Produits Recommandés -->
+    <div class="bg-white rounded-3xl shadow-sm border-2 border-black overflow-hidden" *ngIf="hasProfile()">
+      <div class="bg-emerald-600 px-6 py-6 text-white border-b-2 border-black">
+        <h2 class="text-2xl font-extrabold">🛒 Équipements Recommandés</h2>
+        <p class="text-emerald-50 text-sm mt-1">Produits de notre boutique adaptés à vos objectifs</p>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        @if (loadingRecs()) {
+          <div class="animate-pulse space-y-4">
+            <div class="h-32 bg-gray-200 rounded-2xl w-full"></div>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            @if (productRecs().length === 0) {
+              <div class="col-span-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center">
+                <p class="text-gray-500">Aucun produit recommandé pour le moment.</p>
+              </div>
+            }
+
+            @for (rec of productRecs(); track rec.produit.id) {
+              <div class="border-2 border-black rounded-2xl overflow-hidden transition-all hover:shadow-md flex flex-col bg-white">
+                <div class="relative bg-gray-100 h-36 flex items-center justify-center border-b-2 border-black">
+                  @if (rec.produit.image_url) {
+                    <img [src]="rec.produit.image_url" [alt]="rec.produit.nom" class="w-full h-full object-cover">
+                  } @else {
+                    <span class="text-3xl text-gray-400">📦</span>
+                  }
+                  <div class="absolute top-2 right-2 bg-white border-2 border-black rounded-lg px-2 py-0.5 text-xs font-extrabold text-emerald-600 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                    {{ rec.score }}/100
+                  </div>
+                </div>
+                <div class="p-4 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-extrabold text-sm truncate mb-1" [title]="rec.produit.nom">{{ rec.produit.nom }}</h3>
+                    <div class="flex items-center gap-1.5 mb-2">
+                      <span class="bg-gray-100 border border-gray-200 rounded px-2 py-0.5 text-xs font-bold text-gray-600">
+                        {{ rec.produit.sport_cible }}
+                      </span>
+                      <span class="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded px-2 py-0.5 text-xs font-bold">
+                        {{ rec.produit.niveau_cible }}
+                      </span>
+                    </div>
+                    <p class="text-gray-600 text-xs italic mb-4">"{{ rec.explication }}"</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                    <span class="font-extrabold text-emerald-600 text-sm">{{ rec.produit.prix }} TND</span>
+                    <a [routerLink]="['/shop/product', rec.produit.id]"
+                      class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all text-xs">
+                      Acheter
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
   </div>
 </div>

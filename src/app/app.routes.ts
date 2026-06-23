@@ -11,6 +11,7 @@ import { ReservationsComponent } from './pages/reservations/reservations.compone
 import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 import { ComplexeProfileComponent } from './pages/complexe-profile/complexe-profile.component';
 import { ProfilFitnessComponent } from './pages/profil-fitness/profil-fitness.component';
+import { ProfilComponent } from './pages/profil/profil.component';
 import { SubscriptionComponent } from './pages/abonnements/subscription.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { ActivitesComponent } from './pages/activites/activites.component';
@@ -48,6 +49,7 @@ export const routes: Routes = [
   { path: 'abonnements', component: SubscriptionComponent, canActivate: [authGuard] },
   { path: 'mes-abonnements', component: MesAbonnementsComponent, canActivate: [authGuard] },
   { path: 'abonnements/mes-abonnements', redirectTo: '/mes-abonnements', pathMatch: 'full' },
+  { path: 'profil', component: ProfilComponent, canActivate: [authGuard] },
   { path: 'mon-profil-fitness', component: ProfilFitnessComponent, canActivate: [authGuard] },
   { path: 'mes-activites', component: MesActivitesComponent, canActivate: [authGuard] },
   { path: 'historique/reservations', component: HistoriqueReservationsComponent, canActivate: [authGuard] },

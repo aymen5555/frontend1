@@ -79,6 +79,11 @@ export class AuthService {
         });
     }
 
+    /** Force logout without HTTP call (used by JWT interceptor when refresh fails) */
+    forceLogout(): void {
+        this.clearSession();
+    }
+
     // ── Refresh token ─────────────────────────────────
     refreshToken(): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${this.api}/refresh`, {}).pipe(

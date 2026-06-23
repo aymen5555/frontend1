@@ -5,11 +5,15 @@ import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../services/cart.service';
 import { ToastService } from '../../../services/toast.service';
 import { Product } from '../../../models/product.interface';
+import { AuthService } from '../../../services/auth.service';
+import { ReviewService, Review } from '../../../services/review.service';
+import { StarRatingComponent } from '../../../components/shared/star-rating/star-rating.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, StarRatingComponent, FormsModule],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
@@ -19,8 +23,16 @@ export class ProductDetailComponent implements OnInit {
   private readonly productSvc = inject(ProductService);
   private readonly cartSvc = inject(CartService);
   private readonly toastSvc = inject(ToastService);
+  public readonly auth = inject(AuthService);
+  private readonly reviewSvc = inject(ReviewService);
 
   product = signal<Product | null>(null);
+  reviews = signal<Review[]>([]);
+  isEligible = signal(false);
+  alreadyRated = signal(false);
+  newRating = signal(0);
+  newCommentaire = signal('');
+  submittingReview = signal(false);
   loading = signal(true);
   quantity = signal(1);
   imageLoaded = signal(false);
@@ -37,6 +49,8 @@ export class ProductDetailComponent implements OnInit {
     this.productSvc.get(id).subscribe({
       next: (res) => {
         this.product.set(res.data);
+        this.loadReviews(id);
+        this.checkEligibility(id);
         this.loading.set(false);
       },
       error: () => {
@@ -113,5 +127,62 @@ export class ProductDetailComponent implements OnInit {
       return 'ti ti-shirt';
     }
     return 'ti ti-photo-off';
+  }
+
+  loadReviews(id: number): void {
+    this.reviewSvc.getProductReviews(id).subscribe({
+      next: (reviews) => this.reviews.set(reviews),
+      error: () => console.error('Error fetching product reviews')
+    });
+  }
+
+  checkEligibility(id: number): void {
+    if (this.auth.isLoggedIn()) {
+      this.reviewSvc.getEligibility({ produit_id: id }).subscribe({
+        next: (res) => {
+          this.isEligible.set(res.eligible);
+          this.alreadyRated.set(res.already_rated);
+        },
+        error: () => console.error('Error checking rating eligibility')
+      });
+    }
+  }
+
+  submitReview(): void {
+    const rating = this.newRating();
+    if (rating < 1 || rating > 5 || this.submittingReview()) return;
+    this.submittingReview.set(true);
+    const id = this.product()?.id;
+    if (!id) return;
+    this.reviewSvc.submitProductReview(id, rating, this.newCommentaire()).subscribe({
+      next: () => {
+        this.toastSvc.success('Votre avis a été enregistré.');
+        this.newRating.set(0);
+        this.newCommentaire.set('');
+        this.submittingReview.set(false);
+        this.loadReviews(id);
+        this.checkEligibility(id);
+      },
+      error: (err) => {
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'enregistrement de votre avis');
+        this.submittingReview.set(false);
+      }
+    });
+  }
+
+  deleteReview(reviewId: number): void {
+    if (confirm('Voulez-vous supprimer cet avis ?')) {
+      this.reviewSvc.deleteProductReview(reviewId).subscribe({
+        next: () => {
+          this.toastSvc.success('Avis supprimé.');
+          const id = this.product()?.id;
+          if (id) {
+            this.loadReviews(id);
+            this.checkEligibility(id);
+          }
+        },
+        error: () => this.toastSvc.error('Erreur lors de la suppression de l\'avis.')
+      });
+    }
   }
 }

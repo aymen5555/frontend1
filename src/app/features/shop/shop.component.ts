@@ -165,4 +165,16 @@ export class ShopComponent implements OnInit {
     }
     return 'ti ti-package';
   }
+
+  /** Returns array of 5 star types for a given rating (0-5) */
+  getStars(rating: number | null | undefined): ('full' | 'half' | 'empty')[] {
+    if (!rating) return ['empty', 'empty', 'empty', 'empty', 'empty'];
+    const stars: ('full' | 'half' | 'empty')[] = [];
+    for (let i = 1; i <= 5; i++) {
+      if (rating >= i) stars.push('full');
+      else if (rating >= i - 0.5) stars.push('half');
+      else stars.push('empty');
+    }
+    return stars;
+  }
 }

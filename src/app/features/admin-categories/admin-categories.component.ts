@@ -111,8 +111,8 @@ export class AdminCategoriesComponent implements OnInit {
   deleteCategory(category: Category): void {
     if (!confirm(`Supprimer la catégorie "${category.nom}" ? Cette action peut impacter les produits existants.`)) return;
     this.categorySvc.delete(category.id).subscribe({
-      next: () => {
-        this.toastSvc.success('Catégorie supprimée.');
+      next: (res) => {
+        this.toastSvc.success(res.message || 'Catégorie supprimée.');
         this.loadData();
       },
       error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la suppression.')

@@ -33,6 +33,8 @@ export interface RecommendationResponse {
 }
 
 import { Complexe } from './complexe.model';
+import { Product } from './product.interface';
+import { Activite } from './activite.model';
 
 export interface RecommendationItem {
     rang: number;
@@ -40,4 +42,18 @@ export interface RecommendationItem {
     complexe: Complexe;
     explication: string;
     matched_sport?: string;
+}
+
+export interface ProductRecommendationItem {
+    rang: number;
+    score: number;
+    produit: Product;
+    explication: string;
+}
+
+export interface ActivityRecommendationItem {
+    rang: number;
+    score: number;
+    activite: Activite;
+    explication: string;
 }

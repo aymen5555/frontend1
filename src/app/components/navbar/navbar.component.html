@@ -32,6 +32,7 @@
                 Mon Espace <span class="ml-1">▾</span>
               </button>
               <div *ngIf="showClientEspace()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/profil" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">👤 Mon Profil</a>
                 <a routerLink="/reservations" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📅 Mes Réservations</a>
                 <a routerLink="/mes-activites" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎯 Mes Activités</a>
                 <a routerLink="/abonnements/mes-abonnements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎫 Mes Abonnements</a>
@@ -156,6 +157,7 @@
 
           <button (click)="toggleClientEspace($event)" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Mon Espace ▾</button>
           <div *ngIf="showClientEspace()" class="pl-4 space-y-1">
+            <a routerLink="/profil" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mon Profil</a>
             <a routerLink="/reservations" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Réservations</a>
             <a routerLink="/mes-activites" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Activités</a>
             <a routerLink="/abonnements/mes-abonnements" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Abonnements</a>
