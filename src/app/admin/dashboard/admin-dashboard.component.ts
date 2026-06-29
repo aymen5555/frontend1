@@ -69,6 +69,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     reservations = signal<Reservation[]>([]);
     activites = signal<Activite[]>([]);
     activiteReservations = signal<ReservationActivite[]>([]);
+    archivedItems = signal<any[]>([]);
+    searchArchives = signal<string>('');
     clients = signal<Client[]>([]);
     availableSlots = signal<Slot[]>([]);
     selectedComplexId = signal<number | null>(null);
@@ -578,6 +580,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                     this.activiteSvc.adminGetReservations().pipe(tap((data) => this.activiteReservations.set(data))),
                     this.abonnementSvc.adminGetTypes().pipe(tap((data) => this.subscriptionTypes.set(data))),
                     this.abonnementSvc.adminGetAbonnements().pipe(tap((data) => this.clientSubscriptions.set(data))),
+                    this.reservationSvc.getArchives().pipe(tap((data) => this.archivedItems.set(data))),
                 ];
 
                 forkJoin(obs).subscribe({
@@ -606,6 +609,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                     this.activiteReservations.set([]);
                     this.subscriptionTypes.set([]);
                     this.clientSubscriptions.set([]);
+                    this.archivedItems.set([]);
                     this.loading.set(false);
                     return;
                 }
@@ -621,6 +625,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.loadActiviteReservations();
                 this.loadSubscriptionTypes();
                 this.loadClientSubscriptions();
+                this.loadArchives();
             },
             error: (err) => {
                 this.loading.set(false);
@@ -1356,6 +1361,25 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             const matchesComplexe = !cid || Number(t.complexe_id) === Number(cid);
             return matchesSearch && matchesComplexe;
         });
+    }
+
+    loadArchives(): void {
+        this.reservationSvc.getArchives().subscribe({
+            next: (data) => this.archivedItems.set(data),
+            error: () => {}
+        });
+    }
+
+    filteredArchives() {
+        const search = this.searchArchives().toLowerCase().trim();
+        if (!search) return this.archivedItems();
+        return this.archivedItems().filter(a =>
+            (a.client_name || '').toLowerCase().includes(search) ||
+            (a.client_email || '').toLowerCase().includes(search) ||
+            (a.item_detail || '').toLowerCase().includes(search) ||
+            (a.type_label || '').toLowerCase().includes(search) ||
+            (a.complexe_name || '').toLowerCase().includes(search)
+        );
     }
 
     // ──────────────────────────────────────────────

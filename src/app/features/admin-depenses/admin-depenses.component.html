@@ -78,10 +78,10 @@
         </thead>
         <tbody class="divide-y divide-slate-50">
           <tr *ngFor="let d of depenses()" class="hover:bg-slate-50/50 transition-colors">
-            <td class="py-4 px-3 font-bold text-slate-900">{{ d.date_depense }}</td>
+            <td class="py-4 px-3 font-bold text-slate-900">{{ (d.date_depense | slice:0:10) | date:'dd/MM/yyyy' }}</td>
             <td class="py-4 px-3 text-slate-600">{{ d.type_depense?.designation_ty_dep || '—' }}</td>
             <td class="py-4 px-3 text-slate-900">{{ d.montant_dep | number:'1.0-3' }} DT</td>
-            <td class="py-4 px-3 text-slate-600">{{ d.complexe_id ? 'Complexe #' + d.complexe_id : '—' }}</td>
+            <td class="py-4 px-3 text-slate-600">{{ d.complexe?.name || '—' }}</td>
             <td class="py-4 px-3 text-right">
               <div class="flex items-center justify-end gap-2">
                 <button (click)="openEditForm(d)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>

@@ -1,4 +1,4 @@
-<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+﻿<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
       <div class="flex items-center">
@@ -47,7 +47,7 @@
           <!-- ── GÉRANT LINKS ────────────────────────────────────────────── -->
          @if (auth.isGerant()) {
            <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Mon Complexe</a>
-           <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
+                      <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
            <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
            <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
@@ -60,9 +60,10 @@
            <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
            <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
            <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
-         }
+            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+          }
 
-         @if (auth.isSuperAdmin()) {
+          @if (auth.isSuperAdmin()) {
             <a routerLink="/home" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Accueil</a>
             <a routerLink="/complexes" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Complexes</a>
             <a routerLink="/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Activités</a>
@@ -81,6 +82,8 @@
                   <a routerLink="/admin/fournisseurs-internes" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs Internes</a>
                   <a routerLink="/admin/bons-entree" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📥 Bons d'Entrée</a>
                   <a routerLink="/admin/bons-sortie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📤 Bons de Sortie</a>
+                  <a routerLink="/admin/depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💸 Dépenses</a>
+                  <a routerLink="/admin/types-depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏷️ Types Dépenses</a>
                 </div>
             </div>
           }
@@ -206,7 +209,7 @@
 
          @if (auth.isGerant()) {
            <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Mon Complexe</a>
-           <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
+                      <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
            <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
            <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
@@ -219,14 +222,15 @@
            <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
            <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
            <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
-         }
+            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+          }
 
-         @if (auth.isSuperAdmin()) {
+          @if (auth.isSuperAdmin()) {
            <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Accueil</a>
            <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Complexes</a>
            <a routerLink="/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Activités</a>
            <a routerLink="/super-admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Administration</a>
-           <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Abonnements</a>
+                        <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Abonnements</a>
            <a routerLink="/admin/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Catégories</a>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
            <a routerLink="/admin/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🧾 Commandes</a>
@@ -238,6 +242,7 @@
            <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
            <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
            <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
+            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
          }
 
          <hr class="my-2 border-gray-100">

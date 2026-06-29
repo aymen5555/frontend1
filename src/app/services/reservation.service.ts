@@ -85,4 +85,9 @@ export class ReservationService {
   adminCancel(id: number): Observable<void> {
     return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}`, {});
   }
+
+  /** GET /admin/archives — fetch soft-deleted archives (admin/gerant) */
+  getArchives(): Observable<any[]> {
+    return this.http.get<ApiList<any>>(`${environment.apiUrl}/admin/archives`).pipe(map(r => r.data));
+  }
 }

@@ -121,6 +121,13 @@
           <h3 class="font-bold text-gray-900 mb-1">Mes activités</h3>
           <p class="text-xs text-gray-500">Participer aux activités</p>
         </a>
+
+        <!-- Mes réservations (super admin) -->
+        <a [routerLink]="['/reservations']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-pink-200">
+          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">📅</div>
+          <h3 class="font-bold text-gray-900 mb-1">Mes réservations</h3>
+          <p class="text-xs text-gray-500">Voir mes réservations</p>
+        </a>
       </div>
     </div>
   </section>
@@ -138,7 +145,7 @@
 
     <section class="py-12 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-complexes">
             <div class="text-5xl mb-4">🏢</div>
             <h3 class="font-bold text-gray-900 mb-2">Mon Complexe</h3>
@@ -158,6 +165,25 @@
             <div class="text-5xl mb-4">👥</div>
             <h3 class="font-bold text-gray-900 mb-2">Clients</h3>
             <p class="text-sm text-gray-500">Consulter les joueurs</p>
+          </div>
+          
+          <!-- Réserver un terrain (gérant) -->
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-orange-200" [routerLink]="['/terrains']">
+            <div class="text-5xl mb-4">🎾</div>
+            <h3 class="font-bold text-gray-900 mb-2">Réserver un terrain</h3>
+            <p class="text-sm text-gray-500">Jouer sur un terrain</p>
+          </div>
+          <!-- Mes activités (gérant) -->
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-teal-200" [routerLink]="['/mes-activites']">
+            <div class="text-5xl mb-4">🏃</div>
+            <h3 class="font-bold text-gray-900 mb-2">Mes activités</h3>
+            <p class="text-sm text-gray-500">Participer aux activités</p>
+          </div>
+          <!-- Mes réservations (gérant) -->
+          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-pink-200" [routerLink]="['/reservations']">
+            <div class="text-5xl mb-4">📅</div>
+            <h3 class="font-bold text-gray-900 mb-2">Mes réservations</h3>
+            <p class="text-sm text-gray-500">Voir mes réservations</p>
           </div>
         </div>
       </div>

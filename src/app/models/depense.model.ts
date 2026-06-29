@@ -9,6 +9,8 @@ export interface Depense {
   complexe_id: number;
   created_by: number;
   type_depense?: TypeDepense;
+  complexe?: { id: number; name: string };
   created_at: string;
   updated_at: string;
 }
+

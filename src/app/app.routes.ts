@@ -167,13 +167,13 @@ export const routes: Routes = [
     path: 'admin/types-depenses',
     loadComponent: () =>
       import('./features/admin-types-depenses/admin-types-depenses.component').then(m => m.AdminTypesDepensesComponent),
-    canActivate: [authGuard, superAdminGuard]
+    canActivate: [authGuard, gerantGuard]
   },
   {
     path: 'admin/depenses',
     loadComponent: () =>
       import('./features/admin-depenses/admin-depenses.component').then(m => m.AdminDepensesComponent),
-    canActivate: [authGuard, superAdminGuard]
+    canActivate: [authGuard, gerantGuard]
   },
   {
     path: 'admin/societes',
