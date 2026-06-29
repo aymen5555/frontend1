@@ -10,6 +10,7 @@ export interface TypeAbonnement {
   sport_cible?: string;
   avantages?: string[];
   active?: boolean;
+  abonnements_count?: number;
   categorie_abonnement_adherent_id?: number;
   categorie_abonnement_adherent?: {
     id: number;

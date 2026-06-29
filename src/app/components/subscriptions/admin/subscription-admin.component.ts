@@ -197,7 +197,7 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   *ngIf="!type.active"
                   class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md"
                   (click)="deleteType(type)"
-                  [disabled]="deletingTypeId === type.id || savingType || (type.abonnements_count && type.abonnements_count > 0)"
+                  [disabled]="deletingTypeId === type.id || savingType || ((type.abonnements_count ?? 0) > 0)"
                   title="Supprimer"
                 >
                   Supprimer

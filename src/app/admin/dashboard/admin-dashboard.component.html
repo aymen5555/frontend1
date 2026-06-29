@@ -974,7 +974,7 @@
                             <div class="flex flex-wrap justify-end gap-2">
                                 <button type="button" class="btn-xs" (click)="editType(type)">Modifier</button>
                                 <button type="button" class="btn-xs" [class.danger]="type.active" (click)="toggleTypeActive(type)">{{ type.active ? 'Désactiver' : 'Activer' }}</button>
-                                <button *ngIf="!type.active" type="button" class="btn-xs danger" (click)="deleteType(type)" [disabled]="type.abonnements_count > 0">Supprimer</button>
+                                <button *ngIf="!type.active" type="button" class="btn-xs danger" (click)="deleteType(type)" [disabled]="(type.abonnements_count ?? 0) > 0">Supprimer</button>
                             </div>
                         </td>
                     </tr>
