@@ -130,6 +130,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     searchGerants = signal('');
     searchTypes = signal('');
     selectedComplexeFilter = signal<string>('');
+    searchActiviteReservations = '';
 
     complexForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(2)]],
@@ -1332,6 +1333,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             a.nom.toLowerCase().includes(search) ||
             (a.complexe?.name || '').toLowerCase().includes(search) ||
             a.sport.toLowerCase().includes(search)
+        );
+    }
+
+    filteredActiviteReservations() {
+        const search = this.searchActiviteReservations.toLowerCase().trim();
+        if (!search) return this.activiteReservations();
+        return this.activiteReservations().filter(ra =>
+            (ra.user?.first_name || '').toLowerCase().includes(search) ||
+            (ra.user?.last_name || '').toLowerCase().includes(search) ||
+            `${ra.user?.first_name || ''} ${ra.user?.last_name || ''}`.toLowerCase().includes(search)
         );
     }
 

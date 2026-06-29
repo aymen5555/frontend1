@@ -801,6 +801,14 @@
         @if (activiteReservations().length === 0) {
         <p class="text-sm text-gray-500">Aucune réservation d'activité.</p>
         } @else {
+        <div class="mb-4">
+            <input
+                type="text"
+                placeholder="Rechercher par nom de client…"
+                [(ngModel)]="searchActiviteReservations"
+                class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full max-w-xs"
+            />
+        </div>
         <div class="overflow-x-auto rounded-3xl border border-slate-200">
             <table class="w-full text-sm">
                 <thead class="bg-slate-100 border-b border-slate-200">
@@ -814,7 +822,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @for (ra of activiteReservations(); track ra.id) {
+                    @for (ra of filteredActiviteReservations(); track ra.id) {
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3">{{ ra.activite?.nom || '—' }}</td>
                         <td class="px-4 py-3">{{ ra.user?.first_name }} {{ ra.user?.last_name }}</td>

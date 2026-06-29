@@ -204,14 +204,6 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   Désactiver
                 </button>
                 <button
-                  class="border border-red-300 text-red-600 text-sm py-1 px-3 rounded-md"
-                  (click)="deleteType(type)"
-                  [disabled]="deletingTypeId === type.id"
-                  title="Supprimer"
-                >
-                  Supprimer
-                </button>
-                <button
                   class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-1 px-3 rounded-md"
                   (click)="editType(type)"
                   [disabled]="savingType || deletingTypeId === type.id"
@@ -668,21 +660,6 @@ export class SubscriptionAdminComponent implements OnInit {
     });
   }
 
-  deleteType(type: TypeAbonnement): void {
-    if (!confirm(`Supprimer la formule d'abonnement "${type.nom}" ?`)) return;
-    this.deletingTypeId = type.id;
-    this.abonnementService.adminDeleteType(type.id).subscribe({
-      next: () => {
-        this.toast.success('Type supprimé');
-        this.loadTypes();
-        this.deletingTypeId = null;
-      },
-      error: (err) => {
-        this.toast.error(err?.error?.message || 'Erreur lors de la suppression');
-        this.deletingTypeId = null;
-      },
-    });
-  }
 
   activateType(type: TypeAbonnement): void {
     const payload = { active: true };
