@@ -1,7 +1,8 @@
-import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, inject, signal, HostListener, ElementRef, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { NotificationService } from '../../services/notification.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,14 +12,18 @@ import { CommonModule } from '@angular/common';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   cart = inject(CartService);
+  notificationSvc = inject(NotificationService);
   private readonly el = inject(ElementRef);
 
   mobileMenuOpen = signal(false);
   showClientEspace = signal(false);
   showGerantBoutique = signal(false);
+  showNotifications = signal(false);
+
+  private pollInterval: any;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -26,6 +31,24 @@ export class NavbarComponent {
     if (!clickedInside) {
       this.showClientEspace.set(false);
       this.showGerantBoutique.set(false);
+      this.showNotifications.set(false);
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.auth.isLoggedIn()) {
+      this.notificationSvc.loadNotifications().subscribe();
+      this.pollInterval = setInterval(() => {
+        if (this.auth.isLoggedIn()) {
+          this.notificationSvc.loadNotifications().subscribe();
+        }
+      }, 30000);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
     }
   }
 
@@ -54,17 +77,40 @@ export class NavbarComponent {
     event.stopPropagation();
     this.showClientEspace.update(v => !v);
     this.showGerantBoutique.set(false);
+    this.showNotifications.set(false);
   }
 
   toggleGerantBoutique(event: Event): void {
     event.stopPropagation();
     this.showGerantBoutique.update(v => !v);
     this.showClientEspace.set(false);
+    this.showNotifications.set(false);
+  }
+
+  toggleNotifications(event: Event): void {
+    event.stopPropagation();
+    this.showNotifications.update(v => !v);
+    this.showClientEspace.set(false);
+    this.showGerantBoutique.set(false);
+  }
+
+  markAllAsRead(event: Event): void {
+    event.stopPropagation();
+    this.notificationSvc.markAllAsRead().subscribe();
+  }
+
+  unreadNotificationsCount(): number {
+    return this.notificationSvc.unreadCount();
+  }
+
+  recentNotifications() {
+    return this.notificationSvc.notifications().slice(0, 5);
   }
 
   closeEspaces(): void {
     this.showClientEspace.set(false);
     this.showGerantBoutique.set(false);
+    this.showNotifications.set(false);
   }
 
   closeMobileMenu(): void {

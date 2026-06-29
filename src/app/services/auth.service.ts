@@ -10,6 +10,7 @@ import {
     ResendVerificationResponse,
     User,
 } from '../models/auth.model';
+import { CartService } from './cart.service';
 import { environment } from '../../environments/environment';
 
 const TOKEN_KEY = 'ps_token';
@@ -40,7 +41,11 @@ export class AuthService {
     });
     readonly isClient = computed(() => this._user()?.role === 'CLIENT');
 
-    constructor(private readonly http: HttpClient, private readonly router: Router) { }
+    constructor(
+        private readonly http: HttpClient,
+        private readonly router: Router,
+        private readonly cart: CartService
+    ) { }
 
     // ── Register ─────────────────────────────────────
     register(payload: RegisterRequest): Observable<RegisterResponse> {
@@ -60,6 +65,25 @@ export class AuthService {
         return this.http.post<ResendVerificationResponse>(
             `${this.api}/resend-verification`,
             { email }
+        ).pipe(catchError(this.handleError));
+    }
+
+    forgotPassword(email: string): Observable<{ success: boolean; message: string }> {
+        return this.http.post<{ success: boolean; message: string }>(
+            `${this.api}/forgot-password`,
+            { email }
+        ).pipe(catchError(this.handleError));
+    }
+
+    resetPassword(payload: {
+        token: string;
+        email: string;
+        password: string;
+        password_confirmation: string;
+    }): Observable<{ success: boolean; message: string }> {
+        return this.http.post<{ success: boolean; message: string }>(
+            `${this.api}/reset-password`,
+            payload
         ).pipe(catchError(this.handleError));
     }
 
@@ -110,8 +134,8 @@ export class AuthService {
     }
 
     navigateToHome(): void {
-        if (this.isSuperAdmin() || this.isClient()) {
-            this.router.navigate(['/home']);
+        if (this.isSuperAdmin()) {
+            this.router.navigate(['/super-admin/dashboard']);
             return;
         }
 
@@ -133,6 +157,7 @@ export class AuthService {
     }
 
     private clearSession(): void {
+        this.cart.clear();
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
         this._token.set(null);

@@ -39,6 +39,7 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
         <div *ngFor="let type of types" class="bg-white rounded-lg shadow-lg p-6">
           <!-- Type Header -->
           <h2 class="text-xl font-bold text-blue-600 mb-2">{{ type.nom }}</h2>
+          <p *ngIf="type.complexe" class="text-gray-500 text-sm mb-1">🏟️ {{ type.complexe.name }}</p>
           <p *ngIf="type.description" class="text-gray-600 text-sm mb-4">{{ type.description }}</p>
 
           <!-- Key Info -->

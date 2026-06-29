@@ -26,7 +26,9 @@ export class AdminOrdersComponent implements OnInit {
 
   filterForm = this.fb.group({
     statut: [''],
-    statut_paiement: ['']
+    statut_paiement: [''],
+    date_from: [''],
+    date_to: ['']
   });
 
   statuses = [
@@ -54,7 +56,9 @@ export class AdminOrdersComponent implements OnInit {
     const vals = this.filterForm.value;
     this.orderSvc.adminList({
       statut: vals.statut || undefined,
-      statut_paiement: vals.statut_paiement || undefined
+      statut_paiement: vals.statut_paiement || undefined,
+      date_from: vals.date_from || undefined,
+      date_to: vals.date_to || undefined
     }).subscribe({
       next: (res) => { this.orders.set(res.data); this.loading.set(false); },
       error: () => { this.toastSvc.error('Erreur lors du chargement des commandes.'); this.loading.set(false); }
@@ -106,5 +110,20 @@ export class AdminOrdersComponent implements OnInit {
 
   getPaymentBadgeClass(s: string): string {
     return s === 'paye' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200';
+  }
+
+  cancelOrder(order: Order): void {
+    if (!confirm(`Annuler la commande #${order.id} et remettre les produits en stock ? Cette action est irréversible.`)) {
+      return;
+    }
+    this.orderSvc.adminCancel(order.id).subscribe({
+      next: () => {
+        this.toastSvc.success('Commande annulée avec succès.');
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'annulation de la commande.');
+      }
+    });
   }
 }

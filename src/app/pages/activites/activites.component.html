@@ -280,3 +280,12 @@
     </div>
   </div>
 }
+
+<!-- Payment modal for card payments -->
+<app-payment-modal
+  *ngIf="showPaymentModal()"
+  [reservationId]="paymentReservationId()"
+  [paymentDeadlineMinutes]="30"
+  (paid)="onPaymentModalPaid($event)"
+  (closed)="onPaymentModalCancelled()">
+</app-payment-modal>

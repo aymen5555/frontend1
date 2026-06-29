@@ -1,7 +1,7 @@
 <div class="flex flex-col min-h-screen">
   <!-- Hero Section -->
   <section class="min-h-screen relative overflow-hidden flex items-center justify-center">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg');"></div>
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://placehold.co/1600x900/0d2137/1a5276?text=PlaySpace');"></div>
     <div class="absolute inset-0 bg-black/50"></div>
     @if (auth.isSuperAdmin()) {
     <div class="relative z-10 text-center text-white px-4">
@@ -235,7 +235,7 @@
         <div *ngFor="let complexe of complexes()" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer flex flex-col justify-between" [routerLink]="['/complexes', complexe.id]">
           <div>
             <div class="h-40 bg-gray-200 relative overflow-hidden">
-              <img [src]="complexe.image_c || 'https://images.pexels.com/photos/32897040/pexels-photo-32897040.jpeg'" alt="Complexe" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <img [src]="complexe.image_c || complexe.image_url || 'https://placehold.co/800x500/1a5276/ffffff?text=PlaySpace'" alt="Complexe" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
               <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-emerald-700 flex items-center gap-1">
                 ⭐ {{ complexe.moyenne_notation_c || '4.5' }}
               </div>

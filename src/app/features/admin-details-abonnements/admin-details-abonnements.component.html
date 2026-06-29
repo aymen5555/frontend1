@@ -1,0 +1,85 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Créneaux Abonnement</h1>
+      <p class="text-slate-600 mt-2">Définissez les jours et horaires par formule.</p>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="glass-panel p-6 rounded-2xl">
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Complexe</label>
+      <select (change)="onComplexeChange()" [value]="selectedComplexeId() || ''" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full">
+        <option value="" disabled>Sélectionner</option>
+        <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+    <div class="glass-panel p-6 rounded-2xl">
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Formule</label>
+      <select (change)="onTypeChange()" [value]="selectedTypeId() || ''" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full">
+        <option value="" disabled>Sélectionner</option>
+        <option *ngFor="let t of typesAbonnement" [value]="t.id">{{ t.nom }} ({{ t.complexe?.name || '—' }})</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-lg text-slate-900 mb-4">Nouveau créneau</h2>
+    <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Jour *</label>
+        <select formControlName="jour_seance" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option *ngFor="let d of days" [value]="d">{{ d | titlecase }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Début *</label>
+        <input type="time" formControlName="heure_debut_de_abo" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Fin *</label>
+        <input type="time" formControlName="heure_fin_de_abo" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex items-end">
+        <button type="submit" [disabled]="form.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer w-full">
+          {{ submitting() ? '...' : 'Ajouter' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <div *ngIf="!loading() && details().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">📅</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucun créneau</h3>
+    <p class="text-slate-500 mt-2">Sélectionnez une formule et ajoutez des créneaux.</p>
+  </div>
+
+  <div *ngIf="!loading() && details().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Jour</th>
+            <th class="py-4 px-3">Début</th>
+            <th class="py-4 px-3">Fin</th>
+            <th class="py-4 px-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let d of details()" class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-4 px-3 font-bold text-slate-900">{{ d.jour_seance | titlecase }}</td>
+            <td class="py-4 px-3 text-slate-600">{{ d.heure_debut_de_abo }}</td>
+            <td class="py-4 px-3 text-slate-600">{{ d.heure_fin_de_abo }}</td>
+            <td class="py-4 px-3 text-right">
+              <button (click)="remove(d.id)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

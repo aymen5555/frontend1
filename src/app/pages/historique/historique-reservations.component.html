@@ -22,7 +22,9 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="font-bold text-gray-900">{{ r.terrain?.name || r.activite?.nom || 'Événement' }}</div>
-            <div class="text-sm text-gray-500">{{ r.start_at || r.date_seance }}</div>
+            <div class="text-sm text-gray-500">
+              {{ r.start_at ? (r.start_at | date:'dd/MM/yyyy HH:mm') : (r.date_seance | date:'dd/MM/yyyy') }}
+            </div>
           </div>
           <div class="text-sm text-gray-600">{{ r.status }}</div>
         </div>

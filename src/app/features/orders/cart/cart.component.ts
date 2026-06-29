@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { CartService, CartItem } from '../../../services/cart.service';
+import { CartService } from '../../../services/cart.service';
 
 @Component({
   selector: 'app-cart',
@@ -18,6 +18,7 @@ export class CartComponent {
   cartItems = this.cartSvc.items;
   cartCount = this.cartSvc.count;
   cartTotal = this.cartSvc.total;
+  errorMessage = signal('');
 
   updateQuantity(productId: number, newQty: number, maxQty: number): void {
     if (newQty > maxQty) {
@@ -38,6 +39,17 @@ export class CartComponent {
 
   proceedToCheckout(): void {
     if (this.cartItems().length === 0) return;
+
+    const complexeIds = this.cartItems().map(item => item.product.complexe_id);
+    const allSame = complexeIds.every(id => id === complexeIds[0]);
+    if (!allSame) {
+      this.errorMessage.set(
+        'Votre panier contient des produits de plusieurs complexes. Veuillez commander depuis un seul complexe à la fois.'
+      );
+      return;
+    }
+
+    this.errorMessage.set('');
     this.router.navigate(['/checkout']);
   }
 }

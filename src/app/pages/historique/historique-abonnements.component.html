@@ -23,7 +23,9 @@
           <div>
             <div class="font-bold text-gray-900">{{ a.type_abonnement?.nom || 'Abonnement' }}</div>
             <div class="text-sm text-gray-500">{{ a.complexe?.name }}</div>
-            <div class="text-xs text-gray-400">{{ a.date_debut }} → {{ a.date_fin }}</div>
+            <div class="text-xs text-gray-400">
+              {{ a.date_debut | date:'dd/MM/yyyy' }} → {{ a.date_fin | date:'dd/MM/yyyy' }}
+            </div>
           </div>
           <div class="text-sm text-gray-600">{{ a.statut }}</div>
         </div>

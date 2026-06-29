@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { StarRatingComponent } from '../../components/shared/star-rating/star-rating.component';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { ComplexeService } from '../../services/complexe.service';
@@ -14,7 +15,7 @@ import { Complexe } from '../../models/complexe.model';
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, StarRatingComponent],
   templateUrl: './shop.component.html',
   styleUrls: ['./shop.component.css']
 })
@@ -164,17 +165,5 @@ export class ShopComponent implements OnInit {
       return 'ti ti-shirt';
     }
     return 'ti ti-package';
-  }
-
-  /** Returns array of 5 star types for a given rating (0-5) */
-  getStars(rating: number | null | undefined): ('full' | 'half' | 'empty')[] {
-    if (!rating) return ['empty', 'empty', 'empty', 'empty', 'empty'];
-    const stars: ('full' | 'half' | 'empty')[] = [];
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) stars.push('full');
-      else if (rating >= i - 0.5) stars.push('half');
-      else stars.push('empty');
-    }
-    return stars;
   }
 }

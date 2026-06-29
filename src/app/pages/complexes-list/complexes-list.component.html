@@ -1,7 +1,7 @@
 <div class="flex flex-col min-h-screen bg-gray-50">
   <!-- Hero Section -->
   <section class="relative h-80 flex items-center justify-center overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg');"></div>
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://placehold.co/1600x900/0d2137/1a5276?text=PlaySpace');"></div>
     <div class="absolute inset-0 bg-black/20"></div>
     <div class="relative z-10 text-center px-4 w-full max-w-3xl">
       <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">Nos Complexes Sportifs</h1>
@@ -92,11 +92,7 @@
             <!-- Rating (real data) -->
             @if (complexe.moyenne_notation_c && complexe.moyenne_notation_c > 0) {
               <div class="flex items-center gap-1 mt-2">
-                <div class="flex text-amber-400 text-sm">
-                  @for (star of getStars(complexe.moyenne_notation_c); track $index) {
-                    <span [class.text-amber-400]="star === 'full'" [class.text-amber-300]="star === 'half'" [class.text-gray-200]="star === 'empty'">★</span>
-                  }
-                </div>
+                <app-star-rating [rating]="complexe.moyenne_notation_c || 0" [readonly]="true" sizeClass="text-sm"></app-star-rating>
                 <span class="text-xs font-bold text-gray-700 ml-1">{{ complexe.moyenne_notation_c }}</span>
               </div>
             } @else {

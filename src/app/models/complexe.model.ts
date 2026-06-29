@@ -1,6 +1,7 @@
 export interface Complexe {
     id: number;
     owner_id: number;
+    societe_id?: number;
     name: string;
     nom_c?: string;
     description?: string;
@@ -27,6 +28,12 @@ export interface Complexe {
     website_url?: string;
     facebook_url?: string;
     instagram_url?: string;
+    images?: {
+        id?: number;
+        complexe_id?: number;
+        image_url: string;
+        sort_order?: number;
+    }[];
 }
 
 export interface ComplexePayload {
@@ -50,4 +57,5 @@ export interface ComplexePayload {
     website_url?: string;
     facebook_url?: string;
     instagram_url?: string;
+    gallery_images?: string[];
 }

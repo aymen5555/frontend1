@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { SupplierService } from '../../services/supplier.service';
 import { ComplexeService } from '../../services/complexe.service';
+import { CategoryService } from '../../services/category.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { Supplier } from '../../models/supplier.interface';
@@ -18,12 +19,14 @@ import { Complexe } from '../../models/complexe.model';
 export class AdminSuppliersComponent implements OnInit {
   private readonly supplierSvc = inject(SupplierService);
   private readonly complexeSvc = inject(ComplexeService);
+  private readonly categorySvc = inject(CategoryService);
   private readonly authSvc = inject(AuthService);
   private readonly toastSvc = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
   suppliers = signal<Supplier[]>([]);
   complexes = signal<Complexe[]>([]);
+  categoriesFournisseur = signal<any[]>([]);
   loading = signal(true);
   showForm = signal(false);
   editing = signal<Supplier | null>(null);
@@ -43,7 +46,8 @@ export class AdminSuppliersComponent implements OnInit {
       contact: [''],
       telephone: ['', [Validators.pattern(/^\+216\d{8}$/)]],
       email: ['', [Validators.email]],
-      adresse: ['']
+      adresse: [''],
+      categorie_fournisseur_id: [null as number | null]
     });
   }
 
@@ -52,6 +56,11 @@ export class AdminSuppliersComponent implements OnInit {
     this.supplierSvc.list().subscribe({
       next: (res) => { this.suppliers.set(res.data); this.loading.set(false); },
       error: () => { this.toastSvc.error('Erreur lors du chargement des fournisseurs.'); this.loading.set(false); }
+    });
+
+    this.categorySvc.adminList('fournisseur').subscribe({
+      next: (res) => { if (res?.data) this.categoriesFournisseur.set(res.data); },
+      error: () => {}
     });
 
     const user = this.authSvc.currentUser();
@@ -65,7 +74,7 @@ export class AdminSuppliersComponent implements OnInit {
 
   openCreateForm(): void {
     this.editing.set(null);
-    this.supplierForm.reset();
+    this.supplierForm.reset({ categorie_fournisseur_id: null });
     // Re-set complexe for gérant
     const user = this.authSvc.currentUser();
     if (user?.role === 'GERANT' && (user as any).complexe) {
@@ -82,7 +91,8 @@ export class AdminSuppliersComponent implements OnInit {
       contact: supplier.contact || '',
       telephone: supplier.telephone || '',
       email: supplier.email || '',
-      adresse: supplier.adresse || ''
+      adresse: supplier.adresse || '',
+      categorie_fournisseur_id: supplier.categorie_fournisseur_id ?? null
     });
     this.showForm.set(true);
   }
@@ -116,11 +126,21 @@ export class AdminSuppliersComponent implements OnInit {
     });
   }
 
-  deactivate(supplier: Supplier): void {
-    if (!confirm(`Désactiver le fournisseur "${supplier.nom}" ?`)) return;
-    this.supplierSvc.deactivate(supplier.id).subscribe({
-      next: () => { this.toastSvc.success('Fournisseur désactivé.'); this.loadData(); },
-      error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur.')
-    });
+  toggleStatus(supplier: Supplier): void {
+    const nextState = !supplier.actif;
+    const actionText = nextState ? 'Activer' : 'Désactiver';
+    if (!confirm(`${actionText} le fournisseur "${supplier.nom}" ?`)) return;
+
+    if (!nextState) {
+      this.supplierSvc.deactivate(supplier.id).subscribe({
+        next: () => { this.toastSvc.success('Fournisseur désactivé.'); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur.')
+      });
+    } else {
+      this.supplierSvc.update(supplier.id, { actif: true }).subscribe({
+        next: () => { this.toastSvc.success('Fournisseur activé.'); this.loadData(); },
+        error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur.')
+      });
+    }
   }
 }

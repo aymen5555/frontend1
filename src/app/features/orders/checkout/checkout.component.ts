@@ -5,11 +5,12 @@ import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CartService } from '../../../services/cart.service';
 import { OrderService } from '../../../services/order.service';
 import { ToastService } from '../../../services/toast.service';
+import { PaymentModalComponent } from '../../../components/payment-modal/payment-modal.component';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, PaymentModalComponent],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
@@ -23,6 +24,7 @@ export class CheckoutComponent implements OnInit {
   cartItems = this.cartSvc.items;
   cartTotal = this.cartSvc.total;
   submitting = signal(false);
+  showPaymentModal = signal(false);
 
   checkoutForm = this.fb.group({
     modalite_paiement: ['carte', [Validators.required]],
@@ -57,6 +59,27 @@ export class CheckoutComponent implements OnInit {
   submitOrder(): void {
     if (this.checkoutForm.invalid || this.cartItems().length === 0) return;
 
+    // For card payments, show the payment modal first to collect credentials
+    if (this.checkoutForm.value.modalite_paiement === 'carte') {
+      this.showPaymentModal.set(true);
+      return;
+    }
+
+    this.placeOrder();
+  }
+
+  /** Called when card credentials are confirmed in the payment modal */
+  onCardConfirmed(_token: string): void {
+    this.showPaymentModal.set(false);
+    this.placeOrder();
+  }
+
+  /** Called when the payment modal is dismissed — do nothing, user stays on checkout */
+  onCardCancelled(): void {
+    this.showPaymentModal.set(false);
+  }
+
+  private placeOrder(): void {
     this.submitting.set(true);
 
     // Get complexe_id from the first item (all items share the same complexe — validated in ngOnInit)

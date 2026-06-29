@@ -8,6 +8,7 @@ import { environment } from '../../environments/environment';
 
 interface ApiList<T> { success: boolean; data: T[] }
 interface ApiItem<T> { success: boolean; data: T }
+interface ApiSlotsResponse { terrain_id: number; terrain_name: string; date: string; timezone: string; slots: Slot[] }
 
 @Injectable({ providedIn: 'root' })
 export class TerrainService {
@@ -38,9 +39,19 @@ export class TerrainService {
         return this.http.delete(`${this.api}/${id}`).pipe(map(() => undefined));
     }
 
-    getSlots(id: number, date: string): Observable<Slot[]> {
-        const params = new HttpParams().set('date', date);
-        return this.http.get<ApiList<Slot>>(`${this.api}/${id}/slots`, { params }).pipe(map((r) => r.data));
+    getSlots(id: number, date: string, timezone?: string): Observable<Slot[]> {
+        let params = new HttpParams().set('date', date);
+        if (timezone) {
+            params = params.set('timezone', timezone);
+        }
+        return this.http.get<ApiItem<ApiSlotsResponse>>(`${this.api}/${id}/slots`, { params }).pipe(
+            map((r) => {
+                if (Array.isArray((r as any).data)) {
+                    return (r as any).data as Slot[];
+                }
+                return (r.data.slots ?? []) as Slot[];
+            })
+        );
     }
 
     getAll(complexeId?: number): Observable<Terrain[]> {

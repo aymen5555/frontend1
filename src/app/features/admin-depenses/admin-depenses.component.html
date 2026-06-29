@@ -1,0 +1,96 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dépenses</h1>
+      <p class="text-slate-600 mt-2">Suivi des dépenses par complexe.</p>
+    </div>
+    <button (click)="openCreateForm()" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition cursor-pointer">
+      + Nouvelle Dépense
+    </button>
+  </header>
+
+  <div class="glass-panel p-4 rounded-2xl mb-6 flex flex-col md:flex-row gap-4">
+    <div class="flex-1">
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total ce mois</label>
+      <p class="text-2xl font-extrabold text-slate-900">{{ totalMois() | number:'1.0-3' }} DT</p>
+    </div>
+  </div>
+
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-lg text-slate-900 mb-4">{{ editing() ? 'Modifier la dépense' : 'Nouvelle dépense' }}</h2>
+    <form [formGroup]="depenseForm" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Date *</label>
+        <input type="date" formControlName="date_depense" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Montant (DT) *</label>
+        <input type="number" step="0.001" formControlName="montant_dep" placeholder="0.000" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Type *</label>
+        <select formControlName="type_depense_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option value="" disabled>Sélectionner</option>
+          <option *ngFor="let t of types()" [value]="t.id">{{ t.designation_ty_dep }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Complexe *</label>
+        <select formControlName="complexe_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option value="" disabled>Sélectionner</option>
+          <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="md:col-span-2 flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Commentaire</label>
+        <textarea formControlName="commentaire_dep" rows="2" placeholder="Détails..." class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"></textarea>
+      </div>
+      <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
+        <button type="submit" [disabled]="depenseForm.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
+          {{ submitting() ? 'Enregistrement...' : (editing() ? 'Mettre à jour' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <div *ngIf="!loading() && depenses().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">💸</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucune dépense</h3>
+    <p class="text-slate-500 mt-2">Enregistrez votre première dépense.</p>
+  </div>
+
+  <div *ngIf="!loading() && depenses().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Date</th>
+            <th class="py-4 px-3">Type</th>
+            <th class="py-4 px-3">Montant</th>
+            <th class="py-4 px-3">Complexe</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let d of depenses()" class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-4 px-3 font-bold text-slate-900">{{ d.date_depense }}</td>
+            <td class="py-4 px-3 text-slate-600">{{ d.type_depense?.designation_ty_dep || '—' }}</td>
+            <td class="py-4 px-3 text-slate-900">{{ d.montant_dep | number:'1.0-3' }} DT</td>
+            <td class="py-4 px-3 text-slate-600">{{ d.complexe_id ? 'Complexe #' + d.complexe_id : '—' }}</td>
+            <td class="py-4 px-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button (click)="openEditForm(d)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>
+                <button (click)="delete(d)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Supprimer</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

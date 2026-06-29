@@ -41,6 +41,15 @@
         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Adresse</label>
         <textarea formControlName="adresse" rows="2" placeholder="Adresse postale du fournisseur" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"></textarea>
       </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Catégorie</label>
+        <select formControlName="categorie_fournisseur_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option [ngValue]="null">Aucune</option>
+          @for (cat of categoriesFournisseur(); track cat.id) {
+          <option [ngValue]="cat.id">{{ cat.nom_cat_four }}</option>
+          }
+        </select>
+      </div>
       <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
         <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
         <button type="submit" [disabled]="supplierForm.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
@@ -69,6 +78,7 @@
         <thead>
           <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
             <th class="py-4 px-3">Nom</th>
+            <th class="py-4 px-3">Statut</th>
             <th class="py-4 px-3">Contact</th>
             <th class="py-4 px-3">Téléphone</th>
             <th class="py-4 px-3">Email</th>
@@ -78,8 +88,14 @@
         </thead>
         <tbody class="divide-y divide-slate-50">
           @for (s of suppliers(); track s.id) {
-            <tr class="hover:bg-slate-50/50 transition-colors">
+            <tr class="hover:bg-slate-50/50 transition-colors" [class.opacity-50]="!s.actif">
               <td class="py-4 px-3 font-bold text-slate-900">{{ s.nom }}</td>
+              <td class="py-4 px-3">
+                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      [ngClass]="s.actif ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                  {{ s.actif ? '✓ Actif' : '✗ Inactif' }}
+                </span>
+              </td>
               <td class="py-4 px-3 text-slate-600">{{ s.contact || '—' }}</td>
               <td class="py-4 px-3 text-slate-600">{{ s.telephone || '—' }}</td>
               <td class="py-4 px-3 text-slate-600">{{ s.email || '—' }}</td>
@@ -87,7 +103,8 @@
               <td class="py-4 px-3 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button (click)="openEditForm(s)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>
-                  <button (click)="deactivate(s)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Désactiver</button>
+                  <button *ngIf="s.actif" (click)="toggleStatus(s)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Désactiver</button>
+                  <button *ngIf="!s.actif" (click)="toggleStatus(s)" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold text-xs rounded-lg transition cursor-pointer">Activer</button>
                 </div>
               </td>
             </tr>

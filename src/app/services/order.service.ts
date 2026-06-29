@@ -34,13 +34,20 @@ export class OrderService {
   }
 
   // Admin/Gérant: List all orders with filters
-  adminList(filters?: { statut?: string; statut_paiement?: string }): Observable<{ success: boolean; data: Order[] }> {
+  adminList(filters?: { statut?: string; statut_paiement?: string; date_from?: string; date_to?: string }): Observable<{ success: boolean; data: Order[] }> {
     let params = new HttpParams();
     if (filters) {
       if (filters.statut) params = params.set('statut', filters.statut);
       if (filters.statut_paiement) params = params.set('statut_paiement', filters.statut_paiement);
+      if (filters.date_from) params = params.set('date_from', filters.date_from);
+      if (filters.date_to) params = params.set('date_to', filters.date_to);
     }
     return this.http.get<{ success: boolean; data: Order[] }>(this.adminApi, { params });
+  }
+
+  // Admin/Gérant: Cancel an order and restore stock
+  adminCancel(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.put<{ success: boolean; message: string }>(`${this.adminApi}/${id}/annuler`, {});
   }
 
   // Admin/Gérant: Update order status

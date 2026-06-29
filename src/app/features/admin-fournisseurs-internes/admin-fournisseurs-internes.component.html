@@ -1,0 +1,115 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Fournisseurs Internes</h1>
+      <p class="text-slate-600 mt-2">Gérez vos fournisseurs internes pour les bons d'entrée de stock.</p>
+    </div>
+    <button (click)="openCreateForm()" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition cursor-pointer">
+      + Nouveau Fournisseur Interne
+    </button>
+  </header>
+
+  <!-- Inline Form -->
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-lg text-slate-900 mb-4">{{ editing() ? 'Modifier le fournisseur interne' : 'Nouveau fournisseur interne' }}</h2>
+    <form [formGroup]="fournisseurForm" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Complexe *</label>
+        <select formControlName="complexe_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+          <option value="" disabled>Sélectionner</option>
+          <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nom *</label>
+        <input type="text" formControlName="nom_f_int" placeholder="Nom du fournisseur" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Raison sociale</label>
+        <input type="text" formControlName="raison_sociale_f_int" placeholder="Raison sociale (optionnel)" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact</label>
+        <input type="text" formControlName="contact_f_int" placeholder="Personne de contact" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
+        <input type="text" formControlName="tel_f_int" placeholder="+216 XX XXX XXX" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
+        <input type="email" formControlName="email_f_int" placeholder="contact@fournisseur.com" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="md:col-span-2 flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Adresse</label>
+        <textarea formControlName="adresse_f_int" rows="2" placeholder="Adresse postale" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"></textarea>
+      </div>
+      <div class="md:col-span-2 flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Matricule fiscale</label>
+        <input type="text" formControlName="matricule_fiscale_f_int" placeholder="Matricule fiscal (optionnel)" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+      </div>
+      <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
+        <button type="submit" [disabled]="fournisseurForm.invalid || submitting()" class="px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
+          {{ submitting() ? 'Enregistrement...' : (editing() ? 'Mettre à jour' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && fournisseurs().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">🏭</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucun fournisseur interne</h3>
+    <p class="text-slate-500 mt-2">Créez votre premier fournisseur interne pour gérer vos approvisionnements.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && fournisseurs().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Nom</th>
+            <th class="py-4 px-3">Contact</th>
+            <th class="py-4 px-3">Téléphone</th>
+            <th class="py-4 px-3">Email</th>
+            <th class="py-4 px-3">Nb Bons Entrée</th>
+            <th class="py-4 px-3">Statut</th>
+            <th class="py-4 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          @for (f of fournisseurs(); track f.id) {
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="py-4 px-3 font-bold text-slate-900">{{ f.nom_f_int }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ f.contact_f_int || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ f.tel_f_int || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ f.email_f_int || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ f.bon_entrees_count ?? 0 }}</td>
+              <td class="py-4 px-3">
+                @if (f.active) {
+                  <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-xs font-bold rounded-lg">Actif</span>
+                } @else {
+                  <span class="bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 text-xs font-bold rounded-lg">Inactif</span>
+                }
+              </td>
+              <td class="py-4 px-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openEditForm(f)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">Modifier</button>
+                  <button (click)="toggleActive(f)" class="px-2.5 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-bold text-xs rounded-lg transition cursor-pointer">{{ f.active ? 'Désactiver' : 'Réactiver' }}</button>
+                  <button (click)="delete(f)" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition cursor-pointer">Supprimer</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

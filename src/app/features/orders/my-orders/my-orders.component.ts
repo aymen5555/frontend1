@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { ToastService } from '../../../services/toast.service';
 import { Order } from '../../../models/order.interface';
+import { ReviewService } from '../../../services/review.service';
 
 @Component({
   selector: 'app-my-orders',
@@ -15,12 +16,20 @@ import { Order } from '../../../models/order.interface';
 export class MyOrdersComponent implements OnInit {
   private readonly orderSvc = inject(OrderService);
   private readonly toastSvc = inject(ToastService);
+  private readonly reviewSvc = inject(ReviewService);
 
   orders = signal<Order[]>([]);
   loading = signal(true);
+  eligibleProduits = signal<number[]>([]);
 
   ngOnInit(): void {
     this.loadOrders();
+    this.reviewSvc.getEligibleList().subscribe({
+      next: (list) => {
+        this.eligibleProduits.set(list.eligible_produits || []);
+      },
+      error: () => {}
+    });
   }
 
   loadOrders(): void {
@@ -73,5 +82,10 @@ export class MyOrdersComponent implements OnInit {
 
   getPaymentLabel(status: string): string {
     return status === 'paye' ? 'Payé' : 'Non Payé';
+  }
+
+  hasReviewableItems(order: Order): boolean {
+    const eligibleIds = this.eligibleProduits();
+    return order.lignes?.some(ligne => eligibleIds.includes(ligne.produit_id)) ?? false;
   }
 }

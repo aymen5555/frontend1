@@ -8,7 +8,7 @@ export interface Product {
   prix: number;
   prix_achat?: number;
   reference?: string;
-  image: string;
+  image?: string;
   image_url?: string;
   sport_cible: string;
   niveau_cible: string;
@@ -26,4 +26,5 @@ export interface Product {
   disponible: boolean;
   alerte_stock?: boolean;
   average_rating?: number | null;
+  stock_disponible?: number;
 }

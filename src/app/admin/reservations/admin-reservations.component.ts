@@ -57,11 +57,12 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                 <td class="px-6 py-4 text-sm">{{ r.start_at | date:'HH:mm' }} – {{ r.end_at | date:'HH:mm' }}</td>
                 <td class="px-6 py-4 text-sm">
                   <span [ngClass]="{
-                    'bg-yellow-100 text-yellow-800': r.statut === 'reservee',
-                    'bg-green-100 text-green-800': r.statut === 'confirmee',
-                    'bg-red-100 text-red-800': r.statut === 'annulee'
+                    'bg-yellow-100 text-yellow-800': r.status === 'pending',
+                    'bg-green-100 text-green-800': r.status === 'confirmed',
+                    'bg-red-100 text-red-800': r.status === 'cancelled',
+                    'bg-gray-100 text-gray-800': r.status === 'expired' || r.status === 'played'
                   }" class="px-2 py-1 rounded-full text-xs font-medium">
-                    {{ statutLabel(r.statut) }}
+                    {{ statutLabel(r.status) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-sm">
@@ -71,7 +72,7 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                 </td>
                 <td class="px-6 py-4 text-sm space-x-2">
                   <button *ngIf="r.statut_paiement !== 'paye'" (click)="confirmPayment(r)" class="btn-xs success">Confirmer paiement</button>
-                  <button *ngIf="r.statut !== 'annulee'" (click)="cancelReservation(r)" class="btn-xs danger">Annuler</button>
+                  <button *ngIf="r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="cancelReservation(r)" class="btn-xs danger">Annuler</button>
                 </td>
               </tr>
             </tbody>
@@ -95,11 +96,11 @@ export class AdminReservationsComponent {
     const list = this.reservations();
     switch (this.activeTab()) {
       case 'upcoming':
-        return list.filter(r => new Date(r.start_at) >= now && r.statut !== 'annulee');
+        return list.filter(r => new Date(r.start_at) >= now && r.status !== 'cancelled');
       case 'past':
-        return list.filter(r => new Date(r.start_at) < now && r.statut !== 'annulee');
+        return list.filter(r => new Date(r.start_at) < now && r.status !== 'cancelled');
       case 'cancelled':
-        return list.filter(r => r.statut === 'annulee');
+        return list.filter(r => r.status === 'cancelled');
       default:
         return list;
     }
@@ -122,12 +123,14 @@ export class AdminReservationsComponent {
     });
   }
 
-  statutLabel(statut: string): string {
-    switch (statut) {
-      case 'reservee': return 'Réservée';
-      case 'confirmee': return 'Confirmée';
-      case 'annulee': return 'Annulée';
-      default: return statut;
+  statutLabel(status: string): string {
+    switch (status) {
+      case 'pending': return 'En attente';
+      case 'confirmed': return 'Confirmée';
+      case 'cancelled': return 'Annulée';
+      case 'expired': return 'Expirée';
+      case 'played': return 'Jouée';
+      default: return status;
     }
   }
 

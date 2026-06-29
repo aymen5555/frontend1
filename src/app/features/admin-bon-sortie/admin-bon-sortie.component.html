@@ -1,0 +1,121 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+  <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Bons de Sortie</h1>
+      <p class="text-slate-600 mt-2">Enregistrez les sorties de stock (casse, péremption, inventaire...).</p>
+    </div>
+    <button (click)="openForm()" class="inline-flex items-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-sm transition cursor-pointer">
+      + Nouveau Bon de Sortie
+    </button>
+  </header>
+
+  <!-- Form -->
+  <div *ngIf="showForm()" class="glass-panel p-6 rounded-2xl mb-6 animate-fade-in">
+    <h2 class="font-bold text-xl text-slate-900 mb-6">Nouveau Bon de Sortie</h2>
+    <form [formGroup]="bonForm" (ngSubmit)="save()" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Complexe *</label>
+          <select formControlName="complexe_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+            <option value="" disabled>Sélectionner</option>
+            <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Motif</label>
+          <select formControlName="motif" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+            <option value="">Sélectionner</option>
+            <option value="casse">Casse</option>
+            <option value="péremption">Péremption</option>
+            <option value="correction inventaire">Correction inventaire</option>
+            <option value="don">Don</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Date *</label>
+          <input type="date" formControlName="date_bon_sor" max="{{ today }}" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-slate-800">Articles</h3>
+          <button type="button" (click)="addLigne()" class="text-primary text-sm font-bold hover:underline cursor-pointer">+ Ajouter un article</button>
+        </div>
+        <div formArrayName="lignes" class="space-y-3">
+          <div *ngFor="let ctrl of lignes.controls; let i = index" [formGroupName]="i" class="flex items-end gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="flex-1 flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Produit *</label>
+              <select formControlName="produit_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                <option value="" disabled>Choisir un produit</option>
+                <option *ngFor="let p of filteredProducts()" [value]="p.id">{{ p.nom }} (dispo: {{ p.stock?.quantite_disponible ?? 0 }})</option>
+              </select>
+            </div>
+            <div class="w-32 flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Qté *</label>
+              <input type="number" formControlName="quantite" min="1" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-center" />
+            </div>
+            <div class="w-40 flex flex-col gap-1">
+              @if (isStockWarning(ctrl)) {
+                <span class="text-xs text-red-500 font-semibold">Stock: {{ getStock(ctrl.get('produit_id')?.value) }} disponible</span>
+              } @else {
+                <span class="text-xs text-slate-400">Stock: {{ getStock(ctrl.get('produit_id')?.value) }} disponible</span>
+              }
+            </div>
+            <button type="button" (click)="removeLigne(i)" [disabled]="lignes.length === 1" class="text-red-400 hover:text-red-600 font-bold text-lg cursor-pointer disabled:opacity-30 pb-1 transition">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="closeForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition cursor-pointer">Annuler</button>
+        <button type="submit" [disabled]="bonForm.invalid || submitting()" class="px-5 py-2.5 bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-xl transition cursor-pointer">
+          {{ submitting() ? 'Enregistrement...' : '✓ Confirmer le bon' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && bons().length === 0" class="glass-panel text-center py-16 rounded-3xl">
+    <span class="text-5xl block mb-4">📤</span>
+    <h3 class="font-bold text-xl text-slate-900">Aucun bon de sortie</h3>
+    <p class="text-slate-500 mt-2">Créez votre premier bon de sortie via le bouton ci-dessus.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && bons().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+            <th class="py-4 px-3">Référence</th>
+            <th class="py-4 px-3">Date</th>
+            <th class="py-4 px-3">Motif</th>
+            <th class="py-4 px-3">Complexe</th>
+            <th class="py-4 px-3">Nb Articles</th>
+            <th class="py-4 px-3">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          @for (b of bons(); track b.id) {
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="py-4 px-3 font-bold text-slate-700">{{ b.reference }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ b.date_bon_sor }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ b.motif || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ b.complexe?.name || '—' }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ b.lignes.length || 0 }}</td>
+              <td class="py-4 px-3 font-bold text-primary">{{ b.total_ttc_bon_sor | number:'1.2-2' }} TND</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

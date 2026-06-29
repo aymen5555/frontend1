@@ -7,7 +7,7 @@
     <ng-container *ngIf="complexe() as c; else notFound">
       <!-- Hero Banner -->
       <div class="relative h-96 w-full overflow-hidden">
-        <img [src]="c.image_url || c.image_c || 'https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg'" alt="Complexe Cover" class="w-full h-full object-cover">
+        <img [src]="c.image_url || c.image_c || 'https://placehold.co/800x500/1a5276/ffffff?text=PlaySpace'" alt="Complexe Cover" class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
 
         <div class="absolute bottom-0 left-0 right-0 p-8 max-w-5xl mx-auto">
@@ -38,12 +38,16 @@
       </div>
 
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-        <div class="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100" *ngIf="c.description || c.description_c">
+        <div *ngIf="c.images && c.images.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div *ngFor="let image of c.images" class="rounded-3xl overflow-hidden h-52 bg-gray-100">
+            <img [src]="image.image_url" [alt]="c.name + ' photo'" class="w-full h-full object-cover"
+                 (error)="$any($event.target).style.display='none'" />
+          </div>
+        </div>
           <h2 class="text-2xl font-bold text-gray-900 mb-6">À propos</h2>
           <p class="text-gray-600 leading-relaxed max-w-3xl">
             {{ c.description || c.description_c }}
           </p>
-        </div>
 
         <!-- Subscription Section -->
         <div *ngIf="subscriptionTypes().length > 0" class="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
@@ -144,7 +148,7 @@
               <div class="space-y-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Note</label>
-                  <app-star-rating [rating]="newRating" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
+                  <app-star-rating [rating]="newRating()" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
                 </div>
                 
                 <div>

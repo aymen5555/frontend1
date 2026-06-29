@@ -13,6 +13,9 @@ import { ClientService } from '../../services/client.service';
 import { ToastService } from '../../services/toast.service';
 import { AbonnementService } from '../../services/abonnement.service';
 import { GerantService, Gerant, CreateGerantPayload } from '../../services/gerant.service';
+import { SocieteService } from '../../services/societe.service';
+import { DepenseService } from '../../services/depense.service';
+import { CategoryService } from '../../services/category.service';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
 import { SaleService } from '../../services/sale.service';
@@ -44,6 +47,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     private readonly toastSvc = inject(ToastService);
     private readonly abonnementSvc = inject(AbonnementService);
     private readonly gerantSvc = inject(GerantService);
+    private readonly societeSvc = inject(SocieteService);
+    private readonly depenseSvc = inject(DepenseService);
+    private readonly categorySvc = inject(CategoryService);
     private readonly fb = inject(FormBuilder);
     private readonly productSvc = inject(ProductService);
     private readonly orderSvc = inject(OrderService);
@@ -53,6 +59,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     lowStockProducts = signal<number>(0);
     ordersToday = signal<number>(0);
     directSalesToday = signal<number>(0);
+    depensesMois = signal<number>(0);
+    nbDepensesMois = signal<number>(0);
+    depensesParType = signal<{ designation: string; total: number; count: number }[]>([]);
 
     complexes = signal<Complexe[]>([]);
     terrains = signal<Terrain[]>([]);
@@ -89,6 +98,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
     gerantComplexeId = signal<number | null>(null);
     editingComplex = signal<Complexe | null>(null);
+    galleryImages = signal<string[]>([]);
     editingTerrain = signal<Terrain | null>(null);
     editingReservation = signal<Reservation | null>(null);
     showEditReservationForm = signal(false);
@@ -106,8 +116,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     // Assign complexe to gerant modal
     showAssignGerantModal = signal(false);
     selectedGerantForAssign = signal<Gerant | null>(null);
+    categoriesRessource = signal<any[]>([]);
     availableComplexesForAssign = signal<Complexe[]>([]);
     selectedAssignComplexeId = signal<number | null>(null);
+    societes = signal<any[]>([]);
     submittingAssignComplexe = signal(false);
     assignComplexeError = signal('');
 
@@ -116,17 +128,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     searchReservations = signal('');
     searchActivites = signal('');
     searchGerants = signal('');
+    searchTypes = signal('');
+    selectedComplexeFilter = signal<string>('');
 
     complexForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(2)]],
         address: ['', Validators.required],
         city: [''],
-        phone: ['', [Validators.pattern(/^\+216\d{8}$/)]],
+        phone: [''],
         description: [''],
         image_url: [''],
         facebook_url: [''],
         instagram_url: [''],
         website_url: [''],
+        gallery_images: this.fb.control<string[]>([]),
+        societe_id: [null as number | null],
     });
 
     terrainForm = this.fb.group({
@@ -134,6 +150,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         sport_type: ['padel'],
         price_per_hour: [45, [Validators.required, Validators.min(0)]],
         image_url: [''],
+        categorie_ressource_id: [null as number | null],
     });
 
     editReservationForm = this.fb.group({
@@ -186,7 +203,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         password: ['', [Validators.required, Validators.minLength(8)]],
         complexe_id: [null as number | null, Validators.required],
         phone: [''],
-    
+        company_name: [''],
     });
 
     confirmPaymentForm = this.fb.group({
@@ -266,6 +283,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.gerants.update(g => [...g, newGerant]);
                 this.updateUnassignedComplexes();
                 this.toastSvc.success('Gérant créé avec succès.');
+
+                const companyName = this.gerantForm.value.company_name?.trim();
+                if (companyName) {
+                    this.societeSvc.create({ nom_soc: companyName }).subscribe({
+                        next: () => console.log('Société créée:', companyName),
+                        error: () => console.warn('Impossible de créer la société automatiquement.')
+                    });
+                }
             },
             error: (err) => {
                 this.submittingGerant.set(false);
@@ -297,7 +322,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     }
 
     deleteGerant(id: number): void {
-        if (!confirm('Supprimer ce gérant ?')) return;
+        if (!confirm('Attention: Supprimer ce gérant est PERMANENT et libère son complexe. Cette action est irréversible. Continuer?')) return;
         this.gerantSvc.deleteGerant(id).subscribe({
             next: () => {
                 this.loadGerants();
@@ -492,6 +517,45 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             },
             error: () => {}
         });
+
+        this.loadDepensesMois();
+        this.loadCategoriesRessource();
+    }
+
+    loadCategoriesRessource(): void {
+        this.categorySvc.adminList('ressource').subscribe({
+            next: (res) => { if (res?.data) this.categoriesRessource.set(res.data); },
+            error: () => {}
+        });
+    }
+
+    loadDepensesMois(): void {
+        const now = new Date();
+        const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        this.depenseSvc.list({ date_debut: `${ym}-01` }).subscribe({
+            next: (res) => {
+                if (res && res.success && res.data) {
+                    const total = res.data.reduce((s: number, d: any) => s + Number(d.montant_dep || 0), 0);
+                    this.depensesMois.set(Math.round(total * 1000) / 1000);
+                    this.nbDepensesMois.set(res.data.length);
+                    const map = new Map<string, { total: number; count: number }>();
+                    for (const d of res.data) {
+                        const label = d.type_depense?.designation_ty_dep || 'Autre';
+                        const cur = map.get(label) || { total: 0, count: 0 };
+                        cur.total += Number(d.montant_dep || 0);
+                        cur.count += 1;
+                        map.set(label, cur);
+                    }
+                    const arr = Array.from(map.entries()).map(([designation, v]) => ({
+                        designation,
+                        total: Math.round(v.total * 1000) / 1000,
+                        count: v.count,
+                    }));
+                    this.depensesParType.set(arr);
+                }
+            },
+            error: () => {}
+        });
     }
 
     reload(): void {
@@ -527,6 +591,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.complexes.set(data);
                 const first = data[0]?.id ?? null;
                 this.selectedComplexId.set(first);
+                this.societeSvc.list().subscribe({
+                    next: (res) => { if (res?.data) this.societes.set(res.data); },
+                    error: () => {}
+                });
 
                 if (!first && this.auth.isGerant()) {
                     this.terrains.set([]);
@@ -720,22 +788,38 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
     confirmActivitePayment(reservation: ReservationActivite): void {
         this.selectedActiviteReservationForPayment.set(reservation);
+        this.confirmPaymentForm.reset({
+            modalite_paiement: 'especes',
+            reference: '',
+            montant: (reservation as any).montant_paye ?? reservation.activite?.prix ?? 0,
+        });
         this.showActivitePaymentModal.set(true);
     }
 
     executeActivitePayment(): void {
         const reservation = this.selectedActiviteReservationForPayment();
-        if (!reservation) return;
+        if (!reservation || this.confirmPaymentForm.invalid) return;
+
+        this.submittingActivite.set(true);
+        const val = this.confirmPaymentForm.value;
 
         this.activiteSvc.adminConfirmPayment(reservation.id, {
-            modalite_paiement: reservation.modalite_paiement || 'especes',
+            modalite_paiement: val.modalite_paiement as 'especes' | 'carte',
             statut_paiement: 'paye',
+            reference: val.reference || undefined,
+            montant: Number(val.montant),
         }).subscribe({
             next: () => {
+                this.submittingActivite.set(false);
                 this.activiteReservations.update((reservations) =>
                     reservations.map((item) =>
                         item.id === reservation.id
-                            ? { ...item, statut_paiement: 'paye' as const, statut: item.statut === 'reservee' ? 'confirmee' : item.statut }
+                            ? { 
+                                ...item, 
+                                statut_paiement: 'paye' as const, 
+                                statut: item.statut === 'reservee' ? 'confirmee' : item.statut,
+                                modalite_paiement: val.modalite_paiement as 'especes' | 'carte'
+                              }
                             : item
                     )
                 );
@@ -744,6 +828,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.toastSvc.success('Paiement confirmé.');
             },
             error: (err) => {
+                this.submittingActivite.set(false);
                 this.toastSvc.error(err?.error?.message || err.message || 'Impossible de confirmer le paiement.');
                 this.closeActivitePaymentModal();
             },
@@ -882,7 +967,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
     openComplexForm(complexe?: Complexe): void {
         this.editingComplex.set(complexe ?? null);
+
         if (complexe) {
+            const gallery = complexe.images?.map((img) => img.image_url) ?? [];
+            this.galleryImages.set(gallery);
+
             this.complexForm.patchValue({
                 name: complexe.name,
                 address: complexe.address,
@@ -893,9 +982,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 facebook_url: complexe.facebook_url ?? complexe.facebook_c ?? '',
                 instagram_url: complexe.instagram_url ?? complexe.instagram_c ?? '',
                 website_url: complexe.website_url ?? complexe.website_c ?? '',
+                gallery_images: gallery,
             });
         } else {
+            this.galleryImages.set([]);
             this.complexForm.reset();
+            this.complexForm.patchValue({ gallery_images: [] });
         }
         this.showComplexForm.set(true);
     }
@@ -904,7 +996,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         if (this.complexForm.invalid) return;
         this.submittingComplex.set(true);
 
-        const payload = this.complexForm.value as any;
+        const currentGallery = this.galleryImages();
+        const originalGallery = this.editingComplex()
+            ?.images?.map((i: any) => i.image_url) ?? [];
+        const galleryChanged =
+            JSON.stringify(currentGallery) !== JSON.stringify(originalGallery);
+
+        const payload: any = { ...this.complexForm.value };
+        if (galleryChanged) {
+            payload.gallery_images = currentGallery;
+        } else {
+            delete payload.gallery_images;
+        }
+
         const isEdit = !!this.editingComplex();
 
         const request = isEdit
@@ -930,6 +1034,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.showComplexForm.set(false);
         this.editingComplex.set(null);
         this.complexForm.reset();
+        this.galleryImages.set([]);
+    }
+
+    addGalleryImage(): void {
+        this.galleryImages.update((images) => [...images, '']);
+    }
+
+    updateGalleryImage(index: number, value: string): void {
+        this.galleryImages.update((images) => images.map((img, idx) => idx === index ? value : img));
+        this.complexForm.patchValue({ gallery_images: this.galleryImages() });
+    }
+
+    removeGalleryImage(index: number): void {
+        this.galleryImages.update((images) => images.filter((_, idx) => idx !== index));
+        this.complexForm.patchValue({ gallery_images: this.galleryImages() });
     }
 
     createComplex(): void {
@@ -1216,6 +1335,18 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         );
     }
 
+    filteredSubscriptionTypes() {
+        const search = this.searchTypes().toLowerCase();
+        const cid = this.selectedComplexeFilter();
+        return this.subscriptionTypes().filter(t => {
+            const matchesSearch = t.nom.toLowerCase().includes(search) ||
+                (t.sport_cible || '').toLowerCase().includes(search) ||
+                (t.description || '').toLowerCase().includes(search);
+            const matchesComplexe = !cid || Number(t.complexe_id) === Number(cid);
+            return matchesSearch && matchesComplexe;
+        });
+    }
+
     // ──────────────────────────────────────────────
     // SUBSCRIPTION MANAGEMENT METHODS
     // ──────────────────────────────────────────────
@@ -1306,17 +1437,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 const msg = err?.error?.message || err.message || 'Erreur lors de l\'enregistrement.';
                 this.toastSvc.error(msg);
             }
-        });
-    }
-
-    deleteType(type: TypeAbonnement): void {
-        if (!confirm(`Supprimer le type d'abonnement "${type.nom}" ?`)) return;
-        this.abonnementSvc.adminDeleteType(type.id).subscribe({
-            next: () => {
-                this.loadSubscriptionTypes();
-                this.toastSvc.success('Type d\'abonnement supprimé.');
-            },
-            error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la suppression.')
         });
     }
 
@@ -1435,13 +1555,24 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     }
 
     getSubscriptionStatusStyle(status: string): { bg: string; text: string; icon: string } {
-        switch (status) {
+        const normalizedStatus = (status || '').toLowerCase().trim();
+        switch (normalizedStatus) {
             case 'actif':
+            case 'active':
                 return { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: '✓' };
+            case 'expire':
+            case 'expired':
             case 'expiré':
+            case 'expirée':
                 return { bg: 'bg-slate-100', text: 'text-slate-600', icon: '⏳' };
+            case 'annule':
             case 'annulé':
+            case 'cancelled':
+            case 'canceled':
                 return { bg: 'bg-red-100', text: 'text-red-700', icon: '✕' };
+            case 'en_attente':
+            case 'pending':
+                return { bg: 'bg-amber-100', text: 'text-amber-700', icon: '⏱' };
             default:
                 return { bg: 'bg-gray-100', text: 'text-gray-600', icon: '○' };
         }

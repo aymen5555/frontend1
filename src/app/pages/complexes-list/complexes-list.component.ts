@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { StarRatingComponent } from '../../components/shared/star-rating/star-rating.component';
 import { ComplexeService } from '../../services/complexe.service';
 import { Complexe } from '../../models/complexe.model';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +10,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-complexes-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, StarRatingComponent],
   templateUrl: './complexes-list.component.html',
   styleUrls: []
 })
@@ -62,14 +63,14 @@ export class ComplexesListComponent implements OnInit {
     }
     const label = (complexe.name || '').toLowerCase();
     if (label.includes('padel') || sport.includes('padel'))
-      return 'https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg';
+      return 'https://images.unsplash.com/photo-1600198356592-b84a2c7a6b1f?w=800&h=600&fit=crop';
     if (label.includes('tennis') || sport.includes('tennis'))
-      return 'https://images.pexels.com/photos/1784798/pexels-photo-1784798.jpeg';
+      return 'https://images.unsplash.com/photo-1511047073419-e2b5c45f1abe?w=800&h=600&fit=crop';
     if (label.includes('football') || label.includes('foot') || sport.includes('football') || sport.includes('foot'))
-      return 'https://images.pexels.com/photos/61135/pexels-photo-61135.jpeg';
+      return 'https://images.unsplash.com/photo-1519494080482-565cff30e12b?w=800&h=600&fit=crop';
     if (label.includes('basket') || sport.includes('basket'))
-      return 'https://images.pexels.com/photos/35248286/pexels-photo-35248286.jpeg';
-    return 'https://images.pexels.com/photos/32897040/pexels-photo-32897040.jpeg';
+      return 'https://images.unsplash.com/photo-1504851117547-41f979a64490?w=800&h=600&fit=crop';
+    return 'https://images.unsplash.com/photo-1551958219-acbc608c7794?w=800&h=600&fit=crop';
   }
 
   getTerrainCount(complexe: Complexe): number {
@@ -87,17 +88,5 @@ export class ComplexesListComponent implements OnInit {
 
     // Logged in users proceed to terrains with selected complexe filter
     this.router.navigate(['/terrains'], { queryParams: { complexe: complexeId } });
-  }
-
-  /** Returns array of 5 star types for a given rating (0-5) */
-  getStars(rating: number | null | undefined): ('full' | 'half' | 'empty')[] {
-    if (!rating) return ['empty', 'empty', 'empty', 'empty', 'empty'];
-    const stars: ('full' | 'half' | 'empty')[] = [];
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) stars.push('full');
-      else if (rating >= i - 0.5) stars.push('half');
-      else stars.push('empty');
-    }
-    return stars;
   }
 }

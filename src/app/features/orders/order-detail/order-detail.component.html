@@ -130,7 +130,7 @@
               <div class="mt-4 bg-amber-50/40 border border-amber-100 rounded-2xl p-5 space-y-4 animate-fade-in">
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Votre note pour "{{ item.produit_nom }}"</p>
                 <div>
-                  <app-star-rating [rating]="reviewRating()[item.produit_id] ?? 0" [readonly]="false" sizeClass="text-2xl"
+                  <app-star-rating [rating]="(reviewRating()[item.produit_id] || 0)" [readonly]="false" sizeClass="text-2xl"
                     (ratingChange)="setRating(item.produit_id, $event)"></app-star-rating>
                 </div>
                 <div>
@@ -143,7 +143,7 @@
                   </textarea>
                 </div>
                 <button (click)="submitProductReview(item.produit_id)"
-                  [disabled]="(reviewRating()[item.produit_id] ?? 0) < 1 || reviewSubmitting()[item.produit_id]"
+                  [disabled]="(reviewRating()[item.produit_id] || 0) < 1 || reviewSubmitting()[item.produit_id]"
                   class="bg-amber-500 hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-2 px-5 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm">
                   <span *ngIf="reviewSubmitting()[item.produit_id]" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   Envoyer l'avis

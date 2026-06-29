@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { SaleService } from '../../services/sale.service';
@@ -31,7 +31,16 @@ export class AdminSalesComponent implements OnInit {
   showForm = signal(false);
   submitting = signal(false);
 
+  selectedComplexeId = signal<number | null>(null);
+
   saleForm!: FormGroup;
+
+  /** Products filtered by the currently selected complexe — reactive via signals */
+  filteredProducts = computed(() => {
+    const complexeId = this.selectedComplexeId();
+    if (!complexeId) return [];
+    return this.products().filter(p => p.complexe_id === complexeId);
+  });
 
   get lignes(): FormArray {
     return this.saleForm.get('lignes') as FormArray;
@@ -57,8 +66,14 @@ export class AdminSalesComponent implements OnInit {
       modalite_paiement: ['especes', Validators.required],
       lignes: this.fb.array([])
     });
-    // Require reference only when carte
-    // Reference is generated server-side; no client-side input required
+
+    // Sync selectedComplexeId signal with the form control — triggers reactive filteredProducts
+    this.saleForm.get('complexe_id')!.valueChanges.subscribe(val => {
+      this.selectedComplexeId.set(val ? +val : null);
+      // Reset all product selections when complexe changes
+      this.lignes.controls.forEach(lgn => lgn.get('produit_id')!.reset(''));
+    });
+
     this.addLigne();
   }
 
@@ -74,7 +89,8 @@ export class AdminSalesComponent implements OnInit {
     const lgn = this.createLigne();
     // Auto-fill price when product selected
     lgn.get('produit_id')!.valueChanges.subscribe(pid => {
-      const prod = this.products().find(p => p.id === +pid);
+      const allProducts = this.products();
+      const prod = allProducts.find(p => p.id === +pid);
       if (prod) lgn.get('prix_unitaire')!.setValue(prod.prix);
     });
     this.lignes.push(lgn);
@@ -84,6 +100,14 @@ export class AdminSalesComponent implements OnInit {
     if (this.lignes.length > 1) this.lignes.removeAt(i);
   }
 
+  /** Called when complexe <select> changes — sync the signal */
+  onComplexeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const val = select.value;
+    this.selectedComplexeId.set(val ? +val : null);
+    this.lignes.controls.forEach(lgn => lgn.get('produit_id')!.reset(''));
+  }
+
   loadData(): void {
     this.loading.set(true);
     this.saleSvc.list().subscribe({
@@ -91,7 +115,11 @@ export class AdminSalesComponent implements OnInit {
       error: () => { this.toastSvc.error('Erreur lors du chargement.'); this.loading.set(false); }
     });
     this.productSvc.list({ per_page: 200 }).subscribe({
-      next: (res) => this.products.set(res.data)
+      next: (res) => {
+        this.products.set(res.data);
+        this.loading.set(false);
+      },
+      error: () => { this.loading.set(false); }
     });
     const user = this.authSvc.currentUser();
     if (user?.role === 'GERANT' && (user as any).complexe) {
@@ -99,7 +127,14 @@ export class AdminSalesComponent implements OnInit {
       this.complexes.set([c]);
       this.saleForm.patchValue({ complexe_id: c.id });
     } else {
-      this.complexeSvc.list().subscribe({ next: (res) => this.complexes.set(res) });
+      this.complexeSvc.list().subscribe({
+        next: (res) => {
+          this.complexes.set(res);
+          if (res.length === 1) {
+            this.saleForm.patchValue({ complexe_id: res[0].id });
+          }
+        }
+      });
     }
   }
 
@@ -122,7 +157,17 @@ export class AdminSalesComponent implements OnInit {
     if (this.saleForm.invalid) return;
     this.submitting.set(true);
     const raw = this.saleForm.getRawValue();
-    this.saleSvc.create(raw).subscribe({
+    const payload = {
+      complexe_id: raw.complexe_id,
+      client_nom: raw.client_nom,
+      modalite_paiement: raw.modalite_paiement,
+      lignes: raw.lignes.map((ligne: any) => ({
+        produit_id: ligne.produit_id,
+        quantite: ligne.quantite,
+      })),
+    };
+
+    this.saleSvc.create(payload).subscribe({
       next: (res) => {
         const ref = res?.data?.reference;
         this.toastSvc.success(ref ? `Vente enregistrée — Réf: ${ref}` : 'Vente directe enregistrée.');

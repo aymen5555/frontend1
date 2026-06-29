@@ -29,7 +29,7 @@ export class MesActivitesComponent implements OnInit {
         return (res.statut === 'reservee' || res.statut === 'confirmee') && seanceAt >= now;
       }
       if (this.activeTab() === 'past') {
-        return (res.statut === 'confirmee' || res.statut === 'reservee') && seanceAt < now;
+        return res.statut === 'confirmee' || res.statut === 'expiree' || (res.statut === 'reservee' && seanceAt < now);
       }
       return res.statut === 'annulee';
     });
@@ -56,6 +56,7 @@ export class MesActivitesComponent implements OnInit {
       case 'reservee':  return { class: 'bg-yellow-100 text-yellow-700',  label: 'Réservée' };
       case 'confirmee': return { class: 'bg-green-100 text-green-700',   label: 'Confirmée' };
       case 'annulee':   return { class: 'bg-red-100 text-red-600',       label: 'Annulée' };
+      case 'expiree':   return { class: 'bg-gray-100 text-gray-500',     label: 'Expirée' };
       default:          return { class: 'bg-gray-100 text-gray-600',     label: statut };
     }
   }
@@ -145,7 +146,7 @@ export class MesActivitesComponent implements OnInit {
   onPaymentModalCancelled(): void {
     this.showPaymentModal.set(false);
     this.payingReservation.set(null);
-    this.toastSvc.warning('Paiement annulé.');
+    this.toastSvc.warning('Paiement non effectué. Vous pouvez payer depuis Mes Activités.');
   }
 
   formatDate(dateStr: string): string {

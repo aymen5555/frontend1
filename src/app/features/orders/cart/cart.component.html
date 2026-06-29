@@ -4,6 +4,18 @@
     <p class="text-slate-600 mt-2">Vérifiez vos articles avant de finaliser votre commande.</p>
   </header>
 
+  <!-- Error Message -->
+  <div *ngIf="errorMessage()" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-xl">
+    <div class="flex">
+      <div class="flex-shrink-0 text-red-500 font-bold">⚠️</div>
+      <div class="ml-3">
+        <p class="text-sm font-semibold text-red-800">
+          {{ errorMessage() }}
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- Empty State -->
   <div *ngIf="cartItems().length === 0" class="glass-panel text-center py-20 px-4 rounded-3xl">
     <span class="text-6xl block mb-6">🛒</span>
@@ -31,8 +43,8 @@
             <!-- Product Info -->
             <div class="flex items-center gap-4">
               <div class="w-16 h-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                <img *ngIf="item.product.image" [src]="item.product.image" [alt]="item.product.nom" class="w-full h-full object-cover" />
-                <span *ngIf="!item.product.image" class="text-2xl">📦</span>
+                <img *ngIf="item.product.image_url || item.product.image" [src]="item.product.image_url || item.product.image" [alt]="item.product.nom" class="w-full h-full object-cover" />
+                <span *ngIf="!item.product.image_url && !item.product.image" class="text-2xl">📦</span>
               </div>
               <div>
                 <a [routerLink]="['/shop/products', item.product.id]" class="font-bold text-slate-900 hover:text-primary transition-colors block text-base">

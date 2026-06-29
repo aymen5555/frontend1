@@ -41,8 +41,9 @@ export class ReservationService {
   }
 
   /** PUT /reservations/{id}/cancel (client) */
-  cancel(id: number): Observable<Reservation> {
-    return this.http.put<ApiItem<Reservation>>(`${this.api}/${id}/cancel`, {}).pipe(map(r => r.data));
+  cancel(id: number, force: boolean = false): Observable<Reservation> {
+    const url = force ? `${this.api}/${id}/cancel?force=true` : `${this.api}/${id}/cancel`;
+    return this.http.put<ApiItem<Reservation>>(url, {}).pipe(map(r => r.data));
   }
 
   /** PUT /reservations/{id}/pay */

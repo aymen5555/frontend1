@@ -1,39 +1,58 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Category } from '../models/category.interface';
+import { CategoryItem } from '../models/category.interface';
 import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class CategoryService {
   private readonly http = inject(HttpClient);
   private readonly publicApi = `${environment.apiUrl}/categories-produits`;
   private readonly adminApi = `${environment.apiUrl}/admin/categories-produits`;
 
-  // Public: List active categories
-  list(): Observable<{ success: boolean; data: Category[] }> {
-    return this.http.get<{ success: boolean; data: Category[] }>(this.publicApi);
+  list(): Observable<{ success: boolean; data: CategoryItem[] }> {
+    return this.http.get<{ success: boolean; data: CategoryItem[] }>(this.publicApi);
   }
 
-  // Admin: List all categories (active & inactive)
-  adminList(): Observable<{ success: boolean; data: Category[] }> {
-    return this.http.get<{ success: boolean; data: Category[] }>(this.adminApi);
+  adminList(type?: string): Observable<{ success: boolean; data: CategoryItem[] }> {
+    const map: Record<string, string> = {
+      'produit': this.adminApi,
+      'abonnement-adherent': `${environment.apiUrl}/admin/categories-abonnement-adherent`,
+      'fournisseur': `${environment.apiUrl}/admin/categories-fournisseurs`,
+      'ressource': `${environment.apiUrl}/admin/categories-ressources`,
+    };
+    const url = map[type || 'produit'];
+    return this.http.get<{ success: boolean; data: CategoryItem[] }>(url);
   }
 
-  // Super Admin: Create a new category
-  create(payload: { nom: string; description?: string }): Observable<{ success: boolean; data: Category }> {
-    return this.http.post<{ success: boolean; data: Category }>(this.adminApi, payload);
+  create(type: string, payload: { nom: string; active?: boolean }): Observable<{ success: boolean; data: CategoryItem }> {
+    const map: Record<string, string> = {
+      'produit': this.adminApi,
+      'abonnement-adherent': `${environment.apiUrl}/admin/categories-abonnement-adherent`,
+      'fournisseur': `${environment.apiUrl}/admin/categories-fournisseurs`,
+      'ressource': `${environment.apiUrl}/admin/categories-ressources`,
+    };
+    return this.http.post<{ success: boolean; data: CategoryItem }>(map[type] || this.adminApi, payload);
   }
 
-  // Super Admin: Update a category
-  update(id: number, payload: { nom?: string; description?: string; active?: boolean }): Observable<{ success: boolean; data: Category }> {
-    return this.http.put<{ success: boolean; data: Category }>(`${this.adminApi}/${id}`, payload);
+  update(type: string, id: number, payload: { nom?: string; active?: boolean }): Observable<{ success: boolean; data: CategoryItem }> {
+    const map: Record<string, string> = {
+      'produit': this.adminApi,
+      'abonnement-adherent': `${environment.apiUrl}/admin/categories-abonnement-adherent`,
+      'fournisseur': `${environment.apiUrl}/admin/categories-fournisseurs`,
+      'ressource': `${environment.apiUrl}/admin/categories-ressources`,
+    };
+    const url = `${map[type] || this.adminApi}/${id}`;
+    return this.http.put<{ success: boolean; data: CategoryItem }>(url, payload);
   }
 
-  // Super Admin: Deactivate a category
-  delete(id: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.adminApi}/${id}`);
+  delete(type: string, id: number): Observable<{ success: boolean; message: string }> {
+    const map: Record<string, string> = {
+      'produit': this.adminApi,
+      'abonnement-adherent': `${environment.apiUrl}/admin/categories-abonnement-adherent`,
+      'fournisseur': `${environment.apiUrl}/admin/categories-fournisseurs`,
+      'ressource': `${environment.apiUrl}/admin/categories-ressources`,
+    };
+    return this.http.delete<{ success: boolean; message: string }>(`${map[type] || this.adminApi}/${id}`);
   }
 }

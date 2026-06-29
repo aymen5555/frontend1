@@ -50,8 +50,9 @@ export class ActiviteService {
   }
 
   /** DELETE /activites/reservations/{id} — client cancel */
-  cancelReservation(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.api}/activites/reservations/${id}`);
+  cancelReservation(id: number, force = false): Observable<void> {
+    const params = force ? '?force=true' : '';
+    return this.http.delete<void>(`${this.api}/activites/reservations/${id}${params}`);
   }
 
   /** DELETE /activites/reservations/{id}/delete — client delete cancelled activity reservation */
@@ -90,7 +91,7 @@ export class ActiviteService {
   }
 
   /** PUT /admin/activites/reservations/{id}/confirm */
-  adminConfirmPayment(id: number, data: { modalite_paiement: 'especes' | 'carte'; statut_paiement: 'paye' }): Observable<void> {
+  adminConfirmPayment(id: number, data: { modalite_paiement: 'especes' | 'carte'; statut_paiement: 'paye'; reference?: string; montant?: number }): Observable<void> {
     return this.http.put<void>(`${this.api}/admin/activites/reservations/${id}/confirm`, data);
   }
 

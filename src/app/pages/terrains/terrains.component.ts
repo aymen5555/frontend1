@@ -141,6 +141,8 @@ export class TerrainsComponent implements OnInit, OnDestroy {
 
   loadTerrains(): void {
     this.loading.set(true);
+    const timezone = this.browserTimezone();
+
     this.terrainSvc.list(this.selectedComplexId() || undefined).pipe(
       tap(data => {
         const initialTerrains = data.map(t => ({ ...t, slots: [] as Slot[] }));
@@ -149,7 +151,7 @@ export class TerrainsComponent implements OnInit, OnDestroy {
       switchMap(terrains => {
         if (terrains.length === 0) return [[]];
         const slotRequests = terrains.map(t =>
-          this.terrainSvc.getSlots(t.id, this.selectedDate()).pipe(
+          this.terrainSvc.getSlots(t.id, this.selectedDate(), timezone).pipe(
             map(slots => ({ id: t.id, slots }))
           )
         );
@@ -218,6 +220,10 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     }).format(new Date(this.selectedDate()));
   }
 
+  browserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  }
+
   setPaymentMethod(method: 'especes' | 'carte'): void {
     this.paymentMethod.set(method);
   }
@@ -231,12 +237,9 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     this.bookingInProgress.set(true);
     this.errorMessage.set('');
 
-    const [hours, minutes] = slot.time.split(':').map(Number);
-    const startStr = `${this.selectedDate()} ${slot.time}:00`;
-    const endHour = hours + 1;
-    const endStr = `${this.selectedDate()} ${String(endHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    const startStr = slot.starts_at || `${this.selectedDate()} ${slot.time}:00`;
+    const endStr = slot.ends_at || `${this.selectedDate()} ${String(Number(slot.time.split(':')[0]) + 1).padStart(2, '0')}:${slot.time.split(':')[1]}:00`;
 
-    // Step 1: Create the reservation (status = reserved)
     this.reservationSvc.create({
       terrain_id: terrain.id,
       start_at: startStr,
@@ -280,10 +283,27 @@ export class TerrainsComponent implements OnInit, OnDestroy {
           setTimeout(() => { this.closeBookingPanel(); this.loadTerrains(); }, 1500);
         },
         error: () => {
-          this.showPaymentModal.set(false);
-          this.bookingInProgress.set(false);
-          this.errorMessage.set('Paiement annulé.');
-          setTimeout(() => { this.closeBookingPanel(); this.loadTerrains(); }, 1500);
+          // Retry with force-cancel flag
+          this.reservationSvc.cancel(id, true).subscribe({
+            next: () => {
+              this.showPaymentModal.set(false);
+              this.bookingInProgress.set(false);
+              this.errorMessage.set('Paiement annulé — réservation annulée.');
+              const timerId = this.paymentDeadlineTimer();
+              if (timerId !== undefined) clearInterval(timerId);
+              this.paymentDeadlineMinutes.set(null);
+              setTimeout(() => { this.closeBookingPanel(); this.loadTerrains(); }, 1500);
+            },
+            error: () => {
+              this.showPaymentModal.set(false);
+              this.bookingInProgress.set(false);
+              this.errorMessage.set('Votre réservation est en attente de paiement. Elle sera automatiquement annulée dans 30 minutes.');
+              const timerId = this.paymentDeadlineTimer();
+              if (timerId !== undefined) clearInterval(timerId);
+              this.paymentDeadlineMinutes.set(null);
+              setTimeout(() => { this.closeBookingPanel(); this.loadTerrains(); }, 5000);
+            }
+          });
         }
       });
     } else {
@@ -348,12 +368,14 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     if (terrain.image_t) return terrain.image_t;
     const sport = (terrain.sport_type || terrain.name || '').toLowerCase();
     if (sport.includes('padel'))
-      return 'https://images.pexels.com/photos/32474981/pexels-photo-32474981.jpeg';
+      return 'https://images.unsplash.com/photo-1600198356592-b84a2c7a6b1f?w=600&h=400&fit=crop';
     if (sport.includes('tennis'))
-      return 'https://images.pexels.com/photos/1784798/pexels-photo-1784798.jpeg';
+      return 'https://images.unsplash.com/photo-1511047073419-e2b5c45f1abe?w=600&h=400&fit=crop';
     if (sport.includes('football') || sport.includes('foot'))
-      return 'https://images.pexels.com/photos/61135/pexels-photo-61135.jpeg';
-    return 'https://images.pexels.com/photos/32897040/pexels-photo-32897040.jpeg';
+      return 'https://images.unsplash.com/photo-1519494080482-565cff30e12b?w=600&h=400&fit=crop';
+    if (sport.includes('basket'))
+      return 'https://images.unsplash.com/photo-1504851117547-41f979a64490?w=600&h=400&fit=crop';
+    return 'https://images.unsplash.com/photo-1554445022-41078d8f77fd?w=600&h=400&fit=crop';
   }
 
   onDateChange(event: Event): void {

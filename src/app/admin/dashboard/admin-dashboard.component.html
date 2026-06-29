@@ -58,6 +58,40 @@
         </div>
     </div>
 
+    <!-- ═══════ DEPENSES WIDGET ═══════ -->
+    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
+        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">💸 Dépenses du mois</h3>
+        <div class="summary-grid">
+            <div class="stat-card">
+                <p class="stat-label">Total ce mois</p>
+                <p class="stat-value">{{ depensesMois() | number:'1.0-3' }} DT</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Nb dépenses</p>
+                <p class="stat-value">{{ nbDepensesMois() }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ DEPENSES PAR TYPE WIDGET ═══════ -->
+    @if (depensesParType().length > 0) {
+    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
+        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">📊 Répartition par type</h3>
+        <div class="space-y-2">
+            @for (item of depensesParType(); track item.designation) {
+            <div class="flex items-center gap-3">
+                <div class="w-32 text-xs font-semibold text-slate-600 truncate">{{ item.designation }}</div>
+                <div class="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" [style.width.%]="depensesMois() > 0 ? (item.total / depensesMois() * 100) : 0"></div>
+                </div>
+                <div class="w-20 text-right text-xs font-bold text-slate-900">{{ item.total | number:'1.0-3' }} DT</div>
+                <div class="w-8 text-right text-[10px] text-slate-400">{{ item.count }}x</div>
+            </div>
+            }
+        </div>
+    </div>
+    }
+
     <div class="grid gap-6 lg:grid-cols-[1.7fr_1fr]" id="section-complexes">
         <!-- SUPER ADMIN: Complexe Selection Panel -->
         @if (auth.isSuperAdmin()) {
@@ -99,6 +133,15 @@
                         <label class="block text-xs font-medium mb-1">Description</label>
                         <input type="text" formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Courte description" />
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Société propriétaire</label>
+                        <select formControlName="societe_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option [ngValue]="null">Aucune</option>
+                            @for (s of societes(); track s.id) {
+                            <option [ngValue]="s.id">{{ s.nom_soc }}</option>
+                            }
+                        </select>
+                    </div>
                     <!-- Image & Social Links -->
                     <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; margin-top: 0.25rem;">
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Photo &amp; Liens</p>
@@ -109,6 +152,17 @@
                                 
                                 <label class="block text-xs font-medium mt-2">URL de la photo (Alternative)</label>
                                 <input type="url" formControlName="image_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Galerie du Complexe</label>
+                                <div class="space-y-3">
+                                    <div *ngFor="let image of galleryImages(); let i = index" class="flex gap-2 items-center">
+                                        <input type="url" [value]="image" (input)="updateGalleryImage(i, $event.target.value)" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                                        <button type="button" class="btn-xs danger" (click)="removeGalleryImage(i)">Supprimer</button>
+                                    </div>
+                                    <button type="button" class="btn-sm" (click)="addGalleryImage()">Ajouter une image</button>
+                                    <p class="text-xs text-slate-500">Ajoutez plusieurs URLs pour créer une galerie. L'image principale reste la première photo.</p>
+                                </div>
                             </div>
                             <div class="grid gap-2 sm:grid-cols-3">
                                 <div>
@@ -202,6 +256,17 @@
                                 <label class="block text-xs font-medium mt-2">URL de la photo (Alternative)</label>
                                 <input type="url" formControlName="image_url" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
                             </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Galerie du Complexe</label>
+                                <div class="space-y-3">
+                                    <div *ngFor="let image of galleryImages(); let i = index" class="flex gap-2 items-center">
+                                        <input type="url" [value]="image" (input)="updateGalleryImage(i, $event.target.value)" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="https://exemple.com/photo.jpg" />
+                                        <button type="button" class="btn-xs danger" (click)="removeGalleryImage(i)">Supprimer</button>
+                                    </div>
+                                    <button type="button" class="btn-sm" (click)="addGalleryImage()">Ajouter une image</button>
+                                    <p class="text-xs text-slate-500">Ajoutez plusieurs URLs pour créer une galerie. L'image principale reste la première photo.</p>
+                                </div>
+                            </div>
                             <div class="grid gap-2 sm:grid-cols-3">
                                 <div>
                                     <label class="block text-xs font-medium mb-1">🌐 Site web</label>
@@ -287,6 +352,17 @@
                             <div>
                                 <label class="block text-xs font-medium mb-1">Prix/h *</label>
                                 <input type="number" formControlName="price_per_hour" class="w-full border border-gray-300 rounded-md px-3 py-2"/>
+                            </div>
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Catégorie ressource</label>
+                                <select formControlName="categorie_ressource_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                    <option [ngValue]="null">Aucune</option>
+                                    @for (cat of categoriesRessource(); track cat.id) {
+                                    <option [ngValue]="cat.id">{{ cat.nom_cat_res }}</option>
+                                    }
+                                </select>
                             </div>
                         </div>
                         <div class="space-y-2">
@@ -435,6 +511,10 @@
                     @if (unassignedComplexes().length === 0) {
                     <p class="text-xs text-amber-600 mt-1">Tous les complexes ont déjà un gérant.</p>
                     }
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="block text-xs font-medium mb-1">Nom de la société (optionnel)</label>
+                    <input type="text" formControlName="company_name" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Nom de la société propriétaire" />
                 </div>
                 <div style="grid-column: 1 / -1;" class="flex justify-end gap-2 pt-2">
                     <button type="button" class="btn-outline" (click)="closeGerantForm()">Annuler</button>
@@ -700,7 +780,6 @@
                             <div class="flex flex-wrap justify-end gap-2">
                                 <button type="button" class="btn-xs" (click)="editActivite(act)">Modifier</button>
                                 <button type="button" class="btn-xs" [class.danger]="act.active" (click)="toggleActiviteActive(act)">{{ act.active ? 'Désactiver' : 'Activer' }}</button>
-                                <button type="button" class="btn-xs danger" (click)="deleteActivite(act)">Supprimer</button>
                             </div>
                         </td>
                     </tr>
@@ -782,13 +861,26 @@
             <button type="button" class="btn-sm" (click)="openTypeForm()">+ Créer</button>
         </div>
 
+        <div class="flex flex-wrap gap-3 mb-4 items-center">
+            <input type="text" placeholder="Rechercher formule..." [(ngModel)]="searchTypes" class="px-3 py-2 border border-gray-300 rounded-md text-sm" style="flex: 1; max-width: 300px;" />
+            
+            @if (auth.isSuperAdmin()) {
+            <select [(ngModel)]="selectedComplexeFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white" style="max-width: 250px;">
+                <option value="">Tous les complexes</option>
+                @for (c of complexes(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+                }
+            </select>
+            }
+        </div>
+
         @if (showTypeForm()) {
         <div class="panel" style="margin-bottom: 1rem; padding: 1rem; background: #fafafa;">
             <h3 class="font-semibold mb-3">{{ editingType() ? 'Modifier' : 'Nouvelle formule' }}</h3>
             <form [formGroup]="typeForm" (ngSubmit)="saveType()" class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                 <div>
                     <label class="block text-xs font-medium mb-1">Nom *</label>
-                    <input type="text" formControlName="nom" placeholder="Ex: Mensuel" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                    <input type="text" formControlName="nom" placeholder="Ex: Flat Rate" class="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
                 @if (auth.isSuperAdmin()) {
                 <div style="grid-column: 1 / -1;">
@@ -824,7 +916,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium mb-1">Sport cible</label>
-                    <input type="text" formControlName="sport_cible" placeholder="Ex: Tennis" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                    <input type="text" formControlName="sport_cible" placeholder="Ex: Padel" class="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
                 <div style="grid-column: 1 / -1;">
                     <label class="block text-xs font-medium mb-1">Description</label>
@@ -857,7 +949,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @for (type of subscriptionTypes(); track type.id) {
+                    @for (type of filteredSubscriptionTypes(); track type.id) {
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3 font-medium">{{ type.nom }}</td>
                         <td class="px-4 py-3">{{ type.complexe?.nom_c || type.complexe?.name || '—' }}</td>
@@ -874,8 +966,14 @@
                             <div class="flex flex-wrap justify-end gap-2">
                                 <button type="button" class="btn-xs" (click)="editType(type)">Modifier</button>
                                 <button type="button" class="btn-xs" [class.danger]="type.active" (click)="toggleTypeActive(type)">{{ type.active ? 'Désactiver' : 'Activer' }}</button>
-                                <button type="button" class="btn-xs danger" (click)="deleteType(type)">Supprimer</button>
                             </div>
+                        </td>
+                    </tr>
+                    }
+                    @empty {
+                    <tr>
+                        <td colspan="7" class="px-4 py-6 text-center text-slate-500 font-medium bg-slate-50/50">
+                            Aucune formule ne correspond à vos filtres.
                         </td>
                     </tr>
                     }
@@ -1113,13 +1211,34 @@
             </div>
             <div class="modal-body">
                 <p class="text-sm text-gray-600 mb-3">
-                    Réservation de <strong>{{ selectedActiviteReservationForPayment()?.user?.first_name }}</strong>
+                    Réservation de <strong>{{ selectedActiviteReservationForPayment()?.user?.first_name }} {{ selectedActiviteReservationForPayment()?.user?.last_name }}</strong>
                     — {{ selectedActiviteReservationForPayment()?.activite?.nom }}
                 </p>
-                <div class="modal-footer">
-                    <button type="button" class="btn-outline" (click)="closeActivitePaymentModal()">Annuler</button>
-                    <button type="button" class="btn-manual" (click)="executeActivitePayment()">Confirmer paiement</button>
-                </div>
+                <form [formGroup]="confirmPaymentForm" (ngSubmit)="executeActivitePayment()">
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Montant (TND) *</label>
+                            <input type="number" step="0.01" formControlName="montant" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Modalité</label>
+                            <select formControlName="modalite_paiement" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="especes">Espèces</option>
+                                <option value="carte">Carte</option>
+                            </select>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label class="block text-xs font-medium mb-1">Référence</label>
+                            <input type="text" formControlName="reference" placeholder="Optionnel" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" (click)="closeActivitePaymentModal()">Annuler</button>
+                        <button type="submit" class="btn-manual" [disabled]="confirmPaymentForm.invalid || submittingActivite()">
+                            {{ submittingActivite() ? 'Confirmation…' : 'Confirmer' }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

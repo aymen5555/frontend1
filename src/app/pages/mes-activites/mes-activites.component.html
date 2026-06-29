@@ -108,5 +108,6 @@
 
 <!-- Payment Modal -->
 <app-payment-modal *ngIf="showPaymentModal()"
+                   [reservationId]="payingReservation()?.id"
                    (paid)="onPaymentModalPaid($event)"
                    (closed)="onPaymentModalCancelled()"></app-payment-modal>

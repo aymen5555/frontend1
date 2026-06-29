@@ -10,4 +10,10 @@ export interface Supplier {
   email?: string;
   adresse?: string;
   actif: boolean;
+  categorie_fournisseur_id?: number;
+  categorie_fournisseur?: {
+    id: number;
+    nom_cat_four: string;
+    active: boolean;
+  };
 }

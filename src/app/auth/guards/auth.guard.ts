@@ -56,7 +56,7 @@ export const guestGuard: CanActivateFn = () => {
     if (!auth.isLoggedIn()) return true;
 
     if (auth.isSuperAdmin()) {
-        router.navigate(['/home']);
+        router.navigate(['/super-admin/dashboard']);
     } else if (auth.isGerant()) {
         router.navigate(['/admin/dashboard']);
     } else {

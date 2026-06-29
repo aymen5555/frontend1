@@ -49,7 +49,7 @@
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Produit *</label>
               <select formControlName="produit_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                 <option value="" disabled>Choisir un produit</option>
-                <option *ngFor="let p of products()" [value]="p.id">{{ p.nom }}</option>
+                <option *ngFor="let p of filteredProducts()" [value]="p.id">{{ p.nom }} ({{ p.complexe?.name || '—' }})</option>
               </select>
             </div>
             <div class="w-24 flex flex-col gap-1">
@@ -120,12 +120,7 @@
             <td class="py-4 px-3 font-bold text-slate-700">#{{ s.id }}</td>
             <td class="py-4 px-3 text-slate-700 font-medium">{{ s.client_nom || '—' }}</td>
             <td class="py-4 px-3 text-slate-600">
-              <div class="flex flex-wrap gap-1">
-                <span *ngFor="let l of s.lignes | slice:0:2" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md">
-                  x{{ l.quantite }} {{ getProductName(l.produit_id) }}
-                </span>
-                <span *ngIf="s.lignes.length > 2" class="text-xs text-slate-400 font-medium">+{{ s.lignes.length - 2 }}</span>
-              </div>
+              x{{ s.quantite || 1 }} {{ s.produit?.nom || getProductName(s.produit_id!) }}
             </td>
             <td class="py-4 px-3">
               <span [ngClass]="s.modalite_paiement === 'carte' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'" class="border px-2 py-0.5 text-xs font-bold rounded-lg">

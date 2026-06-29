@@ -32,9 +32,13 @@ export const routes: Routes = [
   { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'login', redirectTo: '/auth/login', pathMatch: 'full' },
   { path: 'auth/verify-email', component: VerifyEmailComponent },
-  { path: 'auth/verify-pending', component: VerifyPendingComponent },
+{ path: 'auth/verify-pending', component: VerifyPendingComponent },
 
-  // ── Public ────────────────────────────────────────────────────────────────
+   // ── Password Reset ──────────────────────────────────────────────────────────
+  { path: 'auth/forgot-password', loadComponent: () => import('./auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent), canActivate: [guestGuard] },
+  { path: 'auth/reset-password', loadComponent: () => import('./auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent), canActivate: [guestGuard] },
+
+   // ── Public ────────────────────────────────────────────────────────────────
   { path: '', component: LandingComponent, canActivate: [guestGuard] },
   { path: 'home', component: HomeComponent, canActivate: [authGuard], data: { redirectAdmin: true } },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
@@ -60,13 +64,11 @@ export const routes: Routes = [
     path: 'shop',
     loadComponent: () =>
       import('./features/shop/shop.component').then(m => m.ShopComponent),
-    canActivate: [authGuard]
   },
   {
     path: 'shop/products/:id',
     loadComponent: () =>
       import('./features/shop/product-detail/product-detail.component').then(m => m.ProductDetailComponent),
-    canActivate: [authGuard]
   },
   {
     path: 'cart',
@@ -95,7 +97,7 @@ export const routes: Routes = [
 
   // ── Admin / Gérant ────────────────────────────────────────────────────────
   { path: 'admin', redirectTo: '/admin/dashboard', pathMatch: 'full' },
-  { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [authGuard] },
+  { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [authGuard, gerantGuard] },
   { path: 'admin/reservations', component: AdminReservationsComponent, canActivate: [authGuard, gerantGuard] },
   { path: 'admin/activites', component: AdminActivitesComponent, canActivate: [authGuard, gerantGuard] },
   { path: 'admin/abonnements', component: SubscriptionAdminComponent, canActivate: [authGuard, gerantGuard] },
@@ -135,6 +137,60 @@ export const routes: Routes = [
     path: 'admin/sales',
     loadComponent: () =>
       import('./features/admin-sales/admin-sales.component').then(m => m.AdminSalesComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/fournisseurs-internes',
+    loadComponent: () =>
+      import('./features/admin-fournisseurs-internes/admin-fournisseurs-internes.component').then(m => m.AdminFournisseursInternesComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/bons-entree',
+    loadComponent: () =>
+      import('./features/admin-bon-entree/admin-bon-entree.component').then(m => m.AdminBonEntreeComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/bons-sortie',
+    loadComponent: () =>
+      import('./features/admin-bon-sortie/admin-bon-sortie.component').then(m => m.AdminBonSortieComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/galerie',
+    loadComponent: () =>
+      import('./features/admin-galerie/admin-galerie.component').then(m => m.AdminGalerieComponent),
+    canActivate: [authGuard, gerantGuard]
+  },
+  {
+    path: 'admin/types-depenses',
+    loadComponent: () =>
+      import('./features/admin-types-depenses/admin-types-depenses.component').then(m => m.AdminTypesDepensesComponent),
+    canActivate: [authGuard, superAdminGuard]
+  },
+  {
+    path: 'admin/depenses',
+    loadComponent: () =>
+      import('./features/admin-depenses/admin-depenses.component').then(m => m.AdminDepensesComponent),
+    canActivate: [authGuard, superAdminGuard]
+  },
+  {
+    path: 'admin/societes',
+    loadComponent: () =>
+      import('./features/admin-societes/admin-societes.component').then(m => m.AdminSocietesComponent),
+    canActivate: [authGuard, superAdminGuard]
+  },
+  {
+    path: 'admin/equipements',
+    loadComponent: () =>
+      import('./features/admin-equipements/admin-equipements.component').then(m => m.AdminEquipementsComponent),
+    canActivate: [authGuard, superAdminGuard]
+  },
+  {
+    path: 'admin/details-abonnements',
+    loadComponent: () =>
+      import('./features/admin-details-abonnements/admin-details-abonnements.component').then(m => m.AdminDetailsAbonnementsComponent),
     canActivate: [authGuard, gerantGuard]
   },
 

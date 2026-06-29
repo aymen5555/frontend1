@@ -22,6 +22,11 @@ export interface Terrain {
     nbheures_seance?: number;
     nbminute_seance?: number;
     image_url?: string;
+    categorie_ressource?: {
+        id: number;
+        nom_cat_res: string;
+        active: boolean;
+    };
 }
 
 export interface TerrainPayload {

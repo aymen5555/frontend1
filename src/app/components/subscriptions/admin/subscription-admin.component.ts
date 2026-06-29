@@ -677,8 +677,8 @@ export class SubscriptionAdminComponent implements OnInit {
         this.loadTypes();
         this.deletingTypeId = null;
       },
-      error: () => {
-        this.toast.error('Erreur lors de la suppression');
+      error: (err) => {
+        this.toast.error(err?.error?.message || 'Erreur lors de la suppression');
         this.deletingTypeId = null;
       },
     });
@@ -735,7 +735,7 @@ export class SubscriptionAdminComponent implements OnInit {
           );
           this.confirmingPayment = false;
           this.closePaymentModal();
-            this.loadStats();
+          this.loadStats();
         },
         error: () => {
           this.toast.error('Erreur lors de la confirmation');

@@ -4,6 +4,25 @@ import { Observable } from 'rxjs';
 import { DirectSale } from '../models/sale.interface';
 import { environment } from '../../environments/environment';
 
+export type DirectSalePayload =
+  | {
+      produit_id: number;
+      complexe_id: number;
+      quantite: number;
+      modalite_paiement: 'especes' | 'carte';
+      client_nom?: string;
+      user_id?: number;
+      notes?: string;
+    }
+  | {
+      complexe_id: number;
+      modalite_paiement: 'especes' | 'carte';
+      client_nom?: string;
+      user_id?: number;
+      notes?: string;
+      lignes: { produit_id: number; quantite: number }[];
+    };
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,7 +36,7 @@ export class SaleService {
   }
 
   // Record a direct sale
-  create(payload: { produit_id: number; complexe_id: number; quantite: number; modalite_paiement: 'especes' | 'carte'; client_nom?: string; user_id?: number; notes?: string }): Observable<{ success: boolean; data: DirectSale }> {
+  create(payload: DirectSalePayload): Observable<{ success: boolean; data: DirectSale }> {
     return this.http.post<{ success: boolean; data: DirectSale }>(this.api, payload);
   }
 }

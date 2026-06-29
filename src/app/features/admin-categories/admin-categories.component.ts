@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CategoryService } from '../../services/category.service';
 import { ToastService } from '../../services/toast.service';
-import { Category } from '../../models/category.interface';
+import { CategoryItem } from '../../models/category.interface';
+
+type TabType = 'produit' | 'abonnement-adherent' | 'fournisseur' | 'ressource';
 
 @Component({
   selector: 'app-admin-categories',
@@ -17,11 +19,19 @@ export class AdminCategoriesComponent implements OnInit {
   private readonly toastSvc = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
-  categories = signal<Category[]>([]);
+  categories = signal<CategoryItem[]>([]);
   loading = signal(true);
   showForm = signal(false);
-  editing = signal<Category | null>(null);
+  editing = signal<CategoryItem | null>(null);
   submitting = signal(false);
+  activeTab: TabType = 'produit';
+
+  tabs: { key: TabType; label: string }[] = [
+    { key: 'produit', label: 'Produits' },
+    { key: 'abonnement-adherent', label: 'Abonnements' },
+    { key: 'fournisseur', label: 'Fournisseurs' },
+    { key: 'ressource', label: 'Ressources' },
+  ];
 
   categoryForm!: FormGroup;
 
@@ -33,22 +43,22 @@ export class AdminCategoriesComponent implements OnInit {
   buildForm(): void {
     this.categoryForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
-      description: [''],
       active: [true]
     });
   }
 
+  switchTab(tab: TabType): void {
+    this.activeTab = tab;
+    this.showForm.set(false);
+    this.editing.set(null);
+    this.loadData();
+  }
+
   loadData(): void {
     this.loading.set(true);
-    this.categorySvc.adminList().subscribe({
-      next: (res) => {
-        this.categories.set(res.data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.toastSvc.error('Erreur lors du chargement des catégories.');
-        this.loading.set(false);
-      }
+    this.categorySvc.adminList(this.activeTab).subscribe({
+      next: (res) => { this.categories.set(res.data); this.loading.set(false); },
+      error: () => { this.toastSvc.error('Erreur chargement catégories.'); this.loading.set(false); }
     });
   }
 
@@ -58,11 +68,10 @@ export class AdminCategoriesComponent implements OnInit {
     this.showForm.set(true);
   }
 
-  openEditForm(category: Category): void {
+  openEditForm(category: CategoryItem): void {
     this.editing.set(category);
     this.categoryForm.patchValue({
       nom: category.nom,
-      description: category.description || '',
       active: category.active
     });
     this.showForm.set(true);
@@ -80,8 +89,8 @@ export class AdminCategoriesComponent implements OnInit {
     const vals = this.categoryForm.value;
 
     const req = this.editing()
-      ? this.categorySvc.update(this.editing()!.id, vals)
-      : this.categorySvc.create(vals);
+      ? this.categorySvc.update(this.activeTab, this.editing()!.id, vals)
+      : this.categorySvc.create(this.activeTab, vals);
 
     req.subscribe({
       next: () => {
@@ -97,9 +106,9 @@ export class AdminCategoriesComponent implements OnInit {
     });
   }
 
-  toggleActive(category: Category): void {
+  toggleActive(category: CategoryItem): void {
     const nextState = !category.active;
-    this.categorySvc.update(category.id, { active: nextState }).subscribe({
+    this.categorySvc.update(this.activeTab, category.id, { active: nextState }).subscribe({
       next: () => {
         this.toastSvc.success(`Catégorie ${nextState ? 'activée' : 'désactivée'}.`);
         this.loadData();
@@ -108,9 +117,9 @@ export class AdminCategoriesComponent implements OnInit {
     });
   }
 
-  deleteCategory(category: Category): void {
-    if (!confirm(`Supprimer la catégorie "${category.nom}" ? Cette action peut impacter les produits existants.`)) return;
-    this.categorySvc.delete(category.id).subscribe({
+  deleteCategory(category: CategoryItem): void {
+    if (!confirm(`Supprimer la catégorie "${category.nom}" ?`)) return;
+    this.categorySvc.delete(this.activeTab, category.id).subscribe({
       next: (res) => {
         this.toastSvc.success(res.message || 'Catégorie supprimée.');
         this.loadData();

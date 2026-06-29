@@ -10,6 +10,12 @@ export interface TypeAbonnement {
   sport_cible?: string;
   avantages?: string[];
   active?: boolean;
+  categorie_abonnement_adherent_id?: number;
+  categorie_abonnement_adherent?: {
+    id: number;
+    nom_cat_abo_ad: string;
+    active: boolean;
+  };
   complexe?: import('./complexe.model').Complexe;
 }
 

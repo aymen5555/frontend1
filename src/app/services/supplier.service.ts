@@ -22,7 +22,7 @@ export class SupplierService {
   }
 
   // Update supplier
-  update(id: number, payload: { nom?: string; contact?: string; telephone?: string; email?: string; adresse?: string }): Observable<{ success: boolean; data: Supplier }> {
+  update(id: number, payload: { nom?: string; contact?: string; telephone?: string; email?: string; adresse?: string; actif?: boolean }): Observable<{ success: boolean; data: Supplier }> {
     return this.http.put<{ success: boolean; data: Supplier }>(`${this.api}/${id}`, payload);
   }
 
