@@ -1240,7 +1240,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.reservationSvc.delete(reservation.id).subscribe({
             next: () => {
                 this.loadReservations();
-                this.toastSvc.success('Réservation supprimée.');
+                this.loadArchives();
+                this.toastSvc.success('Réservation archivée.');
             },
             error: (err) => {
                 const msg = err?.error?.message || err.message || 'Impossible de supprimer.';
@@ -1366,7 +1367,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     loadArchives(): void {
         this.reservationSvc.getArchives().subscribe({
             next: (data) => this.archivedItems.set(data),
-            error: () => {}
+            error: (err) => {
+                this.archivedItems.set([]);
+                const msg = err?.error?.message || err?.message || 'Impossible de charger les archives.';
+                this.toastSvc.error(msg);
+            }
         });
     }
 
@@ -1388,7 +1393,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
     loadSubscriptionTypes(): void {
         this.abonnementSvc.adminGetTypes().subscribe({
-            next: (types) => this.subscriptionTypes.set(types),
+            next: (types) => this.subscriptionTypes.set((types ?? []).map(t => ({ ...t, abonnements_count: (t as any).abonnements_count ?? 0 }))),
             error: () => console.error('Failed to load subscription types')
         });
     }
@@ -1491,6 +1496,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         });
     }
 
+    deleteType(type: TypeAbonnement): void {
+        if (!confirm(`Supprimer la formule "${type.nom}" ? Cette action est irréversible.`)) return;
+        this.submittingType.set(true);
+        this.abonnementSvc.adminDeleteType(type.id).subscribe({
+            next: () => {
+                this.loadSubscriptionTypes();
+                this.submittingType.set(false);
+                this.toastSvc.success('Formule supprimée.');
+            },
+            error: (err) => {
+                this.submittingType.set(false);
+                this.toastSvc.error(err?.error?.message || 'Impossible de supprimer la formule.');
+            }
+        });
+    }
+
     confirmAbonnementPayment(sub: AbonnementAdherent): void {
         this.selectedSubForPayment.set(sub);
         this.confirmPaymentForm.reset({
@@ -1536,6 +1557,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.toastSvc.success('Abonnement annulé.');
             },
             error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'annulation.')
+        });
+    }
+
+    deleteAbonnement(sub: AbonnementAdherent): void {
+        if (!confirm(`Supprimer l'abonnement de ${sub.user?.first_name} ${sub.user?.last_name} ?`)) return;
+        this.abonnementSvc.adminDelete(sub.id).subscribe({
+            next: () => {
+                this.loadClientSubscriptions();
+                this.toastSvc.success('Abonnement supprimé.');
+            },
+            error: (err) => this.toastSvc.error(err?.error?.message || 'Impossible de supprimer l\'abonnement.')
         });
     }
 

@@ -194,6 +194,15 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   Activer
                 </button>
                 <button
+                  *ngIf="!type.active"
+                  class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md"
+                  (click)="deleteType(type)"
+                  [disabled]="deletingTypeId === type.id || savingType || (type.abonnements_count && type.abonnements_count > 0)"
+                  title="Supprimer"
+                >
+                  Supprimer
+                </button>
+                <button
                   *ngIf="type.active"
                   class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md flex items-center gap-2"
                   (click)="deactivateType(type.id)"
@@ -514,12 +523,18 @@ export class SubscriptionAdminComponent implements OnInit {
     this.loadingComplexes = true;
     this.complexeService.getAll().subscribe({
       next: (complexes) => {
-        this.complexes = complexes;
-        this.loadingComplexes = false;
+        setTimeout(() => {
+          this.complexes = complexes;
+          this.loadingComplexes = false;
+          this.cdr.markForCheck();
+        });
       },
       error: () => {
         this.toast.error('Erreur lors du chargement des complexes');
-        this.loadingComplexes = false;
+        setTimeout(() => {
+          this.loadingComplexes = false;
+          this.cdr.markForCheck();
+        });
       },
     });
   }
@@ -528,16 +543,21 @@ export class SubscriptionAdminComponent implements OnInit {
     this.loadingTypes = true;
     this.abonnementService.adminGetTypes().subscribe({
       next: (types) => {
-        this.types = types ?? [];
-        this.loadingTypes = false;
-        this.cdr.markForCheck();
+        // backend now includes abonnements_count; ensure field exists
+        setTimeout(() => {
+          this.types = (types ?? []).map(t => ({ ...t, abonnements_count: (t as any).abonnements_count ?? 0 }));
+          this.loadingTypes = false;
+          this.cdr.markForCheck();
+        });
       },
       error: (error) => {
         console.error('Error loading types:', error);
         this.types = [];
         this.toast.error('Erreur lors du chargement des types: ' + (error?.error?.message || error?.message || 'Erreur serveur'));
-        this.loadingTypes = false;
-        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.loadingTypes = false;
+          this.cdr.markForCheck();
+        });
       },
     });
   }
@@ -545,8 +565,10 @@ export class SubscriptionAdminComponent implements OnInit {
   loadStats(): void {
     this.abonnementService.adminStats().subscribe({
       next: (data) => {
-        this.stats = data ?? null;
-        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.stats = data ?? null;
+          this.cdr.markForCheck();
+        });
       },
       error: (err) => {
         console.error('Error loading abonnements stats:', err);
@@ -559,18 +581,22 @@ export class SubscriptionAdminComponent implements OnInit {
     this.loadingAbonnements = true;
     this.abonnementService.adminGetAbonnements().subscribe({
       next: (abonnements) => {
-        this.abonnements = abonnements ?? [];
-        console.log('Abonnements loaded:', this.abonnements.length, this.abonnements);
-        this.loadingAbonnements = false;
-        this.cdr.markForCheck();
-        this.loadStats();
+        setTimeout(() => {
+          this.abonnements = abonnements ?? [];
+          console.log('Abonnements loaded:', this.abonnements.length, this.abonnements);
+          this.loadingAbonnements = false;
+          this.cdr.markForCheck();
+          this.loadStats();
+        });
       },
       error: (error) => {
         console.error('Error loading abonnements:', error);
         this.abonnements = [];
         this.toast.error('Erreur lors du chargement des abonnements: ' + (error?.error?.message || error?.message || 'Erreur serveur'));
-        this.loadingAbonnements = false;
-        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.loadingAbonnements = false;
+          this.cdr.markForCheck();
+        });
       },
     });
   }
@@ -675,6 +701,24 @@ export class SubscriptionAdminComponent implements OnInit {
         this.toast.error('Erreur lors de la mise à jour du statut');
         this.savingType = false;
       },
+    });
+  }
+
+  deleteType(type: TypeAbonnement): void {
+    if (!confirm(`Supprimer la formule "${type.nom}" ? Cette action est irréversible.`)) return;
+    this.deletingTypeId = type.id;
+    this.abonnementService.adminDeleteType(type.id).subscribe({
+      next: () => {
+        this.toast.success('Type supprimé');
+        this.loadTypes();
+        this.deletingTypeId = null;
+        this.loadStats();
+      },
+      error: (err) => {
+        console.error('Error deleting type:', err);
+        this.toast.error('Erreur lors de la suppression du type');
+        this.deletingTypeId = null;
+      }
     });
   }
 
