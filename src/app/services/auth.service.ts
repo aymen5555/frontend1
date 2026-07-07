@@ -147,6 +147,12 @@ export class AuthService {
         this.router.navigate(['/home']);
     }
 
+    updateUser(user: User): void {
+        const normalizedUser = this.normalizeUser(user);
+        localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+        this._user.set(normalizedUser);
+    }
+
     private persist(res: AuthResponse): void {
         if (!res.data.token) return;
         const normalizedUser = this.normalizeUser(res.data.user);
@@ -162,7 +168,7 @@ export class AuthService {
         localStorage.removeItem(USER_KEY);
         this._token.set(null);
         this._user.set(null);
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/']);
     }
 
     private loadToken(): string | null {

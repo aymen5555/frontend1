@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReservationService } from '../../services/reservation.service';
@@ -71,8 +71,8 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                   </span>
                 </td>
                 <td class="px-6 py-4 text-sm space-x-2">
-                  <button *ngIf="r.statut_paiement !== 'paye'" (click)="confirmPayment(r)" class="btn-xs success">Confirmer paiement</button>
-                  <button *ngIf="r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="cancelReservation(r)" class="btn-xs danger">Annuler</button>
+                  <button *ngIf="r.statut_paiement !== 'paye' && r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="confirmPayment(r)" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition">Confirmer paiement</button>
+                  <button *ngIf="r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="cancelReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Annuler</button>
                 </td>
               </tr>
             </tbody>
@@ -82,7 +82,7 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
     </div>
   `,
 })
-export class AdminReservationsComponent {
+export class AdminReservationsComponent implements OnInit {
   private readonly reservationSvc = inject(ReservationService);
   private readonly toast = inject(ToastService);
   readonly auth = inject(AuthService);

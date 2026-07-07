@@ -9,6 +9,12 @@ export const laravelErrorInterceptor: HttpInterceptorFn = (req: HttpRequest<unkn
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
       try {
+        // Allow callers to opt-out of the global error toast by setting
+        // the `X-Skip-Error-Toast` header to `1` on the request.
+        if (req.headers.get('X-Skip-Error-Toast') === '1') {
+          return throwError(() => err);
+        }
+
         const body = err?.error ?? {};
         // Laravel validation errors: { errors: { field: [messages] } }
         if (err.status === 422 && body.errors) {

@@ -12,7 +12,7 @@
   </div>
 
   <!-- Main Card -->
-  <div *ngIf="!loading() && product()" class="glass-panel rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+  <div *ngIf="!loading() && product()" class="glass-panel rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 p-8">
     <!-- Image section (Left) -->
     <div class="bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center min-h-[300px] md:min-h-[400px] overflow-hidden relative aspect-square">
       <!-- Loading Skeleton -->
@@ -119,7 +119,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Note</label>
-            <app-star-rating [rating]="newRating()" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
+            <app-star-rating [(rating)]="newRating" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
           </div>
 
           <div>
@@ -139,10 +139,19 @@
       <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-8 text-center">
         <p class="text-sm text-gray-500 font-medium">Vous avez déjà laissé un avis pour ce produit.</p>
       </div>
-    } @else if (!auth.isLoggedIn()) {
-      <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-8 text-center">
+    } @else if (auth.isLoggedIn()) {
+      <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-8 text-center flex flex-col items-center gap-2">
+        <span class="text-2xl">🔒</span>
+        <h4 class="font-bold text-amber-950 text-base">Avis restreint</h4>
+        <p class="text-xs text-amber-800 font-medium max-w-md">
+          Vous devez avoir acheté ce produit (avec commande confirmée et payée) pour pouvoir laisser un avis.
+        </p>
+      </div>
+    } @else {
+      <div class="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-8 text-center flex flex-col items-center gap-2">
+        <span class="text-2xl">👤</span>
         <p class="text-sm text-gray-500 font-medium">
-          <a routerLink="/login" class="text-primary font-semibold hover:underline">Connectez-vous</a> pour laisser un avis sur ce produit.
+          Veuillez vous <a routerLink="/auth/login" class="text-emerald-600 font-bold hover:underline">connecter</a> pour laisser un avis sur ce produit.
         </p>
       </div>
     }

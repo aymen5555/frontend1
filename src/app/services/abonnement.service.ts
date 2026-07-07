@@ -92,9 +92,10 @@ export class AbonnementService {
   // GERANT / SUPER_ADMIN METHODS
   // ──────────────────────────────────────────────
 
-  adminGetTypes(): Observable<TypeAbonnement[]> {
-    return this.http.get<ApiList<TypeAbonnement>>(`${this.apiBase}/admin/abonnements/types`)
-      .pipe(map(r => r.data));
+  adminGetTypes(complexeId?: number | null): Observable<TypeAbonnement[]> {
+    const url = `${this.apiBase}/admin/abonnements/types`;
+    const params = (typeof complexeId === 'number' && complexeId > 0) ? new HttpParams().set('complexe_id', String(complexeId)) : undefined as any;
+    return this.http.get<ApiList<TypeAbonnement>>(url, params ? { params } : undefined).pipe(map(r => r.data));
   }
 
   adminStoreType(payload: Partial<TypeAbonnement>): Observable<TypeAbonnement> {
@@ -115,8 +116,10 @@ export class AbonnementService {
     return this.http.delete<void>(`${this.apiBase}/admin/abonnements-adherent/${id}`);
   }
 
-  adminGetAbonnements(): Observable<AbonnementAdherent[]> {
-    return this.http.get<ApiList<AbonnementAdherent>>(`${this.apiBase}/admin/abonnements-adherent`)
+  adminGetAbonnements(complexeId?: number | null): Observable<AbonnementAdherent[]> {
+    const url = `${this.apiBase}/admin/abonnements-adherent`;
+    const params = (typeof complexeId === 'number' && complexeId > 0) ? new HttpParams().set('complexe_id', String(complexeId)) : undefined as any;
+    return this.http.get<ApiList<AbonnementAdherent>>(url, params ? { params } : undefined)
       .pipe(map(r => r.data));
   }
 

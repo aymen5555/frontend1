@@ -57,17 +57,12 @@ export class AdminDepensesComponent implements OnInit {
       next: (res) => { this.depenses.set(res.data); this.loading.set(false); this.calcTotal(); },
       error: () => { this.toastSvc.error('Erreur chargement dépenses.'); this.loading.set(false); }
     });
-    this.typeDepenseSvc.list().subscribe({ next: (res) => this.types.set(res.data) });
+    this.typeDepenseSvc.list(true).subscribe({ next: (res) => this.types.set(res.data) });
     this.loadComplexes();
   }
 
   loadComplexes(): void {
-    const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.complexes.set([(user as any).complexe]);
-    } else {
-      this.complexeSvc.getAll().subscribe({ next: (res) => this.complexes.set(res) });
-    }
+    this.complexeSvc.getAll().subscribe({ next: (res) => this.complexes.set(res) });
   }
 
   calcTotal(): void {

@@ -1,34 +1,60 @@
 <div class="min-h-screen bg-gray-50 py-12">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Historique des réservations</h1>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Historique des réservations</h1>
+        <p class="mt-1 text-sm text-gray-500">Retrouvez toutes vos réservations passées, annulées ou expirées.</p>
+      </div>
       <a routerLink="/reservations" class="text-sm font-semibold text-emerald-600 hover:underline flex items-center gap-1">
         ← Retour aux réservations
       </a>
+    </div>
+
+    <!-- Date Filters -->
+    <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-6 flex flex-wrap items-end gap-4">
+      <div class="flex flex-col gap-1.5 min-w-[150px]">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Depuis le</label>
+        <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium" />
+      </div>
+      <div class="flex flex-col gap-1.5 min-w-[150px]">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Jusqu'au</label>
+        <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium" />
+      </div>
+      <button type="button" (click)="resetFilters()" *ngIf="dateFrom() || dateTo()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition cursor-pointer">
+        Réinitialiser dates
+      </button>
     </div>
 
     <div *ngIf="loading()" class="space-y-4">
       <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow-sm p-6 animate-pulse"></div>
     </div>
 
-    <div *ngIf="!loading() && reservations().length === 0" class="bg-white rounded-3xl p-12 text-center shadow-sm">
+    <div *ngIf="!loading() && filteredReservations().length === 0" class="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-100">
       <div class="text-6xl mb-4">🗄️</div>
       <h3 class="text-xl font-bold text-gray-900 mb-2">Aucun historique</h3>
-      <p class="text-gray-500">Vous n'avez pas de réservations archivées pour le moment.</p>
+      <p class="text-gray-500">Aucune réservation archivée ne correspond à vos critères.</p>
     </div>
 
-    <div *ngIf="!loading() && reservations().length > 0" class="space-y-4">
-      <div *ngFor="let r of reservations()" class="bg-white rounded-2xl shadow-sm p-6 border-l-4" [ngClass]="r.status === 'cancelled' ? 'border-red-400' : (r.status === 'expired' ? 'border-gray-300' : 'border-blue-400')">
+    <div *ngIf="!loading() && filteredReservations().length > 0" class="space-y-4">
+      <div *ngFor="let r of filteredReservations()" class="bg-white rounded-2xl shadow-sm p-6 border-l-4 transition-all hover:shadow-md border border-gray-100" [ngClass]="r.status === 'cancelled' ? 'border-l-red-400' : (r.status === 'expired' ? 'border-l-gray-300' : 'border-l-emerald-400')">
         <div class="flex justify-between items-start">
           <div>
-            <div class="font-bold text-gray-900">{{ r.terrain?.name || r.activite?.nom || 'Événement' }}</div>
-            <div class="text-sm text-gray-500">
+            <div class="font-bold text-gray-900 text-lg">{{ r.terrain?.name || r.activite?.nom || 'Événement' }}</div>
+            <div class="text-sm text-gray-500 font-medium mt-1">
               {{ r.start_at ? (r.start_at | date:'dd/MM/yyyy HH:mm') : (r.date_seance | date:'dd/MM/yyyy') }}
             </div>
+            <div class="text-xs text-emerald-600 font-semibold mt-1" *ngIf="r.terrain?.complexe?.name">
+              {{ r.terrain.complexe.name }}
+            </div>
           </div>
-          <div class="text-sm text-gray-600">{{ r.status }}</div>
+          <div>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border" [ngClass]="statusBadge(r.status).class">
+              {{ statusBadge(r.status).label }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+

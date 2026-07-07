@@ -13,7 +13,7 @@ export interface Product {
   sport_cible: string;
   niveau_cible: string;
   actif: boolean;
-  categorie: Category;
+  categorie?: Category | null;
   categorie_id?: number;
   complexe_id?: number;
   stock?: {
@@ -22,7 +22,7 @@ export interface Product {
     quantite_disponible: number;
     quantite_minimale: number;
   };
-  complexe: Complexe;
+  complexe?: Complexe | null;
   disponible: boolean;
   alerte_stock?: boolean;
   average_rating?: number | null;

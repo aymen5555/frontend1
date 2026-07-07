@@ -38,6 +38,16 @@ export class ComplexeService {
     return this.http.delete(`${this.api}/${id}`).pipe(map(() => undefined));
   }
 
+  /** GET /admin/complexes/deleted — super_admin only */
+  getDeleted(): Observable<Complexe[]> {
+    return this.http.get<ApiList<Complexe>>(`${environment.apiUrl}/admin/complexes/deleted`).pipe(map(r => r.data));
+  }
+
+  /** POST /admin/complexes/{id}/restore — super_admin only */
+  restore(id: number): Observable<Complexe> {
+    return this.http.post<ApiItem<Complexe>>(`${environment.apiUrl}/admin/complexes/${id}/restore`, {}).pipe(map(r => r.data));
+  }
+
   /** Alias kept for backward compatibility */
   list(): Observable<Complexe[]> {
     return this.getAll();

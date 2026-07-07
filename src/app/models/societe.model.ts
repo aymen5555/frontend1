@@ -17,6 +17,8 @@ export interface Societe {
   date_de_creation?: string;
   image_url: string;
   dirigeants?: Dirigeant[];
+  complexes?: any[];
+  complexes_count?: number;
   created_at: string;
   updated_at: string;
 }

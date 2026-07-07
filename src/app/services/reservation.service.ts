@@ -13,9 +13,8 @@ export class ReservationService {
   private readonly http = inject(HttpClient);
   private readonly api = `${environment.apiUrl}/reservations`;
 
-  /** GET /reservations?status= — returns logged-in user's own reservations */
   getMine(status?: string): Observable<Reservation[]> {
-    let params = new HttpParams();
+    let params = new HttpParams().set('mine', 'true');
     if (status) params = params.set('status', status);
     return this.http.get<ApiList<Reservation>>(this.api, { params }).pipe(map(r => r.data));
   }
@@ -37,7 +36,7 @@ export class ReservationService {
 
   /** PUT /admin/reservations/{id}/confirm-cash — admin confirms cash payment */
   confirmCashPayment(id: number): Observable<Reservation> {
-    return this.http.put<ApiItem<Reservation>>(`${environment.apiUrl}/admin/reservations/${id}/confirm-cash`, {}).pipe(map(r => r.data));
+    return this.http.put<ApiItem<Reservation>>(`${environment.apiUrl}/admin/reservations/${id}/confirm-cash`, {}, { headers: { 'X-Skip-Error-Toast': '1' } }).pipe(map(r => r.data));
   }
 
   /** PUT /reservations/{id}/cancel (client) */
@@ -65,9 +64,9 @@ export class ReservationService {
     return this.http.put<ApiItem<Reservation>>(`${this.api}/${id}`, payload).pipe(map(r => r.data));
   }
 
-  /** DELETE /reservations/{id} */
+  /** DELETE /admin/reservations/{id} — soft-delete for audit trail (admin/gerant) */
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.api}/${id}`);
+    return this.http.delete<void>(`${environment.apiUrl}/admin/reservations/${id}`);
   }
 
   /** POST /admin/reservations — admin creates a manual reservation for a client */
@@ -83,7 +82,7 @@ export class ReservationService {
 
   /** PUT /admin/reservations/{id}/cancel — cancel reservation (admin) */
   adminCancel(id: number): Observable<void> {
-    return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}`, {});
+    return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}/cancel`, {});
   }
 
   /** GET /admin/archives — fetch soft-deleted archives (admin/gerant) */

@@ -42,10 +42,10 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                 <p class="text-sm text-gray-500">{{ act.description }}</p>
                 <p class="text-sm text-emerald-600 font-medium mt-2">{{ act.heure_debut | slice:0:5 }} – {{ act.heure_fin | slice:0:5 }}</p>
                 <div class="flex gap-2 mt-4">
-                  <button (click)="editActivite(act)" class="btn-primary text-sm px-3 py-1">Modifier</button>
-                  <button *ngIf="act.active" (click)="deactivateActivite(act)" class="btn-warning text-sm px-3 py-1">Désactiver</button>
-                  <button *ngIf="!act.active" (click)="activateActivite(act)" class="btn-success text-sm px-3 py-1">Activer</button>
-                  <button (click)="deleteActivite(act)" class="btn-danger text-sm px-3 py-1">Supprimer</button>
+                  <button (click)="editActivite(act)" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition">Modifier</button>
+                  <button *ngIf="act.active" (click)="deactivateActivite(act)" class="px-3 py-1 rounded text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition">Désactiver</button>
+                  <button *ngIf="!act.active" (click)="activateActivite(act)" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition">Activer</button>
+                  <button (click)="deleteActivite(act)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Supprimer</button>
                 </div>
               </div>
           </div>
@@ -83,7 +83,7 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                     </span>
                   </td>
                   <td class="px-6 py-4 text-sm">
-                    <button *ngIf="r.statut !== 'annulee'" (click)="cancelReservation(r)" class="btn-xs danger">Annuler</button>
+                    <button *ngIf="r.statut !== 'annulee'" (click)="cancelReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Annuler</button>
                   </td>
                 </tr>
               </tbody>

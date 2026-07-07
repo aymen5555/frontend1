@@ -3,3 +3,211 @@
   transform: translateY(-2px);
   transition: all 0.2s ease;
 }
+
+/* ── Gérant Portal Home ─────────────────────────────── */
+
+/* Hero band */
+.gerant-portal-hero {
+  background: linear-gradient(135deg, #0d2137 0%, #0f3d2e 55%, #1a5276 100%);
+  padding: 5rem 1.5rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+.gerant-portal-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(29, 158, 117, 0.12);
+  pointer-events: none;
+}
+.gerant-portal-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -40px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: rgba(26, 82, 118, 0.18);
+  pointer-events: none;
+}
+.gerant-portal-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.gerant-portal-hero-text {
+  color: #fff;
+}
+.gerant-portal-role-pill {
+  display: inline-block;
+  padding: 0.3rem 0.9rem;
+  background: rgba(29, 230, 180, 0.15);
+  border: 1px solid rgba(29, 230, 180, 0.35);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(29, 230, 180, 0.95);
+  margin-bottom: 1rem;
+}
+.gerant-portal-name {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0 0 0.6rem;
+  line-height: 1.1;
+}
+.gerant-portal-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.65);
+  margin: 0;
+  max-width: 460px;
+}
+.gerant-portal-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 1.75rem;
+  background: linear-gradient(135deg, #1D9E75, #0e7c5b);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(29,158,117,0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.gerant-portal-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(29,158,117,0.45);
+  opacity: 0.95;
+}
+
+/* Operations grid */
+.gerant-portal-ops {
+  background: #f8fafc;
+  padding: 3rem 1.5rem 4rem;
+}
+.gerant-portal-ops-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.gerant-portal-ops-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.5rem;
+}
+.gerant-portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+/* Operation cards */
+.gerant-op-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 16px;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  cursor: pointer;
+}
+.gerant-op-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.10);
+}
+.gerant-op-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.04);
+}
+.gerant-op-name {
+  margin: 0 0 0.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.gerant-op-desc {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Color accents */
+.gerant-op-indigo { border-color: #e0e7ff; }
+.gerant-op-indigo:hover { border-color: #6366f1; }
+.gerant-op-indigo .gerant-op-icon { background: #eef2ff; }
+
+.gerant-op-blue { border-color: #dbeafe; }
+.gerant-op-blue:hover { border-color: #3b82f6; }
+.gerant-op-blue .gerant-op-icon { background: #eff6ff; }
+
+.gerant-op-violet { border-color: #ede9fe; }
+.gerant-op-violet:hover { border-color: #7c3aed; }
+.gerant-op-violet .gerant-op-icon { background: #f5f3ff; }
+
+.gerant-op-emerald { border-color: #d1fae5; }
+.gerant-op-emerald:hover { border-color: #10b981; }
+.gerant-op-emerald .gerant-op-icon { background: #ecfdf5; }
+
+.gerant-op-amber { border-color: #fef3c7; }
+.gerant-op-amber:hover { border-color: #f59e0b; }
+.gerant-op-amber .gerant-op-icon { background: #fffbeb; }
+
+.gerant-op-orange { border-color: #ffedd5; }
+.gerant-op-orange:hover { border-color: #f97316; }
+.gerant-op-orange .gerant-op-icon { background: #fff7ed; }
+
+.gerant-op-teal { border-color: #ccfbf1; }
+.gerant-op-teal:hover { border-color: #14b8a6; }
+.gerant-op-teal .gerant-op-icon { background: #f0fdfa; }
+
+.gerant-op-rose { border-color: #ffe4e6; }
+.gerant-op-rose:hover { border-color: #f43f5e; }
+.gerant-op-rose .gerant-op-icon { background: #fff1f2; }
+
+.gerant-op-slate { border-color: #e2e8f0; }
+.gerant-op-slate:hover { border-color: #475569; }
+.gerant-op-slate .gerant-op-icon { background: #f1f5f9; }
+
+.gerant-op-pink { border-color: #fce7f3; }
+.gerant-op-pink:hover { border-color: #ec4899; }
+.gerant-op-pink .gerant-op-icon { background: #fdf2f8; }
+
+.gerant-op-cyan { border-color: #cffafe; }
+.gerant-op-cyan:hover { border-color: #06b6d4; }
+.gerant-op-cyan .gerant-op-icon { background: #ecfeff; }
+
+.gerant-op-gray { border-color: #e5e7eb; }
+.gerant-op-gray:hover { border-color: #6b7280; }
+.gerant-op-gray .gerant-op-icon { background: #f9fafb; }
+
+@media (max-width: 640px) {
+  .gerant-portal-name { font-size: 2rem; }
+  .gerant-portal-grid { grid-template-columns: 1fr 1fr; }
+  .gerant-portal-hero-inner { flex-direction: column; align-items: flex-start; }
+}

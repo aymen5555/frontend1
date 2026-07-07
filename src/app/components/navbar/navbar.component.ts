@@ -1,5 +1,5 @@
 import { Component, inject, signal, HostListener, ElementRef, OnInit, OnDestroy } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
@@ -17,10 +17,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cart = inject(CartService);
   notificationSvc = inject(NotificationService);
   private readonly el = inject(ElementRef);
+  router = inject(Router);
 
   mobileMenuOpen = signal(false);
   showClientEspace = signal(false);
   showGerantBoutique = signal(false);
+  showGerantOffice = signal(false);
   showNotifications = signal(false);
 
   private pollInterval: any;
@@ -31,6 +33,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (!clickedInside) {
       this.showClientEspace.set(false);
       this.showGerantBoutique.set(false);
+      this.showGerantOffice.set(false);
       this.showNotifications.set(false);
     }
   }
@@ -64,9 +67,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   getHomeRoute(): string {
     if (!this.auth.isLoggedIn()) return '/';
-    if (this.auth.isSuperAdmin()) return '/home';
-    if (this.auth.isGerant() || this.auth.isAdmin()) return '/admin/dashboard';
     return '/home';
+  }
+
+  isRouteActive(prefixes: string[]): boolean {
+    return prefixes.some(p => this.router.url.startsWith(p));
   }
 
   toggleMobileMenu(): void {
@@ -77,6 +82,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.showClientEspace.update(v => !v);
     this.showGerantBoutique.set(false);
+    this.showGerantOffice.set(false);
     this.showNotifications.set(false);
   }
 
@@ -84,6 +90,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.showGerantBoutique.update(v => !v);
     this.showClientEspace.set(false);
+    this.showGerantOffice.set(false);
+    this.showNotifications.set(false);
+  }
+
+  toggleGerantOffice(event: Event): void {
+    event.stopPropagation();
+    this.showGerantOffice.update(v => !v);
+    this.showClientEspace.set(false);
+    this.showGerantBoutique.set(false);
     this.showNotifications.set(false);
   }
 
@@ -92,6 +107,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.showNotifications.update(v => !v);
     this.showClientEspace.set(false);
     this.showGerantBoutique.set(false);
+    this.showGerantOffice.set(false);
   }
 
   markAllAsRead(event: Event): void {
@@ -110,6 +126,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   closeEspaces(): void {
     this.showClientEspace.set(false);
     this.showGerantBoutique.set(false);
+    this.showGerantOffice.set(false);
     this.showNotifications.set(false);
   }
 

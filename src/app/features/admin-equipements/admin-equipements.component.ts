@@ -51,17 +51,20 @@ export class AdminEquipementsComponent implements OnInit {
       next: (res) => { this.equipements.set(res.data); this.loading.set(false); },
       error: () => { this.toastSvc.error('Erreur chargement.'); this.loading.set(false); }
     });
-    const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.complexes.set([(user as any).complexe]);
-      this.selectedComplexeId.set((user as any).complexe.id);
-      this.loadComplexeEquipements();
-    } else {
-      this.complexeSvc.getAll().subscribe({ next: (res) => { this.complexes.set(res); if (res.length) this.selectedComplexeId.set(res[0].id); } });
-    }
+    this.complexeSvc.getAll().subscribe({
+      next: (res) => {
+        this.complexes.set(res);
+        if (res.length) {
+          this.selectedComplexeId.set(res[0].id);
+          this.loadComplexeEquipements();
+        }
+      }
+    });
   }
 
-  onComplexeChange(): void {
+  onComplexeChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedComplexeId.set(val ? Number(val) : null);
     this.loadComplexeEquipements();
   }
 

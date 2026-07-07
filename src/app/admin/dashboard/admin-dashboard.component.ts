@@ -71,6 +71,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     activiteReservations = signal<ReservationActivite[]>([]);
     archivedItems = signal<any[]>([]);
     searchArchives = signal<string>('');
+    deletedComplexes = signal<any[]>([]);
+    showDeletedComplexes = signal(false);
     clients = signal<Client[]>([]);
     availableSlots = signal<Slot[]>([]);
     selectedComplexId = signal<number | null>(null);
@@ -239,6 +241,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     // ──────────────────────────────────────────────
 
     private loadGerants(): void {
+        if (!this.auth.isSuperAdmin()) {
+            return;
+        }
+
         this.gerantSvc.list().subscribe({
             next: (data) => {
                 this.gerants.set(data);
@@ -249,9 +255,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     }
 
     private updateUnassignedComplexes(): void {
-        const assignedIds = new Set(this.gerants().map(g => g.complexe?.id).filter(Boolean));
-        const unassigned = this.complexes().filter(c => !assignedIds.has(c.id));
-        this.unassignedComplexes.set(unassigned);
+        // Use backend endpoint to get truly unassigned complexes
+        // This includes complexes with no owner AND those with non-gerant owners
+        this.complexeSvc.getUnassigned().subscribe({
+            next: (data) => this.unassignedComplexes.set(data),
+            error: () => this.unassignedComplexes.set([]),
+        });
     }
 
     openGerantForm(): void {
@@ -522,7 +531,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         });
 
         this.loadDepensesMois();
-        this.loadCategoriesRessource();
+        if (!this.auth.isGerant()) {
+            this.loadCategoriesRessource();
+        } else {
+            this.categoriesRessource.set([]);
+        }
     }
 
     loadCategoriesRessource(): void {
@@ -567,27 +580,54 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.loadShopMetrics();
 
         const gerantComplexe = this.auth.user()?.complexe;
-        if (this.auth.isGerant() && gerantComplexe) {
-                this.gerantComplexeId.set(gerantComplexe.id);
-                this.selectedComplexId.set(gerantComplexe.id);
+        const isGerant = this.auth.isGerant();
 
-                // Execute key loads in parallel and clear loading when all complete
-                const obs = [
-                    this.terrainSvc.list(gerantComplexe.id).pipe(tap((data) => { this.terrains.set(data); this.loadReservations(); })),
-                    this.clientSvc.list().pipe(tap((data) => this.clients.set(data))),
-                    this.terrainSvc.list().pipe(tap((data) => this.allTerrains.set(data))),
-                    this.activiteSvc.adminGetAll().pipe(tap((data) => this.activites.set(data))),
-                    this.activiteSvc.adminGetReservations().pipe(tap((data) => this.activiteReservations.set(data))),
-                    this.abonnementSvc.adminGetTypes().pipe(tap((data) => this.subscriptionTypes.set(data))),
-                    this.abonnementSvc.adminGetAbonnements().pipe(tap((data) => this.clientSubscriptions.set(data))),
-                    this.reservationSvc.getArchives().pipe(tap((data) => this.archivedItems.set(data))),
-                ];
+        if (isGerant) {
+            this.complexeSvc.list().subscribe({
+                next: (data) => {
+                    this.complexes.set(data);
+                    const comp = data[0] ?? null;
+                    if (comp) {
+                        this.gerantComplexeId.set(comp.id);
+                        this.selectedComplexId.set(comp.id);
 
-                forkJoin(obs).subscribe({
-                    next: () => this.loading.set(false),
-                    error: () => this.loading.set(false),
-                });
-                return;
+                        // Execute key loads in parallel and clear loading when all complete
+                        const obs = [
+                            this.terrainSvc.list(comp.id).pipe(tap((t) => { this.terrains.set(t); this.loadReservations(); })),
+                            this.clientSvc.list().pipe(tap((c) => this.clients.set(c))),
+                            this.terrainSvc.list().pipe(tap((all) => this.allTerrains.set(all))),
+                            this.activiteSvc.adminGetAll().pipe(tap((a) => this.activites.set(a))),
+                            this.activiteSvc.adminGetReservations().pipe(tap((ar) => this.activiteReservations.set(ar))),
+                            this.abonnementSvc.adminGetTypes().pipe(tap((types) => this.subscriptionTypes.set(types))),
+                            this.abonnementSvc.adminGetAbonnements().pipe(tap((subs) => this.clientSubscriptions.set(subs))),
+                            this.reservationSvc.getArchives().pipe(tap((arch) => this.archivedItems.set(arch))),
+                        ];
+
+                        forkJoin(obs).subscribe({
+                            next: () => this.loading.set(false),
+                            error: () => this.loading.set(false),
+                        });
+                    } else {
+                        this.gerantComplexeId.set(null);
+                        this.selectedComplexId.set(null);
+                        this.terrains.set([]);
+                        this.reservations.set([]);
+                        this.clients.set([]);
+                        this.allTerrains.set([]);
+                        this.activites.set([]);
+                        this.activiteReservations.set([]);
+                        this.subscriptionTypes.set([]);
+                        this.clientSubscriptions.set([]);
+                        this.archivedItems.set([]);
+                        this.loading.set(false);
+                    }
+                },
+                error: (err) => {
+                    this.loading.set(false);
+                    this.errorMessage.set(err.message || 'Failed to load complexes.');
+                }
+            });
+            return;
         }
 
         this.complexeSvc.list().subscribe({
@@ -618,7 +658,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                     this.loadTerrains(first);
                 }
 
-                this.loadGerants();
+                if (!this.auth.isGerant()) {
+                    this.loadGerants();
+                }
                 this.loadClients();
                 this.loadAllTerrains();
                 this.loadActivites();
@@ -864,6 +906,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.activiteSvc.adminDeleteReservation(reservation.id).subscribe({
             next: () => {
                 this.loadActiviteReservations();
+                this.loadArchives();
                 this.toastSvc.success('Réservation supprimée.');
             },
             error: (err) => this.toastSvc.error(err?.error?.message || err.message || 'Impossible de supprimer.'),
@@ -989,6 +1032,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 instagram_url: complexe.instagram_url ?? complexe.instagram_c ?? '',
                 website_url: complexe.website_url ?? complexe.website_c ?? '',
                 gallery_images: gallery,
+                societe_id: complexe.societe_id ?? null,
             });
         } else {
             this.galleryImages.set([]);
@@ -1071,9 +1115,32 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                     this.terrains.set([]);
                 }
                 this.toastSvc.success('Complexe supprimé.');
+                // Refresh deleted list if panel is open
+                if (this.showDeletedComplexes()) this.loadDeletedComplexes();
             },
             error: (err) => {
                 const msg = err?.error?.message || err.message || 'Impossible de supprimer le complexe.';
+                this.toastSvc.error(msg);
+            },
+        });
+    }
+
+    loadDeletedComplexes(): void {
+        this.complexeSvc.getDeleted().subscribe({
+            next: (data) => this.deletedComplexes.set(data),
+            error: () => this.toastSvc.error('Impossible de charger les complexes supprimés.'),
+        });
+    }
+
+    restoreComplex(complexe: any): void {
+        this.complexeSvc.restore(complexe.id).subscribe({
+            next: (restored) => {
+                this.deletedComplexes.update((list) => list.filter((c) => c.id !== complexe.id));
+                this.complexes.update((list) => [restored as any, ...list]);
+                this.toastSvc.success(`Complexe "${complexe.name}" restauré avec succès.`);
+            },
+            error: (err) => {
+                const msg = err?.error?.message || err.message || 'Impossible de restaurer le complexe.';
                 this.toastSvc.error(msg);
             },
         });
@@ -1211,9 +1278,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 this.toastSvc.success('Paiement espèces confirmé.');
                 this.closeEspecesModal();
             },
-            error: (err) => {
-                const msg = err?.error?.message || err.message || 'Impossible de confirmer le paiement.';
-                this.toastSvc.error(msg);
+            error: () => {
                 this.closeEspecesModal();
             },
         });
@@ -1565,6 +1630,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.abonnementSvc.adminDelete(sub.id).subscribe({
             next: () => {
                 this.loadClientSubscriptions();
+                this.loadArchives();
                 this.toastSvc.success('Abonnement supprimé.');
             },
             error: (err) => this.toastSvc.error(err?.error?.message || 'Impossible de supprimer l\'abonnement.')

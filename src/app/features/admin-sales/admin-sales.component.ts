@@ -121,21 +121,14 @@ export class AdminSalesComponent implements OnInit {
       },
       error: () => { this.loading.set(false); }
     });
-    const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      const c = (user as any).complexe;
-      this.complexes.set([c]);
-      this.saleForm.patchValue({ complexe_id: c.id });
-    } else {
-      this.complexeSvc.list().subscribe({
-        next: (res) => {
-          this.complexes.set(res);
-          if (res.length === 1) {
-            this.saleForm.patchValue({ complexe_id: res[0].id });
-          }
+    this.complexeSvc.list().subscribe({
+      next: (res) => {
+        this.complexes.set(res);
+        if (res.length && (this.authSvc.currentUser()?.role === 'GERANT' || res.length === 1)) {
+          this.saleForm.patchValue({ complexe_id: res[0].id });
         }
-      });
-    }
+      }
+    });
   }
 
   openForm(): void {
@@ -143,8 +136,8 @@ export class AdminSalesComponent implements OnInit {
     while (this.lignes.length) this.lignes.removeAt(0);
     this.addLigne();
     const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.saleForm.patchValue({ complexe_id: (user as any).complexe.id, modalite_paiement: 'especes' });
+    if (this.complexes().length && user?.role === 'GERANT') {
+      this.saleForm.patchValue({ complexe_id: this.complexes()[0].id, modalite_paiement: 'especes' });
     } else {
       this.saleForm.patchValue({ modalite_paiement: 'especes' });
     }

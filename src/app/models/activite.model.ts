@@ -25,7 +25,7 @@ export interface ReservationActivite {
   activite?: Activite;
   user_id: number;
   date_seance: string;
-  statut: 'reservee' | 'confirmee' | 'annulee' | 'expiree';
+  statut: 'reservee' | 'confirmee' | 'annulee';
   statut_paiement: 'non_paye' | 'paye';
   modalite_paiement?: 'especes' | 'carte';
   notes?: string;

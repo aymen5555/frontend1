@@ -118,13 +118,14 @@ export class AdminBonSortieComponent implements OnInit {
       error: () => {}
     });
 
-    const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.complexes.set([(user as any).complexe]);
-      this.bonForm.patchValue({ complexe_id: (user as any).complexe.id });
-    } else {
-      this.complexeSvc.list().subscribe({ next: (res) => this.complexes.set(res) });
-    }
+    this.complexeSvc.list().subscribe({
+      next: (res) => {
+        this.complexes.set(res);
+        if (res.length && this.authSvc.currentUser()?.role === 'GERANT') {
+          this.bonForm.patchValue({ complexe_id: res[0].id });
+        }
+      }
+    });
   }
 
   openForm(): void {
@@ -132,8 +133,8 @@ export class AdminBonSortieComponent implements OnInit {
     while (this.lignes.length) this.lignes.removeAt(0);
     this.addLigne();
     const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.bonForm.patchValue({ complexe_id: (user as any).complexe.id, date_bon_sor: this.today });
+    if (this.complexes().length && user?.role === 'GERANT') {
+      this.bonForm.patchValue({ complexe_id: this.complexes()[0].id, date_bon_sor: this.today });
     } else {
       this.bonForm.patchValue({ date_bon_sor: this.today });
     }

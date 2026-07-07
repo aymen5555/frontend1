@@ -148,7 +148,7 @@
               <div class="space-y-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Note</label>
-                  <app-star-rating [rating]="newRating()" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
+                  <app-star-rating [(rating)]="newRating" [readonly]="false" sizeClass="text-2xl"></app-star-rating>
                 </div>
                 
                 <div>
@@ -167,6 +167,21 @@
           } @else if (alreadyRated()) {
             <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-8 text-center">
               <p class="text-sm text-gray-500 font-medium">Vous avez déjà laissé un avis pour ce complexe.</p>
+            </div>
+          } @else if (auth.isLoggedIn()) {
+            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-8 text-center flex flex-col items-center gap-2">
+              <span class="text-2xl">🔒</span>
+              <h4 class="font-bold text-amber-950 text-base">Avis restreint</h4>
+              <p class="text-xs text-amber-800 font-medium max-w-md">
+                Vous devez avoir effectué et terminé une réservation de terrain (statut "Joué") ou d'activité dans ce complexe pour pouvoir laisser un avis.
+              </p>
+            </div>
+          } @else {
+            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-8 text-center flex flex-col items-center gap-2">
+              <span class="text-2xl">👤</span>
+              <p class="text-sm text-gray-500 font-medium">
+                Veuillez vous <a routerLink="/auth/login" class="text-emerald-600 font-bold hover:underline">connecter</a> pour laisser un avis.
+              </p>
             </div>
           }
 

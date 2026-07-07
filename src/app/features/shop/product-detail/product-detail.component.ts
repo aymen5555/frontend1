@@ -31,7 +31,7 @@ export class ProductDetailComponent implements OnInit {
   isEligible = signal(false);
   alreadyRated = signal(false);
   newRating = signal(0);
-  newCommentaire = signal('');
+  newCommentaire = '';
   submittingReview = signal(false);
   loading = signal(true);
   quantity = signal(1);
@@ -154,11 +154,11 @@ export class ProductDetailComponent implements OnInit {
     this.submittingReview.set(true);
     const id = this.product()?.id;
     if (!id) return;
-    this.reviewSvc.submitProductReview(id, rating, this.newCommentaire()).subscribe({
+    this.reviewSvc.submitProductReview(id, rating, this.newCommentaire).subscribe({
       next: () => {
         this.toastSvc.success('Votre avis a été enregistré.');
         this.newRating.set(0);
-        this.newCommentaire.set('');
+        this.newCommentaire = '';
         this.submittingReview.set(false);
         this.loadReviews(id);
         this.checkEligibility(id);

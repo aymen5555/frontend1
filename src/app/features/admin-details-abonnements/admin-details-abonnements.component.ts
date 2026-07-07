@@ -52,20 +52,18 @@ export class AdminDetailsAbonnementsComponent implements OnInit {
 
   loadComplexes(): void {
     const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.complexes.set([(user as any).complexe]);
-      this.selectedComplexeId.set((user as any).complexe.id);
-      this.loadTypes();
-    } else {
-      this.complexeSvc.getAll().subscribe({
-        next: (res) => {
-          this.complexes.set(res);
-          if (res.length) { this.selectedComplexeId.set(res[0].id); this.loadTypes(); }
-          else this.loading.set(false);
-        },
-        error: () => { this.toastSvc.error('Erreur.'); this.loading.set(false); }
-      });
-    }
+    this.complexeSvc.getAll().subscribe({
+      next: (res) => {
+        this.complexes.set(res);
+        if (res.length) {
+          this.selectedComplexeId.set(res[0].id);
+          this.loadTypes();
+        } else {
+          this.loading.set(false);
+        }
+      },
+      error: () => { this.toastSvc.error('Erreur.'); this.loading.set(false); }
+    });
   }
 
   onComplexeChange(): void {

@@ -8,9 +8,9 @@ export interface AppNotification {
   id: string;
   type: string;
   data: {
-    type: string;
-    reservation_id: number;
+    type?: string;
     message: string;
+    [key: string]: any;
   };
   read_at: string | null;
   created_at: string;

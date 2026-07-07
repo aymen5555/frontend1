@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ProfileService } from '../../services/profile.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 import { ImageUploadComponent } from '../../components/shared/image-upload/image-upload.component';
 import { User } from '../../models/auth.model';
 
@@ -20,6 +21,7 @@ export class ProfilComponent implements OnInit {
   private fb = inject(FormBuilder);
   private profileSvc = inject(ProfileService);
   private toastSvc = inject(ToastService);
+  private authSvc = inject(AuthService);
 
   loading = signal(true);
   submitting = signal(false);
@@ -89,6 +91,7 @@ export class ProfilComponent implements OnInit {
 
     this.profileSvc.updateProfile(payload).subscribe({
       next: (user) => {
+        this.authSvc.updateUser(user);
         this.toastSvc.success('Profil mis à jour avec succès ✓');
         this.submitting.set(false);
       },

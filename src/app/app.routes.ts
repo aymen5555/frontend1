@@ -5,14 +5,14 @@ import { VerifyEmailComponent } from './auth/verify-email/verify-email.component
 import { VerifyPendingComponent } from './auth/verify-pending/verify-pending.component';
 import { HomeComponent } from './pages/home/home.component';
 import { LandingComponent } from './pages/landing/landing.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
+
 import { TerrainsComponent } from './pages/terrains/terrains.component';
 import { ReservationsComponent } from './pages/reservations/reservations.component';
 import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 import { ComplexeProfileComponent } from './pages/complexe-profile/complexe-profile.component';
 import { ProfilFitnessComponent } from './pages/profil-fitness/profil-fitness.component';
 import { ProfilComponent } from './pages/profil/profil.component';
-import { SubscriptionComponent } from './pages/abonnements/subscription.component';
+
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { ActivitesComponent } from './pages/activites/activites.component';
 import { MesActivitesComponent } from './pages/mes-activites/mes-activites.component';
@@ -40,17 +40,17 @@ export const routes: Routes = [
 
    // ── Public ────────────────────────────────────────────────────────────────
   { path: '', component: LandingComponent, canActivate: [guestGuard] },
-  { path: 'home', component: HomeComponent, canActivate: [authGuard], data: { redirectAdmin: true } },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [authGuard] },
+
   { path: 'complexes', component: ComplexesListComponent },
-  { path: 'terrains', component: TerrainsComponent },
+  { path: 'terrains', component: TerrainsComponent, canActivate: [authGuard] },
   { path: 'complexes/:id', component: ComplexeProfileComponent },
   { path: 'activites', component: ActivitesComponent },
   { path: 'abonnements/parcourir', component: BrowseSubscriptionsComponent },
 
   // ── Client (auth required) ────────────────────────────────────────────────
   { path: 'reservations', component: ReservationsComponent, canActivate: [authGuard] },
-  { path: 'abonnements', component: SubscriptionComponent, canActivate: [authGuard] },
+  { path: 'abonnements', redirectTo: '/abonnements/parcourir', pathMatch: 'full' },
   { path: 'mes-abonnements', component: MesAbonnementsComponent, canActivate: [authGuard] },
   { path: 'abonnements/mes-abonnements', redirectTo: '/mes-abonnements', pathMatch: 'full' },
   { path: 'profil', component: ProfilComponent, canActivate: [authGuard] },
@@ -185,7 +185,7 @@ export const routes: Routes = [
     path: 'admin/equipements',
     loadComponent: () =>
       import('./features/admin-equipements/admin-equipements.component').then(m => m.AdminEquipementsComponent),
-    canActivate: [authGuard, superAdminGuard]
+    canActivate: [authGuard, gerantGuard]
   },
   {
     path: 'admin/details-abonnements',

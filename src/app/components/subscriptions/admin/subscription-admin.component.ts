@@ -62,12 +62,11 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
       <!-- Types Tab -->
       <div *ngIf="activeTab === 'types'" class="space-y-6">
         <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6 mb-6">
-          <div class="flex items-start gap-4">
-            <div class="text-3xl">📋</div>
-            <div>
-              <h2 class="text-lg font-bold text-emerald-900">Formules d'abonnement</h2>
-              <p class="text-sm text-emerald-800 mt-1">Les formules sont les différents plans d'abonnement que vous proposez aux clients. Créez et organisez vos offres ici. Les clients pourront ensuite s'abonner à ces formules.</p>
-            </div>
+            <div class="flex items-start gap-4">
+              <div class="text-3xl">📋</div>
+              <div>
+                <h2 class="text-lg font-bold text-emerald-900">Formules d'abonnement</h2>
+                <p class="text-sm text-emerald-800 mt-1">Les formules sont les différents plans d'abonnement que vous proposez aux clients. Créez et organisez vos offres ici. Les clients pourront ensuite s'abonner à ces formules.</p>
           </div>
         </div>
 
@@ -82,7 +81,7 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
             <div class="grid grid-cols-1 gap-4">
               <div *ngIf="auth.isSuperAdmin()">
                 <label class="block text-sm font-semibold mb-1">Complexe *</label>
-                <select formControlName="complexe_id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                <select name="complexe_id" formControlName="complexe_id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200">
                   <option value="">Sélectionner un complexe...</option>
                   <option *ngFor="let c of complexes" [value]="c.id">{{ c.name }}</option>
                 </select>
@@ -90,28 +89,28 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
 
               <div>
                 <label class="block text-sm font-semibold mb-1">Nom *</label>
-                <input type="text" formControlName="nom" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                <input name="nom" type="text" formControlName="nom" class="w-full border border-gray-300 rounded-md px-3 py-2" />
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-semibold mb-1">Tarif TND *</label>
-                  <input type="number" step="0.01" formControlName="tarif" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <input name="tarif" type="number" step="0.01" formControlName="tarif" class="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
                 <div>
                   <label class="block text-sm font-semibold mb-1">Prix Unitaire TND *</label>
-                  <input type="number" step="0.01" formControlName="prix_unitaire" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <input name="prix_unitaire" type="number" step="0.01" formControlName="prix_unitaire" class="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-semibold mb-1">Durée (mois) *</label>
-                  <input type="number" formControlName="nb_mois" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <input name="nb_mois" type="number" formControlName="nb_mois" class="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
                 <div>
                   <label class="block text-sm font-semibold mb-1">Niveau sportif *</label>
-                  <select formControlName="niveau_sportif_cible" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                  <select name="niveau_sportif_cible" formControlName="niveau_sportif_cible" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200">
                     <option value="">Sélectionner...</option>
                     <option value="debutant">Débutant</option>
                     <option value="intermediaire">Intermédiaire</option>
@@ -124,33 +123,43 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
 
             <div>
               <label class="block text-sm font-semibold mb-1">Description</label>
-              <textarea formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2 resize-y" rows="3"></textarea>
-            </div>
+                <textarea name="description" formControlName="description" class="w-full border border-gray-300 rounded-md px-3 py-2 resize-y" rows="3"></textarea>
+              </div>
 
-            <div>
-              <label class="block text-sm font-semibold mb-1">Sport cible</label>
-              <input type="text" formControlName="sport_cible" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="ex: Fitness, Tennis..." />
-            </div>
-
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-md w-full sm:w-auto" [disabled]="typeForm.invalid || savingType">
-                {{ savingType ? 'Enregistrement...' : (editingType ? 'Mettre à jour' : 'Créer') }}
-              </button>
-              <button
-                *ngIf="editingType"
-                type="button"
-                class="bg-transparent text-gray-700 hover:bg-gray-100 py-2 px-4 rounded-md w-full sm:w-auto"
-                (click)="cancelEditType()"
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Sport cible</label>
+                <input name="sport_cible" type="text" formControlName="sport_cible" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="ex: Fitness, Tennis..." />
+              </div>
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-md w-full sm:w-auto" [disabled]="typeForm.invalid || savingType">
+                  {{ savingType ? 'Enregistrement...' : (editingType ? 'Mettre à jour' : 'Créer') }}
+                </button>
+                <button
+                  *ngIf="editingType"
+                  type="button"
+                  class="bg-transparent text-gray-700 hover:bg-gray-100 py-2 px-4 rounded-md w-full sm:w-auto"
+                  (click)="cancelEditType()"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
         </div>
 
         <div class="rounded-[2rem] bg-white shadow-xl p-6">
-          <h3 class="text-lg font-bold text-gray-900 mb-3">Formules existantes</h3>
-          <p class="text-sm text-gray-500 mb-4">Voici les formules que vous avez créées. Cliquez sur Éditer pour mettre à jour une formule.</p>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 mb-3">Formules existantes</h3>
+              <p class="text-sm text-gray-500">Voici les formules que vous avez créées. Cliquez sur Éditer pour mettre à jour une formule.</p>
+            </div>
+            <div *ngIf="!auth.isGerant()" class="min-w-[220px]">
+              <label class="block text-xs uppercase tracking-[0.3em] text-gray-500 mb-2">Filtrer par complexe</label>
+              <select [(ngModel)]="selectedComplexeId" (change)="loadTypes(); loadAbonnements()" class="w-full border border-gray-200 rounded-md bg-white px-3 py-2 text-sm text-gray-700">
+                <option [ngValue]="null">Tous les complexes</option>
+                <option *ngFor="let c of complexes" [ngValue]="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+          </div>
           <div *ngIf="loadingTypes" class="flex justify-center py-10">
             <app-loader></app-loader>
           </div>
@@ -162,7 +171,9 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
               <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div class="flex items-center gap-3">
-                    <h4 class="font-semibold text-gray-900">{{ type.nom }}</h4>
+                    <h4 class="font-semibold text-gray-900">{{ type.nom }}
+                      <span *ngIf="(type.abonnements_count ?? 0) > 0" class="ml-2 inline-block text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">{{ type.abonnements_count }} abonnés</span>
+                    </h4>
                     <span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                       {{ type.active ? 'Actif' : 'Inactif' }}
                     </span>
@@ -193,15 +204,13 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                 >
                   Activer
                 </button>
-                <button
-                  *ngIf="!type.active"
-                  class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md"
-                  (click)="deleteType(type)"
-                  [disabled]="deletingTypeId === type.id || savingType || ((type.abonnements_count ?? 0) > 0)"
-                  title="Supprimer"
-                >
-                  Supprimer
-                </button>
+                  <button
+                    *ngIf="!type.active && ((type.abonnements_count ?? 0) === 0)"
+                    class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md"
+                    (click)="deleteType(type)"
+                  >
+                    Supprimer
+                  </button>
                 <button
                   *ngIf="type.active"
                   class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md flex items-center gap-2"
@@ -244,6 +253,13 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
               <div>
                 <h2 class="text-2xl font-bold text-gray-900">Abonnements Adhérents</h2>
                 <p class="text-gray-500 text-sm mt-1">Gérez tous les abonnements clients.</p>
+              </div>
+              <div *ngIf="!auth.isGerant()" class="mt-3 sm:mt-0 sm:ml-4">
+                <label class="block text-xs text-gray-500 mb-1">Complexe</label>
+                <select [(ngModel)]="selectedComplexeId" (change)="loadAbonnements()" class="border border-gray-200 rounded-md px-3 py-2 bg-white">
+                  <option [ngValue]="null">Tous</option>
+                  <option *ngFor="let c of complexes" [ngValue]="c.id">{{ c.name }}</option>
+                </select>
               </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
               <div class="rounded-3xl bg-white p-4 border border-gray-200 text-center">
@@ -434,10 +450,11 @@ export class SubscriptionAdminComponent implements OnInit {
   private readonly ngZone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  activeTab: 'types' | 'subscriptions' = 'types';
+  activeTab: string = 'types';
   types: TypeAbonnement[] = [];
   abonnements: AbonnementAdherent[] = [];
   complexes: any[] = [];
+  selectedComplexeId: number | null = null;
   stats: any = null;
 
   loadingTypes = true;
@@ -513,6 +530,7 @@ export class SubscriptionAdminComponent implements OnInit {
       this.loadingComplexes = false;
       this.cdr.markForCheck();
       this.typeForm.patchValue({ complexe_id: gerantComplexe.id });
+      this.selectedComplexeId = gerantComplexe.id;
     } else {
       this.loadComplexes();
     }
@@ -541,7 +559,7 @@ export class SubscriptionAdminComponent implements OnInit {
 
   loadTypes(): void {
     this.loadingTypes = true;
-    this.abonnementService.adminGetTypes().subscribe({
+    this.abonnementService.adminGetTypes(this.selectedComplexeId).subscribe({
       next: (types) => {
         // backend now includes abonnements_count; ensure field exists
         setTimeout(() => {
@@ -579,7 +597,7 @@ export class SubscriptionAdminComponent implements OnInit {
 
   loadAbonnements(): void {
     this.loadingAbonnements = true;
-    this.abonnementService.adminGetAbonnements().subscribe({
+    this.abonnementService.adminGetAbonnements(this.selectedComplexeId).subscribe({
       next: (abonnements) => {
         setTimeout(() => {
           this.abonnements = abonnements ?? [];

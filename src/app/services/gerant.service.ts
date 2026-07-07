@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
 export interface Complexe {
@@ -37,10 +38,14 @@ interface ApiItem<T> { success: boolean; data: T; message?: string }
 @Injectable({ providedIn: 'root' })
 export class GerantService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly api = `${environment.apiUrl}/admin/gerants`;
 
   /** GET /admin/gerants */
   list(): Observable<Gerant[]> {
+    if (!this.auth.isSuperAdmin()) {
+      return of([]);
+    }
     return this.http.get<ApiList<Gerant>>(this.api).pipe(map(r => r.data));
   }
 

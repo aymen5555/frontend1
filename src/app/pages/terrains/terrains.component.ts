@@ -181,7 +181,12 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     }, 150);
   }
 
-  onComplexChange(): void {
+  onComplexChange(event?: Event): void {
+    const select = event?.target as HTMLSelectElement | null;
+    const rawValue = select?.value;
+    const parsedValue = rawValue ? Number(rawValue) : Number.NaN;
+
+    this.selectedComplexId.set(Number.isNaN(parsedValue) || parsedValue <= 0 ? null : parsedValue);
     this.selectedTerrainId.set(null);
     this.loadTerrains();
   }
@@ -391,7 +396,10 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     this.selectedDate.set(new Date().toISOString().split('T')[0]);
     this.maxPrice.set(150);
     this.selectedSportType.set('all');
+    this.selectedComplexId.set(null);
     this.selectedTerrainId.set(null);
+    this.selectedTerrain.set(null);
+    this.showBookingPanel.set(false);
     this.loadTerrains();
   }
 

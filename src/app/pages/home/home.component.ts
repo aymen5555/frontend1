@@ -64,7 +64,8 @@ export class HomeComponent implements OnInit {
     }
 
     if (this.auth.isGerant()) {
-      this.router.navigate(['/admin/dashboard']);
+      // Stay on home — gérant has their own home portal below, no redirect needed
+      this.loading.set(false);
       return;
     }
 

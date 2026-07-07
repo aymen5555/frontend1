@@ -1,4 +1,4 @@
-﻿<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
       <div class="flex items-center">
@@ -12,6 +12,7 @@
 
           <!-- ── GUEST LINKS (Desktop) ────────────────────────────────────── -->
           @if (!auth.isLoggedIn()) {
+            <a routerLink="/" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" [routerLinkActiveOptions]="{exact: true}" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏠 Accueil</a>
             <a routerLink="/complexes" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏢 Complexes</a>
             <a routerLink="/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎯 Activités</a>
             <a routerLink="/abonnements/parcourir" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎫 Abonnements</a>
@@ -44,47 +45,121 @@
             </div>
           }
 
-          <!-- ── GÉRANT LINKS ────────────────────────────────────────────── -->
-         @if (auth.isGerant()) {
-           <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Mon Complexe</a>
-                      <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
-           <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
-           <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
-           <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
-           <a routerLink="/admin/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🧾 Commandes</a>
-           <a routerLink="/admin/suppliers" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs</a>
-           <a routerLink="/admin/sales" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💰 Ventes Directes</a>
-           <a routerLink="/admin/fournisseurs-internes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs Internes</a>
-           <a routerLink="/admin/bons-entree" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📥 Bons d'Entrée</a>
-           <a routerLink="/admin/bons-sortie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📤 Bons de Sortie</a>
-           <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
-           <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
-           <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
-            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+          <!-- ── GÉRANT LINKS (Desktop) ────────────────────────────── -->
+          @if (auth.isGerant()) {
+            <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏠 Portail</a>
+            <a routerLink="/admin/dashboard" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏢 Tableau de bord</a>
+            <a routerLink="/admin/reservations" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">📅 Réservations</a>
+            <a routerLink="/admin/activites" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎯 Activités</a>
+            <a routerLink="/admin/abonnements" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎫 Abonnements</a>
+
+            <!-- Boutique dropdown (shop ops) -->
+            <div class="relative">
+              <button [class.nav-active]="isRouteActive(['/admin/products', '/admin/orders', '/admin/sales', '/admin/suppliers', '/admin/fournisseurs-internes', '/admin/bons-entree', '/admin/bons-sortie'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
+                🛍️ Boutique <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showGerantBoutique()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/products" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Produits</a>
+                <a routerLink="/admin/orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🧾 Commandes</a>
+                <a routerLink="/admin/sales" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💰 Ventes Directes</a>
+                <a routerLink="/admin/suppliers" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs</a>
+                <a routerLink="/admin/fournisseurs-internes" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs Int.</a>
+                <a routerLink="/admin/bons-entree" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📥 Bons d'Entrée</a>
+                <a routerLink="/admin/bons-sortie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📤 Bons de Sortie</a>
+              </div>
+            </div>
+
+            <!-- Gestion dropdown (infra ops) -->
+            <div class="relative">
+              <button [class.nav-active]="isRouteActive(['/admin/galerie', '/admin/depenses', '/admin/types-depenses'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantOffice($event)">
+                🔧 Gestion <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showGerantOffice()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/galerie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🖼️ Galerie</a>
+
+                <a routerLink="/admin/depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💸 Dépenses</a>
+                <a routerLink="/admin/types-depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏷️ Types Dépenses</a>
+              </div>
+            </div>
+
+            <!-- Espace Perso dropdown (for personal client-facing actions) -->
+            <div class="relative">
+              <button class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleClientEspace($event)">
+                Mon Espace (Perso) <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showClientEspace()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/terrains" (click)="closeEspaces()" class="block px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg mx-1">📅 Réserver un Terrain</a>
+                <a routerLink="/shop" (click)="closeEspaces()" class="block px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg mx-1">🛒 Boutique Client</a>
+                <hr class="my-1 border-gray-100" />
+                <a routerLink="/profil" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">👤 Mon Profil</a>
+                <a routerLink="/reservations" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📅 Mes Réservations</a>
+                <a routerLink="/mes-activites" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎯 Mes Activités</a>
+                <a routerLink="/abonnements/mes-abonnements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎫 Mes Abonnements</a>
+                <a routerLink="/my-orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Mes Commandes</a>
+                <a routerLink="/mon-profil-fitness" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💪 Profil Fitness</a>
+                <a routerLink="/historique/reservations" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📅 Hist. Réservations</a>
+                <a routerLink="/historique/abonnements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎫 Hist. Abonnements</a>
+              </div>
+            </div>
           }
 
           @if (auth.isSuperAdmin()) {
-            <a routerLink="/home" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Accueil</a>
-            <a routerLink="/complexes" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Complexes</a>
-            <a routerLink="/activites" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Activités</a>
-            <a routerLink="/super-admin/dashboard" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Administration</a>
-            <a routerLink="/admin/abonnements" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">Abonnements</a>
-            <a routerLink="/admin/categories" routerLinkActive="text-emerald-600 font-semibold border-emerald-500" class="inline-flex px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏷️ Catégories</a>
+            <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏠 Accueil</a>
+            <a routerLink="/super-admin/dashboard" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">⚙️ Administration</a>
+            <a routerLink="/admin/reservations" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">📅 Réservations</a>
+            <a routerLink="/complexes" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🏟️ Complexes</a>
+            <a routerLink="/admin/activites" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎯 Activités</a>
+            <a routerLink="/admin/abonnements" routerLinkActive="active-link" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200">🎫 Abonnements</a>
+
+            <!-- Boutique dropdown (commerce) -->
             <div class="relative">
-              <button class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
-                🛒 Boutique <span class="ml-1">▾</span>
+              <button [class.nav-active]="isRouteActive(['/admin/products', '/admin/orders', '/admin/sales', '/admin/suppliers', '/admin/fournisseurs-internes', '/admin/bons-entree', '/admin/bons-sortie'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
+                🛍️ Boutique <span class="ml-1">▾</span>
               </button>
-                <div *ngIf="showGerantBoutique()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
-                  <a routerLink="/admin/products" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Produits</a>
-                  <a routerLink="/admin/orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🧾 Commandes</a>
-                  <a routerLink="/admin/suppliers" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs</a>
-                  <a routerLink="/admin/sales" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💰 Ventes Directes</a>
-                  <a routerLink="/admin/fournisseurs-internes" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs Internes</a>
-                  <a routerLink="/admin/bons-entree" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📥 Bons d'Entrée</a>
-                  <a routerLink="/admin/bons-sortie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📤 Bons de Sortie</a>
-                  <a routerLink="/admin/depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💸 Dépenses</a>
-                  <a routerLink="/admin/types-depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏷️ Types Dépenses</a>
-                </div>
+              <div *ngIf="showGerantBoutique()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/products" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Produits</a>
+                <a routerLink="/admin/orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🧾 Commandes</a>
+                <a routerLink="/admin/sales" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💰 Ventes Directes</a>
+                <a routerLink="/admin/suppliers" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs</a>
+                <a routerLink="/admin/fournisseurs-internes" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏭 Fournisseurs Int.</a>
+                <a routerLink="/admin/bons-entree" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📥 Bons d'Entrée</a>
+                <a routerLink="/admin/bons-sortie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📤 Bons de Sortie</a>
+              </div>
+            </div>
+
+            <!-- Gestion dropdown (infrastructure + config) -->
+            <div class="relative">
+              <button [class.nav-active]="isRouteActive(['/admin/depenses', '/admin/types-depenses', '/admin/categories', '/admin/societes', '/admin/equipements', '/admin/galerie'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantOffice($event)">
+                🔧 Gestion <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showGerantOffice()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/galerie" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🖼️ Galerie</a>
+                <a routerLink="/admin/equipements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏗️ Équipements</a>
+                <a routerLink="/admin/depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💸 Dépenses</a>
+                <a routerLink="/admin/types-depenses" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏷️ Types Dépenses</a>
+                <a routerLink="/admin/categories" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📂 Catégories</a>
+                <a routerLink="/admin/societes" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🏢 Sociétés</a>
+              </div>
+            </div>
+
+            <!-- Espace Perso dropdown (for personal client-facing actions) -->
+            <div class="relative">
+              <button class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleClientEspace($event)">
+                Mon Espace (Perso) <span class="ml-1">▾</span>
+              </button>
+              <div *ngIf="showClientEspace()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/terrains" (click)="closeEspaces()" class="block px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg mx-1">📅 Réserver un Terrain</a>
+                <a routerLink="/shop" (click)="closeEspaces()" class="block px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg mx-1">🛒 Boutique Client</a>
+                <hr class="my-1 border-gray-100" />
+                <a routerLink="/profil" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">👤 Mon Profil</a>
+                <a routerLink="/reservations" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📅 Mes Réservations</a>
+                <a routerLink="/mes-activites" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎯 Mes Activités</a>
+                <a routerLink="/abonnements/mes-abonnements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎫 Mes Abonnements</a>
+                <a routerLink="/my-orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Mes Commandes</a>
+                <a routerLink="/mon-profil-fitness" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💪 Profil Fitness</a>
+                <a routerLink="/historique/reservations" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📅 Hist. Réservations</a>
+                <a routerLink="/historique/abonnements" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🎫 Hist. Abonnements</a>
+              </div>
             </div>
           }
         </div>
@@ -175,6 +250,7 @@
 
         <!-- ── GUEST LINKS (Mobile) ────────────────────────────────────── -->
         @if (!auth.isLoggedIn()) {
+          <a routerLink="/" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏠 Accueil</a>
           <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Complexes</a>
           <a routerLink="/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
           <a routerLink="/abonnements/parcourir" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
@@ -208,8 +284,9 @@
         }
 
          @if (auth.isGerant()) {
+           <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏠 Portail</a>
            <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Mon Complexe</a>
-                      <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
+           <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
            <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
            <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
@@ -220,29 +297,58 @@
            <a routerLink="/admin/bons-entree" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📥 Bons d'Entrée</a>
            <a routerLink="/admin/bons-sortie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📤 Bons de Sortie</a>
            <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
-           <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
            <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
-            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+           <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+           <button (click)="toggleClientEspace($event)" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Espace Personnel ▾</button>
+           <div *ngIf="showClientEspace()" class="pl-4 space-y-1">
+             <a routerLink="/terrains" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold transition-colors">📅 Réserver un Terrain</a>
+             <a routerLink="/shop" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold transition-colors">🛒 Boutique Client</a>
+             <a routerLink="/profil" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mon Profil</a>
+             <a routerLink="/reservations" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Réservations</a>
+             <a routerLink="/mes-activites" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Activités</a>
+             <a routerLink="/abonnements/mes-abonnements" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Abonnements</a>
+             <a routerLink="/my-orders" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Commandes</a>
+             <a routerLink="/mon-profil-fitness" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Profil Fitness</a>
+             <a routerLink="/historique/reservations" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Hist. Réservations</a>
+             <a routerLink="/historique/abonnements" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Hist. Abonnements</a>
+           </div>
           }
 
           @if (auth.isSuperAdmin()) {
-           <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Accueil</a>
-           <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Complexes</a>
-           <a routerLink="/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Activités</a>
-           <a routerLink="/super-admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Administration</a>
-                        <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">Abonnements</a>
-           <a routerLink="/admin/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Catégories</a>
+           <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏠 Accueil</a>
+           <a routerLink="/super-admin/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">⚙️ Administration</a>
+           <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
+           <a routerLink="/complexes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏟️ Complexes</a>
+           <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
+           <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
+           <p class="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">🛍️ Boutique</p>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
            <a routerLink="/admin/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🧾 Commandes</a>
-           <a routerLink="/admin/suppliers" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs</a>
            <a routerLink="/admin/sales" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💰 Ventes Directes</a>
-           <a routerLink="/admin/fournisseurs-internes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs Internes</a>
+           <a routerLink="/admin/suppliers" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs</a>
+           <a routerLink="/admin/fournisseurs-internes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs Int.</a>
            <a routerLink="/admin/bons-entree" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📥 Bons d'Entrée</a>
            <a routerLink="/admin/bons-sortie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📤 Bons de Sortie</a>
+           <p class="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">🔧 Gestion</p>
            <a routerLink="/admin/galerie" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🖼️ Galerie</a>
-           <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
            <a routerLink="/admin/depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">💸 Dépenses</a>
-            <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+           <a routerLink="/admin/types-depenses" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏷️ Types Dépenses</a>
+           <a routerLink="/admin/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📂 Catégories</a>
+           <a routerLink="/admin/societes" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏢 Sociétés</a>
+           <a routerLink="/admin/equipements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏗️ Équipements</a>
+           <button (click)="toggleClientEspace($event)" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Espace Personnel ▾</button>
+           <div *ngIf="showClientEspace()" class="pl-4 space-y-1">
+             <a routerLink="/terrains" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold transition-colors">📅 Réserver un Terrain</a>
+             <a routerLink="/shop" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold transition-colors">🛒 Boutique Client</a>
+             <a routerLink="/profil" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mon Profil</a>
+             <a routerLink="/reservations" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Réservations</a>
+             <a routerLink="/mes-activites" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Activités</a>
+             <a routerLink="/abonnements/mes-abonnements" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Abonnements</a>
+             <a routerLink="/my-orders" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Mes Commandes</a>
+             <a routerLink="/mon-profil-fitness" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Profil Fitness</a>
+             <a routerLink="/historique/reservations" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Hist. Réservations</a>
+             <a routerLink="/historique/abonnements" (click)="closeMobileMenu(); closeEspaces()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 font-medium transition-colors">Hist. Abonnements</a>
+           </div>
          }
 
          <hr class="my-2 border-gray-100">

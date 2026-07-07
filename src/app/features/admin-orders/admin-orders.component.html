@@ -96,7 +96,7 @@
                   class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">
                   Statut
                 </button>
-                <button *ngIf="order.statut_paiement !== 'paye'" (click)="openPaymentDialog(order)"
+                <button *ngIf="order.statut_paiement !== 'paye' && order.statut !== 'annulee'" (click)="openPaymentDialog(order)"
                   class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-lg transition cursor-pointer">
                   ✓ Payer
                 </button>

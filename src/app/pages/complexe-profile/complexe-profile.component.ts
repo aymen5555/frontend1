@@ -41,8 +41,9 @@ export class ComplexeProfileComponent implements OnInit {
   isEligible = signal(false);
   alreadyRated = signal(false);
   newRating = signal(0);
-  newCommentaire = signal('');
+  newCommentaire = '';
   submittingReview = signal(false);
+
 
   // Subscription features
   subscriptionTypes = signal<TypeAbonnement[]>([]);
@@ -255,11 +256,11 @@ export class ComplexeProfileComponent implements OnInit {
     this.submittingReview.set(true);
     const id = this.complexe()?.id;
     if (!id) return;
-    this.reviewSvc.submitComplexReview(id, rating, this.newCommentaire()).subscribe({
+    this.reviewSvc.submitComplexReview(id, rating, this.newCommentaire).subscribe({
       next: () => {
         this.toastSvc.success('Votre avis a été enregistré.');
         this.newRating.set(0);
-        this.newCommentaire.set('');
+        this.newCommentaire = '';
         this.submittingReview.set(false);
         this.loadReviews(id);
         this.checkEligibility(id);

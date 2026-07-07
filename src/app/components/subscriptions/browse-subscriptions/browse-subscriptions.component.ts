@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbonnementService } from '../../../services/abonnement.service';
 import { ComplexeService } from '../../../services/complexe.service';
 import { Complexe } from '../../../models/complexe.model';
-import { TypeAbonnement, AbonnementAdherent } from '../../../models/abonnement-adherent.model';
+import { TypeAbonnement } from '../../../models/abonnement-adherent.model';
 import { ToastService } from '../../../services/toast.service';
 import { AuthService } from '../../../services/auth.service';
 import { LoaderComponent } from '../../shared/loader/loader.component';
@@ -17,11 +17,15 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
   imports: [CommonModule, FormsModule, ReactiveFormsModule, LoaderComponent, PaymentModalComponent],
   template: `
     <div class="container mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold mb-8">Abonnements Disponibles</h1>
+      <div class="mb-8 rounded-3xl border border-emerald-100 bg-emerald-50/70 p-6 shadow-sm">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Abonnements</p>
+        <h1 class="mt-2 text-3xl font-bold text-gray-900">Choisissez une formule adaptée à votre pratique</h1>
+        <p class="mt-2 max-w-2xl text-sm text-gray-600">Sélectionnez votre complexe puis choisissez la formule qui vous convient le mieux pour profiter de votre sport en toute simplicité.</p>
+      </div>
 
-      <div class="mb-6 flex gap-4 items-center">
-        <label for="filter-complexe-select" class="text-sm font-medium">Filtrer par complexe</label>
-        <select id="filter-complexe-select" class="mt-1 w-64 rounded-xl border border-gray-300 px-3 py-2" [(ngModel)]="complexeId" (change)="loadTypes()">
+      <div class="mb-6 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <label for="filter-complexe-select" class="text-sm font-medium text-gray-700">Filtrer par complexe</label>
+        <select id="filter-complexe-select" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 shadow-sm md:w-64" [(ngModel)]="complexeId" (change)="loadTypes()">
           <option [value]="0">Tous les complexes</option>
           <option *ngFor="let c of complexes" [value]="c.id">{{ c.name }}</option>
         </select>
@@ -31,68 +35,70 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
         <app-loader></app-loader>
       </div>
 
-      <div *ngIf="!loading && types.length === 0" class="rounded-lg border border-gray-200 bg-blue-50 p-4 text-blue-800">
-        Aucun abonnement disponible pour ce complexe.
+      <div *ngIf="!loading && types.length === 0" class="rounded-2xl border border-emerald-100 bg-emerald-50 p-6 text-emerald-800 shadow-sm">
+        <p class="font-semibold">Aucun abonnement disponible pour le moment.</p>
+        <p class="mt-1 text-sm">Essayez un autre complexe ou revenez plus tard.</p>
       </div>
 
       <div *ngIf="!loading && types.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let type of types" class="bg-white rounded-lg shadow-lg p-6">
-          <!-- Type Header -->
-          <h2 class="text-xl font-bold text-blue-600 mb-2">{{ type.nom }}</h2>
-          <p *ngIf="type.complexe" class="text-gray-500 text-sm mb-1">🏟️ {{ type.complexe.name }}</p>
-          <p *ngIf="type.description" class="text-gray-600 text-sm mb-4">{{ type.description }}</p>
+        <div *ngFor="let type of types" class="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-lg">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-emerald-700">{{ type.nom }}</h2>
+              <p *ngIf="type.complexe" class="mt-1 text-sm text-gray-500">🏟️ {{ type.complexe.name }}</p>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Populaire</span>
+          </div>
+          <p *ngIf="type.description" class="mt-3 text-sm text-gray-600">{{ type.description }}</p>
 
-          <!-- Key Info -->
-          <div class="border-t border-b border-gray-200 py-4 mb-4">
+          <div class="mt-4 border-t border-b border-gray-200 py-4">
             <div class="flex justify-between mb-2">
-              <span class="font-semibold">Durée:</span>
-              <span>{{ type.nb_mois }} mois</span>
+              <span class="font-semibold text-gray-700">Durée</span>
+              <span class="text-gray-900">{{ type.nb_mois }} mois</span>
             </div>
             <div class="flex justify-between mb-2">
-              <span class="font-semibold">Tarif:</span>
-              <span class="text-lg text-green-600 font-bold">{{ type.tarif | number:'1.2-2' }} TND</span>
+              <span class="font-semibold text-gray-700">Tarif</span>
+              <span class="text-lg font-bold text-emerald-600">{{ type.tarif | number:'1.2-2' }} TND</span>
             </div>
             <div class="flex justify-between">
-              <span class="font-semibold">Niveau:</span>
-              <span class="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-700 text-sm">{{ type.niveau_sportif_cible }}</span>
+              <span class="font-semibold text-gray-700">Niveau</span>
+              <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-sm font-medium text-emerald-700">{{ type.niveau_sportif_cible }}</span>
             </div>
           </div>
 
-          <!-- Avantages -->
           <div *ngIf="type.avantages && type.avantages.length > 0" class="mb-4">
-            <h3 class="font-semibold mb-2">Avantages:</h3>
-            <ul class="list-disc list-inside text-sm text-gray-700">
+            <h3 class="mb-2 font-semibold text-gray-800">Avantages</h3>
+            <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
               <li *ngFor="let avantage of type.avantages">{{ avantage }}</li>
             </ul>
           </div>
 
-          <!-- Subscribe Form -->
-          <form [formGroup]="subscribeForm" (ngSubmit)="onSubscribe(type)" class="space-y-3">
+          <form [formGroup]="subscribeForm" (ngSubmit)="onSubscribe(type)" class="mt-auto space-y-3">
             <div>
-              <label for="date-debut-{{type.id}}" class="block text-sm font-semibold mb-1">Date de début</label>
+              <label for="date-debut-{{type.id}}" class="mb-1 block text-sm font-semibold text-gray-700">Date de début</label>
               <input
                 id="date-debut-{{type.id}}"
                 type="date"
                 formControlName="dateDebut"
-                class="w-full rounded-xl border border-gray-300 px-3 py-2"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 shadow-sm"
                 [min]="today"
               />
-              <p *ngIf="dateDebutError" class="text-red-600 text-xs mt-1">{{ dateDebutError }}</p>
+              <p *ngIf="dateDebutError" class="mt-1 text-xs text-red-600">{{ dateDebutError }}</p>
             </div>
 
             <div>
-              <label for="modalite-select-{{type.id}}" class="block text-sm font-semibold mb-1">Modalité de paiement</label>
-              <select id="modalite-select-{{type.id}}" formControlName="modalitePaiement" class="w-full rounded-xl border border-gray-300 px-3 py-2">
+              <label for="modalite-select-{{type.id}}" class="mb-1 block text-sm font-semibold text-gray-700">Modalité de paiement</label>
+              <select id="modalite-select-{{type.id}}" formControlName="modalitePaiement" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 shadow-sm">
                 <option value="">Choisir...</option>
                 <option value="especes">Espèces</option>
                 <option value="carte">Carte bancaire</option>
               </select>
-              <p *ngIf="modalitePaiementError" class="text-red-600 text-xs mt-1">{{ modalitePaiementError }}</p>
+              <p *ngIf="modalitePaiementError" class="mt-1 text-xs text-red-600">{{ modalitePaiementError }}</p>
             </div>
 
             <button
               type="submit"
-              class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 font-semibold"
+              class="w-full rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white transition-colors duration-200 hover:bg-emerald-700"
               [disabled]="subscribeForm.invalid || subscribing"
             >
               <span *ngIf="!subscribing">S'abonner</span>
@@ -103,7 +109,6 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
       </div>
     </div>
 
-    <!-- Payment Modal -->
     <app-payment-modal *ngIf="showPaymentModal()"
                        (paid)="onPaymentModalPaid($event)"
                        (closed)="onPaymentModalCancelled()"></app-payment-modal>
@@ -118,6 +123,7 @@ export class BrowseSubscriptionsComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
   private readonly complexeService = inject(ComplexeService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   types: TypeAbonnement[] = [];
   loading = true;
@@ -140,24 +146,37 @@ export class BrowseSubscriptionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.complexeId = params['complexeId'] || 0;
+      this.complexeId = Number(params['complexeId'] || 0);
       this.loadTypes();
     });
 
-    this.complexeService.getAll().subscribe({ next: (list) => (this.complexes = list) });
+    this.complexeService.getAll().subscribe({
+      next: (list) => {
+        this.complexes = list || [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.complexes = [];
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadTypes(): void {
     this.loading = true;
+    this.cdr.detectChanges();
     const complexeId = this.complexeId > 0 ? this.complexeId : undefined;
     this.abonnementService.getTypesDisponibles(complexeId).subscribe({
       next: (types) => {
-        this.types = types;
+        this.types = types || [];
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (_err) => {
         this.toast.error('Erreur lors du chargement des abonnements');
+        this.types = [];
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }

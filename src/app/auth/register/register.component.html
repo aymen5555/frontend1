@@ -4,8 +4,8 @@
         <div class="auth-logo">
             <i class="ti ti-ball-football"></i>
         </div>
-        <h1>Create your account</h1>
-        <p class="subtitle">Join PlaySpace — book padel courts in seconds</p>
+        <h1>Créer votre compte</h1>
+        <p class="subtitle">Rejoignez PlaySpace pour réserver vos terrains et profiter de votre expérience sportive.</p>
 
         @if (errorMessage()) {
         <div class="alert alert-error" role="alert">
@@ -17,7 +17,8 @@
         <!-- Role selector -->
         <div class="role-row">
             <button type="button" class="role-btn" [class.active]="selectedRole() === 'CLIENT'"
-                (click)="selectRole('CLIENT')">
+                (click)="selectRole('CLIENT')" aria-label="Créer un compte joueur" title="Créer un compte joueur">
+                <span class="sr-only">Créer un compte joueur</span>
                 <div class="role-icon"><i class="ti ti-user"></i></div>
                 <div>
                     <div class="role-label">Player</div>
@@ -26,7 +27,8 @@
             </button>
             <!-- Subscriber role removed: only Player and Gerant self-registration allowed -->
             <button type="button" class="role-btn" [class.active]="selectedRole() === 'GERANT'"
-                (click)="selectRole('GERANT')">
+                (click)="selectRole('GERANT')" aria-label="Créer un compte gérant de complexe" title="Créer un compte gérant de complexe">
+                <span class="sr-only">Créer un compte gérant de complexe</span>
                 <div class="role-icon"><i class="ti ti-building-community"></i></div>
                 <div>
                     <div class="role-label">Gerant de complexe</div>
@@ -39,7 +41,7 @@
 
             <div class="row-2">
                 <div class="form-group">
-                    <label for="first_name">First name</label>
+                    <label for="first_name">Prénom</label>
                     <div class="input-wrap">
                         <i class="ti ti-user"></i>
                         <input id="first_name" type="text" formControlName="first_name" placeholder="Ahmed"
@@ -54,7 +56,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="last_name">Last name</label>
+                    <label for="last_name">Nom</label>
                     <div class="input-wrap">
                         <i class="ti ti-user"></i>
                         <input id="last_name" type="text" formControlName="last_name" placeholder="Ben Ali"
@@ -70,7 +72,7 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">Adresse e-mail</label>
                 <div class="input-wrap">
                     <i class="ti ti-mail"></i>
                     <input id="email" type="email" formControlName="email" placeholder="ahmed@example.com"
@@ -86,7 +88,7 @@
             </div>
 
             <div class="form-group">
-                <label for="phone">Phone</label>
+                <label for="phone">Téléphone</label>
                 <div class="input-wrap">
                     <i class="ti ti-phone"></i>
                     <input id="phone" type="tel" formControlName="phone" placeholder="+216 XX XXX XXX"
@@ -124,7 +126,7 @@
             <hr class="divider" />
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Mot de passe</label>
                 <div class="input-wrap">
                     <i class="ti ti-lock"></i>
                     <input id="password" [type]="showPwd() ? 'text' : 'password'" formControlName="password"
@@ -151,7 +153,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password_confirmation">Confirm password</label>
+                <label for="password_confirmation">Confirmer le mot de passe</label>
                 <div class="input-wrap">
                     <i class="ti ti-lock"></i>
                     <input id="password_confirmation" [type]="showPwd2() ? 'text' : 'password'"

@@ -92,7 +92,7 @@ export class ActiviteService {
 
   /** PUT /admin/activites/reservations/{id}/confirm */
   adminConfirmPayment(id: number, data: { modalite_paiement: 'especes' | 'carte'; statut_paiement: 'paye'; reference?: string; montant?: number }): Observable<void> {
-    return this.http.put<void>(`${this.api}/admin/activites/reservations/${id}/confirm`, data);
+    return this.http.put<void>(`${this.api}/admin/activites/reservations/${id}/confirm`, data, { headers: { 'X-Skip-Error-Toast': '1' } });
   }
 
   /** PUT /admin/activites/reservations/{id}/cancel */

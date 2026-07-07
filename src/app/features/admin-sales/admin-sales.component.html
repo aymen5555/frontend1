@@ -49,7 +49,7 @@
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Produit *</label>
               <select formControlName="produit_id" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                 <option value="" disabled>Choisir un produit</option>
-                <option *ngFor="let p of filteredProducts()" [value]="p.id">{{ p.nom }} ({{ p.complexe?.name || '—' }})</option>
+                <option *ngFor="let p of filteredProducts()" [value]="p.id">{{ p.nom }} ({{ p.complexe?.name ?? '—' }})</option>
               </select>
             </div>
             <div class="w-24 flex flex-col gap-1">

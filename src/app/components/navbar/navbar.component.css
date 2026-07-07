@@ -15,3 +15,15 @@
   opacity: 1;
   max-height: 500px;
 }
+
+/* Active link styling (Safe override) */
+.active-link {
+  color: #10b981 !important; /* text-emerald-500 */
+  border-color: #10b981 !important; /* border-emerald-500 */
+  font-weight: 600 !important;
+}
+.nav-active {
+  color: #10b981 !important;
+  border-color: #10b981 !important;
+  font-weight: 600 !important;
+}

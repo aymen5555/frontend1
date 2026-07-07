@@ -9,8 +9,9 @@ export class TypeDepenseService {
   private readonly http = inject(HttpClient);
   private readonly api = `${environment.apiUrl}/admin/types-depenses`;
 
-  list(): Observable<{ success: boolean; data: TypeDepense[] }> {
-    return this.http.get<{ success: boolean; data: TypeDepense[] }>(this.api);
+  list(activeOnly = false): Observable<{ success: boolean; data: TypeDepense[] }> {
+    const url = activeOnly ? `${this.api}?active_only=1` : this.api;
+    return this.http.get<{ success: boolean; data: TypeDepense[] }>(url);
   }
 
   create(payload: { designation_ty_dep: string; active?: boolean }): Observable<{ success: boolean; data: TypeDepense }> {

@@ -30,7 +30,7 @@ export class MesActivitesComponent implements OnInit {
       }
       if (this.activeTab() === 'past') {
         // Only show past sessions (seanceAt < now), regardless of statut
-        return seanceAt < now && (res.statut === 'confirmee' || res.statut === 'expiree' || res.statut === 'reservee');
+        return seanceAt < now && (res.statut === 'confirmee' || res.statut === 'reservee');
       }
       return res.statut === 'annulee';
     });
@@ -57,7 +57,6 @@ export class MesActivitesComponent implements OnInit {
       case 'reservee':  return { class: 'bg-yellow-100 text-yellow-700',  label: 'Réservée' };
       case 'confirmee': return { class: 'bg-green-100 text-green-700',   label: 'Confirmée' };
       case 'annulee':   return { class: 'bg-red-100 text-red-600',       label: 'Annulée' };
-      case 'expiree':   return { class: 'bg-gray-100 text-gray-500',     label: 'Expirée' };
       default:          return { class: 'bg-gray-100 text-gray-600',     label: statut };
     }
   }

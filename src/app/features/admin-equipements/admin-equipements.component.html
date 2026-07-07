@@ -31,7 +31,7 @@
 
   <div class="mb-6">
     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Complexe pour association</label>
-    <select (change)="onComplexeChange()" [value]="selectedComplexeId() || ''" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full md:w-64">
+    <select (change)="onComplexeChange($event)" [value]="selectedComplexeId() || ''" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full md:w-64">
       <option value="" disabled>Sélectionner</option>
       <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
     </select>

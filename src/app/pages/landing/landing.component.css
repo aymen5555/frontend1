@@ -5,8 +5,19 @@
   min-height: 100vh;
 }
 
+.hero-image {
+  background-image: url('/assets/images/hero-landing.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+}
+
 .hero-overlay {
   background: rgba(0,0,0,0.55);
+}
+
+.intro-section {
+  background-color: #f9fafb;
 }
 
 .feature-card {
@@ -21,7 +32,7 @@
 .badge {
   display: inline-block;
   background: #f0fdf4;
-  color: #16a34a;
+  color: #166534;
   border: 1px solid #bbf7d0;
   padding: 0.4rem 0.8rem;
   border-radius: 9999px;

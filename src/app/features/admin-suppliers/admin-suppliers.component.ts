@@ -63,13 +63,14 @@ export class AdminSuppliersComponent implements OnInit {
       error: () => {}
     });
 
-    const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.complexes.set([(user as any).complexe]);
-      this.supplierForm.patchValue({ complexe_id: (user as any).complexe.id });
-    } else {
-      this.complexeSvc.list().subscribe({ next: (res) => this.complexes.set(res) });
-    }
+    this.complexeSvc.list().subscribe({
+      next: (res) => {
+        this.complexes.set(res);
+        if (res.length && this.authSvc.currentUser()?.role === 'GERANT') {
+          this.supplierForm.patchValue({ complexe_id: res[0].id });
+        }
+      }
+    });
   }
 
   openCreateForm(): void {
@@ -77,8 +78,8 @@ export class AdminSuppliersComponent implements OnInit {
     this.supplierForm.reset({ categorie_fournisseur_id: null });
     // Re-set complexe for gérant
     const user = this.authSvc.currentUser();
-    if (user?.role === 'GERANT' && (user as any).complexe) {
-      this.supplierForm.patchValue({ complexe_id: (user as any).complexe.id });
+    if (this.complexes().length && user?.role === 'GERANT') {
+      this.supplierForm.patchValue({ complexe_id: this.complexes()[0].id });
     }
     this.showForm.set(true);
   }

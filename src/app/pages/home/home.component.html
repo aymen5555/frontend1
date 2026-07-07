@@ -1,6 +1,6 @@
 <div class="flex flex-col min-h-screen">
-  <!-- Hero Section -->
-  <section class="min-h-screen relative overflow-hidden flex items-center justify-center">
+  <!-- Hero Section — hidden for gérant (they land on their admin portal directly) -->
+  <section *ngIf="!auth.isGerant()" class="min-h-screen relative overflow-hidden flex items-center justify-center">
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://placehold.co/1600x900/0d2137/1a5276?text=PlaySpace');"></div>
     <div class="absolute inset-0 bg-black/50"></div>
     @if (auth.isSuperAdmin()) {
@@ -107,84 +107,118 @@
           <h3 class="font-bold text-gray-900 mb-1">Abonnements</h3>
           <p class="text-xs text-gray-500">Gérer les formules</p>
         </a>
-
-        <!-- Réserver un terrain (super admin peut aussi jouer) -->
-        <a [routerLink]="['/terrains']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-orange-200">
-          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🎾</div>
-          <h3 class="font-bold text-gray-900 mb-1">Réserver un terrain</h3>
-          <p class="text-xs text-gray-500">Jouer sur un terrain</p>
-        </a>
-
-        <!-- Mes activités (super admin peut participer) -->
-        <a [routerLink]="['/mes-activites']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-teal-200">
-          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">🏃</div>
-          <h3 class="font-bold text-gray-900 mb-1">Mes activités</h3>
-          <p class="text-xs text-gray-500">Participer aux activités</p>
-        </a>
-
-        <!-- Mes réservations (super admin) -->
-        <a [routerLink]="['/reservations']" class="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-6 text-center group cursor-pointer border border-transparent hover:border-pink-200">
-          <div class="text-5xl mb-3 transform group-hover:scale-110 transition-transform">📅</div>
-          <h3 class="font-bold text-gray-900 mb-1">Mes réservations</h3>
-          <p class="text-xs text-gray-500">Voir mes réservations</p>
-        </a>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!--  GÉRANT — Navigation section                -->
-  <!-- ═══════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!--  GÉRANT PORTAL — full page when role = GÉRANT      -->
+  <!-- ═══════════════════════════════════════════════════ -->
   <div *ngIf="auth.isLoggedIn() && auth.isGerant()">
-    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl font-bold mb-2">Espace Gérant</h1>
-        <p class="text-blue-100">Gérez vos complexes, terrains, réservations et abonnements.</p>
+
+    <!-- HERO BAND (full-width, dark gradient) -->
+    <section class="gerant-portal-hero">
+      <div class="gerant-portal-hero-inner">
+        <div class="gerant-portal-hero-text">
+          <span class="gerant-portal-role-pill">Gérant</span>
+          <h1 class="gerant-portal-name">Bonjour, {{ auth.user()?.first_name }} 👋</h1>
+          <p class="gerant-portal-subtitle">
+            Gérez votre complexe, vos terrains et vos équipes depuis ce portail.
+          </p>
+        </div>
+        <a routerLink="/admin/dashboard" class="gerant-portal-cta-btn">
+          Ouvrir le tableau de bord →
+        </a>
       </div>
     </section>
 
-    <section class="py-12 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-complexes">
-            <div class="text-5xl mb-4">🏢</div>
-            <h3 class="font-bold text-gray-900 mb-2">Mon Complexe</h3>
-            <p class="text-sm text-gray-500">Gérer et modifier</p>
-          </div>
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-complexes">
-            <div class="text-5xl mb-4">🎾</div>
-            <h3 class="font-bold text-gray-900 mb-2">Mes Terrains</h3>
-            <p class="text-sm text-gray-500">Ajouter et modifier</p>
-          </div>
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-reservations">
-            <div class="text-5xl mb-4">📅</div>
-            <h3 class="font-bold text-gray-900 mb-2">Réservations</h3>
-            <p class="text-sm text-gray-500">Gérer et confirmer</p>
-          </div>
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all" [routerLink]="['/admin/dashboard']" fragment="section-clients">
-            <div class="text-5xl mb-4">👥</div>
-            <h3 class="font-bold text-gray-900 mb-2">Clients</h3>
-            <p class="text-sm text-gray-500">Consulter les joueurs</p>
-          </div>
-          
-          <!-- Réserver un terrain (gérant) -->
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-orange-200" [routerLink]="['/terrains']">
-            <div class="text-5xl mb-4">🎾</div>
-            <h3 class="font-bold text-gray-900 mb-2">Réserver un terrain</h3>
-            <p class="text-sm text-gray-500">Jouer sur un terrain</p>
-          </div>
-          <!-- Mes activités (gérant) -->
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-teal-200" [routerLink]="['/mes-activites']">
-            <div class="text-5xl mb-4">🏃</div>
-            <h3 class="font-bold text-gray-900 mb-2">Mes activités</h3>
-            <p class="text-sm text-gray-500">Participer aux activités</p>
-          </div>
-          <!-- Mes réservations (gérant) -->
-          <div class="bg-white rounded-2xl shadow-md p-8 text-center group cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-pink-200" [routerLink]="['/reservations']">
-            <div class="text-5xl mb-4">📅</div>
-            <h3 class="font-bold text-gray-900 mb-2">Mes réservations</h3>
-            <p class="text-sm text-gray-500">Voir mes réservations</p>
-          </div>
+    <!-- OPERATIONS GRID -->
+    <section class="gerant-portal-ops">
+      <div class="gerant-portal-ops-inner">
+        <h2 class="gerant-portal-ops-title">Accès rapide</h2>
+        <div class="gerant-portal-grid">
+
+          <!-- Dashboard -->
+          <a routerLink="/admin/dashboard" class="gerant-op-card gerant-op-indigo">
+            <div class="gerant-op-icon">📊</div>
+            <div>
+              <p class="gerant-op-name">Tableau de bord</p>
+              <p class="gerant-op-desc">Vue d'ensemble et statistiques</p>
+            </div>
+          </a>
+
+          <!-- Réservations -->
+          <a routerLink="/admin/reservations" class="gerant-op-card gerant-op-blue">
+            <div class="gerant-op-icon">📅</div>
+            <div>
+              <p class="gerant-op-name">Réservations</p>
+              <p class="gerant-op-desc">Confirmer, annuler, gérer</p>
+            </div>
+          </a>
+
+          <!-- Activités -->
+          <a routerLink="/admin/activites" class="gerant-op-card gerant-op-violet">
+            <div class="gerant-op-icon">⚽</div>
+            <div>
+              <p class="gerant-op-name">Activités</p>
+              <p class="gerant-op-desc">Créer et superviser les séances</p>
+            </div>
+          </a>
+
+          <!-- Abonnements -->
+          <a routerLink="/admin/abonnements" class="gerant-op-card gerant-op-emerald">
+            <div class="gerant-op-icon">🎫</div>
+            <div>
+              <p class="gerant-op-name">Abonnements</p>
+              <p class="gerant-op-desc">Formules et adhérents</p>
+            </div>
+          </a>
+
+          <!-- Produits / Boutique -->
+          <a routerLink="/admin/products" class="gerant-op-card gerant-op-amber">
+            <div class="gerant-op-icon">📦</div>
+            <div>
+              <p class="gerant-op-name">Produits</p>
+              <p class="gerant-op-desc">Stock, catégories, prix</p>
+            </div>
+          </a>
+
+          <!-- Commandes -->
+          <a routerLink="/admin/orders" class="gerant-op-card gerant-op-orange">
+            <div class="gerant-op-icon">🧾</div>
+            <div>
+              <p class="gerant-op-name">Commandes</p>
+              <p class="gerant-op-desc">Traiter les commandes clients</p>
+            </div>
+          </a>
+
+          <!-- Ventes directes -->
+          <a routerLink="/admin/sales" class="gerant-op-card gerant-op-teal">
+            <div class="gerant-op-icon">💰</div>
+            <div>
+              <p class="gerant-op-name">Ventes directes</p>
+              <p class="gerant-op-desc">Caisse et ventes sur place</p>
+            </div>
+          </a>
+
+          <!-- Fournisseurs -->
+          <a routerLink="/admin/fournisseurs-internes" class="gerant-op-card gerant-op-slate">
+            <div class="gerant-op-icon">🏭</div>
+            <div>
+              <p class="gerant-op-name">Fournisseurs</p>
+              <p class="gerant-op-desc">Bons d'entrée et stocks</p>
+            </div>
+          </a>
+
+          <!-- Mon profil -->
+          <a routerLink="/profil" class="gerant-op-card gerant-op-gray">
+            <div class="gerant-op-icon">👤</div>
+            <div>
+              <p class="gerant-op-name">Mon profil</p>
+              <p class="gerant-op-desc">Paramètres du compte</p>
+            </div>
+          </a>
+
         </div>
       </div>
     </section>
@@ -340,7 +374,7 @@
             </div>
             <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
               <span class="font-extrabold text-emerald-600">{{ rec.produit.prix }} TND</span>
-              <a [routerLink]="['/shop/product', rec.produit.id]" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors">Acheter</a>
+              <a [routerLink]="['/shop/products', rec.produit.id]" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors">Acheter</a>
             </div>
           </div>
         </div>

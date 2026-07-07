@@ -1,6 +1,17 @@
 <section class="page">
 
-    <!-- ═══════ QUICK NAV ═══════ -->
+    <!-- ═══════ GÉRANT QUICK NAV ═══════ -->
+    @if (auth.isGerant() && complexes().length > 0 && !loading()) {
+    <nav class="quick-nav">
+        <a (click)="scrollToSection('section-complexes')" class="quick-link">🏟️ Mon Complexe</a>
+        <a (click)="scrollToSection('section-clients')" class="quick-link">👥 Clients</a>
+        <a (click)="scrollToSection('section-reservations')" class="quick-link">📅 Réservations</a>
+        <a (click)="scrollToSection('section-activites')" class="quick-link">⚽ Activités</a>
+        <a (click)="scrollToSection('section-abonnements')" class="quick-link">📦 Abonnements</a>
+    </nav>
+    }
+
+    <!-- ═══════ SUPERADMIN QUICK NAV ═══════ -->
     @if (auth.isSuperAdmin() && !loading()) {
     <nav class="quick-nav">
         <a (click)="scrollToSection('section-complexes')" class="quick-link">🏢 Complexes</a>
@@ -13,12 +24,43 @@
     </nav>
     }
 
+    <!-- ═══════ GÉRANT PREMIUM HEADER ═══════ -->
+    @if (auth.isGerant() && complexes().length > 0 && !loading()) {
+    <header class="gerant-hero-header">
+        <div class="gerant-hero-left">
+            @if (complexes()[0]?.image_url || complexes()[0]?.image_c) {
+            <img [src]="complexes()[0]?.image_url || complexes()[0]?.image_c" alt="Photo complexe" class="gerant-hero-img" />
+            } @else {
+            <div class="gerant-hero-img gerant-hero-img--placeholder">🏟️</div>
+            }
+            <div>
+                <p class="gerant-hero-label">Mon Complexe</p>
+                <h1 class="gerant-hero-title">{{ complexes()[0]?.name }}</h1>
+                <p class="gerant-hero-sub">
+                    @if (complexes()[0]?.address) { {{ complexes()[0]?.address }} }
+                    @if (complexes()[0]?.city) { • {{ complexes()[0]?.city }} }
+                    • {{ complexes()[0]?.terrains?.length ?? 0 }} court(s)
+                </p>
+            </div>
+        </div>
+        <div class="gerant-hero-actions">
+            <button type="button" class="btn-sm" (click)="openComplexForm(complexes()[0])">✏️ Modifier la fiche</button>
+            @if (selectedComplexId()) {
+            <button type="button" class="btn-manual" (click)="openTerrainForm()">+ Ajouter un court</button>
+            }
+        </div>
+    </header>
+    }
+
+    <!-- ═══════ GENERIC HEADER (SuperAdmin or unassigned gérant) ═══════ -->
+    @if (auth.isSuperAdmin() || (auth.isGerant() && complexes().length === 0)) {
     <header class="topbar">
         <div>
             <h1>Tableau de bord</h1>
             <p>Bonjour {{ user?.first_name }}, gérez vos complexes, terrains, réservations et abonnements depuis cet espace.</p>
         </div>
     </header>
+    }
 
     @if (errorMessage()) {
     <div class="alert">{{ errorMessage() }}</div>
@@ -35,62 +77,84 @@
     </div>
     }
 
-    <!-- ═══════ BOUTIQUE SUMMARY OVERVIEW ═══════ -->
-    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
-        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">Boutique & Ventes</h3>
-        <div class="summary-grid">
-            <div class="stat-card">
-                <p class="stat-label">Produits Actifs</p>
-                <p class="stat-value">{{ totalProducts() }}</p>
-            </div>
-            <div class="stat-card" [style.background]="lowStockProducts() > 0 ? '#fff5f5' : '#f5fdf8'" [style.border-color]="lowStockProducts() > 0 ? '#feb2b2' : '#d8f4e5'">
-                <p class="stat-label" [style.color]="lowStockProducts() > 0 ? '#9b2c2c' : '#0f766e'">Alerte Stock Bas</p>
-                <p class="stat-value" [style.color]="lowStockProducts() > 0 ? '#c53030' : '#0f5c52'">{{ lowStockProducts() }}</p>
-            </div>
-            <div class="stat-card">
-                <p class="stat-label">Commandes Aujourd'hui</p>
-                <p class="stat-value">{{ ordersToday() }}</p>
-            </div>
-            <div class="stat-card">
-                <p class="stat-label">Ventes Directes Aujourd'hui</p>
-                <p class="stat-value">{{ directSalesToday() }}</p>
-            </div>
-        </div>
-    </div>
+    <!-- ═══════ KPI DASHBOARD ZONE ═══════ -->
+    <div class="kpi-zone">
 
-    <!-- ═══════ DEPENSES WIDGET ═══════ -->
-    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
-        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">💸 Dépenses du mois</h3>
-        <div class="summary-grid">
-            <div class="stat-card">
-                <p class="stat-label">Total ce mois</p>
-                <p class="stat-value">{{ depensesMois() | number:'1.0-3' }} DT</p>
-            </div>
-            <div class="stat-card">
-                <p class="stat-label">Nb dépenses</p>
-                <p class="stat-value">{{ nbDepensesMois() }}</p>
-            </div>
+      <!-- Row 1: 4 key boutique stats -->
+      <div class="kpi-section-label">📦 Boutique &amp; Ventes — aujourd'hui</div>
+      <div class="kpi-grid-4">
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon-wrap">📦</div>
+          <div>
+            <p class="kpi-label">Produits actifs</p>
+            <p class="kpi-val">{{ totalProducts() }}</p>
+          </div>
         </div>
-    </div>
+        <div class="kpi-card" [class.kpi-red]="lowStockProducts() > 0" [class.kpi-green]="lowStockProducts() === 0">
+          <div class="kpi-icon-wrap">⚠️</div>
+          <div>
+            <p class="kpi-label">Stock bas</p>
+            <p class="kpi-val">{{ lowStockProducts() }}</p>
+          </div>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon-wrap">🧾</div>
+          <div>
+            <p class="kpi-label">Commandes</p>
+            <p class="kpi-val">{{ ordersToday() }}</p>
+          </div>
+        </div>
+        <div class="kpi-card kpi-teal">
+          <div class="kpi-icon-wrap">💰</div>
+          <div>
+            <p class="kpi-label">Ventes directes</p>
+            <p class="kpi-val">{{ directSalesToday() }}</p>
+          </div>
+        </div>
+      </div>
 
-    <!-- ═══════ DEPENSES PAR TYPE WIDGET ═══════ -->
-    @if (depensesParType().length > 0) {
-    <div class="panel summary-panel" style="margin-bottom: 1.5rem;">
-        <h3 class="font-bold uppercase tracking-wider text-slate-500" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.75rem; color: #64748b;">📊 Répartition par type</h3>
-        <div class="space-y-2">
+      <!-- Row 2: Dépenses + Breakdown side by side -->
+      <div class="kpi-depense-row">
+        <div class="kpi-depense-totals">
+          <div class="kpi-section-label">💸 Dépenses du mois</div>
+          <div class="kpi-grid-2">
+            <div class="kpi-card kpi-amber">
+              <div class="kpi-icon-wrap">💸</div>
+              <div>
+                <p class="kpi-label">Total ce mois</p>
+                <p class="kpi-val">{{ depensesMois() | number:'1.0-2' }} <span class="kpi-unit">DT</span></p>
+              </div>
+            </div>
+            <div class="kpi-card kpi-slate">
+              <div class="kpi-icon-wrap">🗂️</div>
+              <div>
+                <p class="kpi-label">Nb dépenses</p>
+                <p class="kpi-val">{{ nbDepensesMois() }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (depensesParType().length > 0) {
+        <div class="kpi-depense-breakdown">
+          <div class="kpi-section-label">📊 Répartition par type</div>
+          <div class="kpi-breakdown-list">
             @for (item of depensesParType(); track item.designation) {
-            <div class="flex items-center gap-3">
-                <div class="w-32 text-xs font-semibold text-slate-600 truncate">{{ item.designation }}</div>
-                <div class="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" [style.width.%]="depensesMois() > 0 ? (item.total / depensesMois() * 100) : 0"></div>
-                </div>
-                <div class="w-20 text-right text-xs font-bold text-slate-900">{{ item.total | number:'1.0-3' }} DT</div>
-                <div class="w-8 text-right text-[10px] text-slate-400">{{ item.count }}x</div>
+            <div class="kpi-breakdown-row">
+              <span class="kpi-breakdown-name">{{ item.designation }}</span>
+              <div class="kpi-breakdown-bar-wrap">
+                <div class="kpi-breakdown-bar" [style.width.%]="depensesMois() > 0 ? (item.total / depensesMois() * 100) : 0"></div>
+              </div>
+              <span class="kpi-breakdown-val">{{ item.total | number:'1.0-2' }} DT</span>
+              <span class="kpi-breakdown-count">{{ item.count }}x</span>
             </div>
             }
+          </div>
         </div>
+        }
+      </div>
+
     </div>
-    }
 
     <div class="grid gap-6 lg:grid-cols-[1.7fr_1fr]" id="section-complexes">
         <!-- SUPER ADMIN: Complexe Selection Panel -->
@@ -208,6 +272,43 @@
                         <button type="button" class="btn-xs danger" (click)="deleteComplex(c); $event.stopPropagation()">Supprimer</button>
                     </div>
                 </div>
+                }
+            </div>
+            }
+        </section>
+        }
+
+        <!-- SUPER ADMIN: Deleted Complexes Restore Panel -->
+        @if (auth.isSuperAdmin()) {
+        <section class="panel" style="border: 1px solid #fca5a5; background: #fff7f7;">
+            <div class="panel-head" style="cursor:pointer;" (click)="showDeletedComplexes.set(!showDeletedComplexes()); showDeletedComplexes() && loadDeletedComplexes()">
+                <h2 style="color:#b91c1c;">🗑️ Complexes supprimés (corbeille)</h2>
+                <span class="badge" style="background:#fee2e2;color:#b91c1c;">
+                    {{ showDeletedComplexes() ? '▲ Fermer' : '▼ Voir' }}
+                </span>
+            </div>
+            @if (showDeletedComplexes()) {
+            <div class="space-y-3 mt-3">
+                @if (deletedComplexes().length === 0) {
+                <p class="text-sm text-gray-500">Aucun complexe supprimé.</p>
+                } @else {
+                @for (c of deletedComplexes(); track c.id) {
+                <div class="complex-entry" style="border-left: 3px solid #fca5a5; opacity: 0.85;">
+                    <div style="flex:1; min-width:0;">
+                        <p class="font-semibold text-slate-900">{{ c.name }}</p>
+                        <p class="text-xs text-slate-500">{{ c.address || 'Adresse non renseignée' }} · Supprimé le {{ c.deleted_at | date:'dd/MM/yyyy HH:mm' }}</p>
+                        <p class="text-xs text-slate-400">{{ c.terrains_count }} court(s) · Propriétaire : {{ c.owner?.first_name }} {{ c.owner?.last_name }}</p>
+                    </div>
+                    <div class="complex-actions">
+                        <button type="button"
+                            class="btn-xs"
+                            style="background:#22c55e;color:#fff;border-color:#22c55e;"
+                            (click)="restoreComplex(c)">
+                            ↩ Restaurer
+                        </button>
+                    </div>
+                </div>
+                }
                 }
             </div>
             }
@@ -566,7 +667,6 @@
                                 @if (!g.is_active) {
                                 <button type="button" class="btn-xs" (click)="activateGerant(g.id)">Activer</button>
                                 }
-                                <button type="button" class="btn-xs danger" (click)="deleteGerant(g.id)">Supprimer</button>
                             </div>
                         </td>
                     </tr>
@@ -688,9 +788,14 @@
                     <select formControlName="sport" class="w-full border border-gray-300 rounded-md px-3 py-2">
                         <option value="yoga">Yoga</option>
                         <option value="fitness">Fitness</option>
-                        <option value="pilates">Pilates</option>
-                        <option value="zumba">Zumba</option>
-                        <option value="meditation">Méditation</option>
+                        <option value="natation">Natation</option>
+                        <option value="musculation">Musculation</option>
+                        <option value="football">Football</option>
+                        <option value="padel">Padel</option>
+                        <option value="tennis">Tennis</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="volleyball">Volleyball</option>
+                        <option value="handball">Handball</option>
                     </select>
                 </div>
                 <div>
@@ -959,7 +1064,7 @@
                 <tbody class="divide-y divide-slate-200">
                     @for (type of filteredSubscriptionTypes(); track type.id) {
                     <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 font-medium">{{ type.nom }}</td>
+                        <td class="px-4 py-3 font-medium">{{ type.nom }} <span *ngIf="(type.abonnements_count ?? 0) > 0" class="ml-2 inline-block text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">{{ type.abonnements_count }} abonnés</span></td>
                         <td class="px-4 py-3">{{ type.complexe?.nom_c || type.complexe?.name || '—' }}</td>
                         <td class="px-4 py-3">{{ type.nb_mois }} mois</td>
                         <td class="px-4 py-3">{{ type.tarif | number:'1.2-2' }} TND</td>
@@ -974,7 +1079,7 @@
                             <div class="flex flex-wrap justify-end gap-2">
                                 <button type="button" class="btn-xs" (click)="editType(type)">Modifier</button>
                                 <button type="button" class="btn-xs" [class.danger]="type.active" (click)="toggleTypeActive(type)">{{ type.active ? 'Désactiver' : 'Activer' }}</button>
-                                <button *ngIf="!type.active" type="button" class="btn-xs danger" (click)="deleteType(type)" [disabled]="(type.abonnements_count ?? 0) > 0">Supprimer</button>
+                                <button *ngIf="!type.active && ((type.abonnements_count ?? 0) === 0)" type="button" class="btn-xs danger" (click)="deleteType(type)">Supprimer</button>
                             </div>
                         </td>
                     </tr>
@@ -1063,7 +1168,14 @@
         </div>
 
         @if (archivedItems().length === 0) {
+        @if (auth.isGerant()) {
+        <div class="text-sm text-gray-500">
+            <p>Aucun enregistrement archivé pour vos complexes.</p>
+            <p class="mt-1">Remarque: les archives sont filtrées par propriétaire. Si vous pensez qu'il devrait y en avoir, demandez à un administrateur de vérifier les attributions de complexes ou exécutez une recherche depuis un compte administrateur.</p>
+        </div>
+        } @else {
         <p class="text-sm text-gray-500">Aucun enregistrement archivé.</p>
+        }
         } @else {
         <div class="mb-4">
             <input
