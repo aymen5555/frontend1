@@ -51,8 +51,14 @@ export class ComplexeProfileComponent implements OnInit {
   showSubModal = signal(false);
   selectedType = signal<TypeAbonnement | null>(null);
   modalitePaiement = signal<'especes' | 'carte'>('carte');
-  dateDebut = signal(new Date().toISOString().split('T')[0]);
-  todayStr = new Date().toISOString().split('T')[0];
+  // Use local YYYY-MM-DD (avoid toISOString which converts to UTC and can shift the day)
+  private localToday(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  dateDebut = signal(this.localToday());
+  todayStr = this.localToday();
   submitting = signal(false);
 
   private pendingSubscribeTypeId: number | null = null;
@@ -138,7 +144,7 @@ export class ComplexeProfileComponent implements OnInit {
   private showSubscriptionModal(type: TypeAbonnement): void {
     this.selectedType.set(type);
     this.modalitePaiement.set('carte');
-    this.dateDebut.set(new Date().toISOString().split('T')[0]);
+    this.dateDebut.set(this.localToday());
     this.showSubModal.set(true);
   }
 
@@ -208,6 +214,14 @@ export class ComplexeProfileComponent implements OnInit {
   onPaymentModalCancelled(): void {
     this.showPaymentModal.set(false);
     this.toastSvc.error('Paiement annulé. Abonnement non créé.');
+  }
+
+  getSelectedTypeAmountCents(): number | null {
+    const type = this.selectedType();
+    if (!type) {
+      return null;
+    }
+    return Math.round(type.tarif * 1000);
   }
 
   onPaymentModalPaid(token: string): void {

@@ -25,4 +25,8 @@ export interface BonSortie {
   lignes: LigneBonSortie[];
   created_at: string;
   updated_at: string;
+  montant_paye?: number;
+  reference_paiement?: string;
+  statut_paiement?: string;
+  reglements?: { id?: number; type?: string; montant: number; reference?: string; created_at?: string }[];
 }

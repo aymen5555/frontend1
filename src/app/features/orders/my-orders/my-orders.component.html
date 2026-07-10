@@ -51,9 +51,14 @@
               </span>
             </td>
             <td class="py-4 px-3">
-              <span class="inline-block border px-2.5 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getPaymentBadgeClass(order.statut_paiement)">
-                {{ getPaymentLabel(order.statut_paiement) }}
-              </span>
+              <div class="flex flex-wrap gap-2">
+                <span class="inline-block border px-2.5 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getPaymentBadgeClass(order.statut_paiement)">
+                  {{ getPaymentLabel(order.statut_paiement) }}
+                </span>
+                <span *ngIf="order.refund_status && order.refund_status !== 'not_requested'" class="inline-block border px-2.5 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getRefundBadgeClass(order.refund_status)">
+                  {{ getRefundLabel(order.refund_status) }}
+                </span>
+              </div>
             </td>
             <td class="py-4 px-3">
               @if (order.statut === 'livree') {

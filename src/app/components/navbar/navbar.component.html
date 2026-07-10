@@ -55,10 +55,11 @@
 
             <!-- Boutique dropdown (shop ops) -->
             <div class="relative">
-              <button [class.nav-active]="isRouteActive(['/admin/products', '/admin/orders', '/admin/sales', '/admin/suppliers', '/admin/fournisseurs-internes', '/admin/bons-entree', '/admin/bons-sortie'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
+              <button [class.nav-active]="isRouteActive(['/admin/products', '/admin/orders', '/admin/sales', '/admin/suppliers', '/admin/fournisseurs-internes', '/admin/bons-entree', '/admin/bons-sortie', '/admin/categories'])" class="inline-flex items-center px-3 py-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-emerald-500 transition-colors duration-200 rounded" (click)="toggleGerantBoutique($event)">
                 🛍️ Boutique <span class="ml-1">▾</span>
               </button>
               <div *ngIf="showGerantBoutique()" class="absolute mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                <a routerLink="/admin/categories" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📂 Catégories</a>
                 <a routerLink="/admin/products" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">📦 Produits</a>
                 <a routerLink="/admin/orders" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">🧾 Commandes</a>
                 <a routerLink="/admin/sales" (click)="closeEspaces()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-lg mx-1">💰 Ventes Directes</a>
@@ -190,7 +191,7 @@
               </svg>
               @if (unreadNotificationsCount() > 0) {
                 <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">
-                  {{ unreadNotificationsCount() > 9 ? '9+' : unreadNotificationsCount() }}
+                  {{ unreadNotificationsCount() }}
                 </span>
               }
             </button>
@@ -203,16 +204,21 @@
               </div>
               
               <div class="max-h-64 overflow-y-auto">
-                @if (recentNotifications().length === 0) {
+                @if (visibleNotifications().length === 0) {
                   <div class="px-4 py-6 text-center text-sm text-gray-400">
                     Aucune notification
                   </div>
                 } @else {
-                  <div *ngFor="let item of recentNotifications()" class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0" [class.bg-emerald-50/10]="!item.read_at">
+                  <div *ngFor="let item of visibleNotifications()" class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0" [class.bg-emerald-50/10]="!item.read_at">
                     <p class="text-sm font-medium text-gray-800">{{ item.data.message }}</p>
                     <span class="text-[10px] text-gray-400 mt-1 block">{{ item.created_at | date:'short' }}</span>
                   </div>
                 }
+              </div>
+              <div *ngIf="notificationSvc.notifications().length > 5" class="px-4 py-2 text-right">
+                <button (click)="toggleShowAllNotifications($event)" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold bg-transparent border-0 cursor-pointer">
+                  {{ showAllNotifications() ? 'Voir moins' : 'Voir tout' }}
+                </button>
               </div>
             </div>
           </div>
@@ -289,6 +295,7 @@
            <a routerLink="/admin/reservations" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📅 Réservations</a>
            <a routerLink="/admin/activites" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎯 Activités</a>
            <a routerLink="/admin/abonnements" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🎫 Abonnements</a>
+           <a routerLink="/admin/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📂 Catégories</a>
            <a routerLink="/admin/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">📦 Produits</a>
            <a routerLink="/admin/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🧾 Commandes</a>
            <a routerLink="/admin/suppliers" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium transition-colors">🏭 Fournisseurs</a>

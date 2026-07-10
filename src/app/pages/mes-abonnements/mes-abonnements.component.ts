@@ -62,6 +62,12 @@ export class MesAbonnementsComponent implements OnInit {
     this.showPaymentModal.set(true);
   }
 
+  getAbonnementAmountCents(): number | null {
+    const ab = this.payingAbonnement();
+    if (!ab) return null;
+    return Math.round(ab.reste_a_payer * 1000);
+  }
+
   onPaymentModalPaid(token: string): void {
     const ab = this.payingAbonnement();
     if (!ab) return;
@@ -169,10 +175,23 @@ export class MesAbonnementsComponent implements OnInit {
     this.router.navigate(['/complexes', complexeId]);
   }
 
+  getSubscriptionAmountCents(ab: AbonnementAdherent | null): number | null {
+    if (!ab) {
+      return null;
+    }
+    const amountTnd = ab.reste_a_payer ?? ab.montant_apres_remise;
+    return Math.round(amountTnd * 1000);
+  }
+
+  private parseDate(dateStr: string | null | undefined): Date {
+    if (!dateStr) return new Date(NaN);
+    return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+  }
+
   formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr + 'T00:00:00');
-    return Number.isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('fr-FR', {
+    const d = this.parseDate(dateStr);
+
+    return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('fr-FR', {
       day: 'numeric', month: 'long', year: 'numeric',
     });
   }

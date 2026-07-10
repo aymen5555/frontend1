@@ -58,7 +58,15 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
             </div>
             <div class="flex justify-between mb-2">
               <span class="font-semibold text-gray-700">Tarif</span>
-              <span class="text-lg font-bold text-emerald-600">{{ type.tarif | number:'1.2-2' }} TND</span>
+              <span class="text-lg font-bold text-emerald-600">{{ getEffectivePrice(type) | number:'1.2-2' }} TND</span>
+            </div>
+            <div *ngIf="hasDiscount(type)" class="flex justify-between mb-2">
+              <span class="font-semibold text-gray-700">Remise</span>
+              <span class="text-sm font-semibold text-amber-600">{{ type.discount_percentage }}%</span>
+            </div>
+            <div *ngIf="hasDiscount(type)" class="flex justify-between mb-2">
+              <span class="font-semibold text-gray-700">Prix de base</span>
+              <span class="text-sm text-gray-500 line-through">{{ type.tarif | number:'1.2-2' }} TND</span>
             </div>
             <div class="flex justify-between">
               <span class="font-semibold text-gray-700">Niveau</span>
@@ -110,8 +118,12 @@ import { PaymentModalComponent } from '../../payment-modal/payment-modal.compone
     </div>
 
     <app-payment-modal *ngIf="showPaymentModal()"
-                       (paid)="onPaymentModalPaid($event)"
-                       (closed)="onPaymentModalCancelled()"></app-payment-modal>
+               [amountCents]="getPendingSubscriptionAmountCents()"
+               [currency]="'tnd'"
+               [typeAbonnementId]="pendingSubscription()?.type?.id"
+               [subscriptionDateDebut]="pendingSubscription()?.dateDebut"
+               (paid)="onPaymentModalPaid($event)"
+               (closed)="onPaymentModalCancelled()"></app-payment-modal>
   `,
   styles: []
 })
@@ -212,6 +224,13 @@ export class BrowseSubscriptionsComponent implements OnInit {
       },
       error: (err) => {
         this.subscribing = false;
+        const refund = err?.error?.refund;
+        if (refund) {
+          const id = refund.refund_id || refund.id || '—';
+          this.toast.error(`Votre paiement a été remboursé (réf: ${id}). Veuillez réessayer.`);
+          return;
+        }
+
         this.toast.error(err.error?.message || "Erreur lors de la création de l'abonnement");
       },
     });
@@ -228,6 +247,27 @@ export class BrowseSubscriptionsComponent implements OnInit {
     this.showPaymentModal.set(false);
     this.pendingSubscription.set(null);
     this.toast.warning('Abonnement annulé.');
+  }
+
+  getPendingSubscriptionAmountCents(): number | null {
+    const pending = this.pendingSubscription();
+    if (!pending) {
+      return null;
+    }
+    return Math.round(this.getEffectivePrice(pending.type) * 1000);
+  }
+
+  getEffectivePrice(type: TypeAbonnement): number {
+    const discount = type.discount_percentage ?? 0;
+    if (discount <= 0) {
+      return type.tarif;
+    }
+
+    return type.tarif * (1 - discount / 100);
+  }
+
+  hasDiscount(type: TypeAbonnement): boolean {
+    return (type.discount_percentage ?? 0) > 0;
   }
 
   get dateDebutError(): string {

@@ -124,9 +124,13 @@ export class SubscriptionComponent implements OnInit {
     });
   }
 
+  private parseDate(dateStr: string | null | undefined): Date {
+    if (!dateStr) return new Date(NaN);
+    return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+  }
+
   formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return 'N/A';
-    const d = new Date(dateStr + 'T00:00:00');
+    const d = this.parseDate(dateStr);
     return Number.isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('fr-FR', {
       day: 'numeric', month: 'long', year: 'numeric',
     });

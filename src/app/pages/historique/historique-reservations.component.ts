@@ -23,22 +23,27 @@ export class HistoriqueReservationsComponent implements OnInit {
     const from = this.dateFrom();
     const to = this.dateTo();
 
+    const parseDate = (dateStr: string | null | undefined): Date => {
+      if (!dateStr) return new Date(NaN);
+      return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+    };
+
     if (from) {
-      const fromDate = new Date(from + 'T00:00:00');
+      const fromDate = parseDate(from);
       list = list.filter(r => {
         const dateStr = r.start_at || r.date_seance;
         if (!dateStr) return false;
-        const d = new Date(dateStr);
+        const d = parseDate(dateStr);
         return d >= fromDate;
       });
     }
 
     if (to) {
-      const toDate = new Date(to + 'T23:59:59');
+      const toDate = new Date(`${to}T23:59:59`);
       list = list.filter(r => {
         const dateStr = r.start_at || r.date_seance;
         if (!dateStr) return false;
-        const d = new Date(dateStr);
+        const d = parseDate(dateStr);
         return d <= toDate;
       });
     }

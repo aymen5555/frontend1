@@ -47,7 +47,18 @@
             <button (click)="resetFilters()" class="w-full text-gray-400 hover:text-gray-600 font-medium text-sm transition-colors text-center block">Réinitialiser</button>
           </div>
         </div>
-      </div>
+          </div>
+          <!-- Conflicts details -->
+          <div *ngIf="conflictsDetails() && conflictsDetails()!.length > 0" class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg mt-3">
+            <h4 class="font-bold text-sm text-yellow-800 mb-2">Détails du conflit</h4>
+            <ul class="text-sm text-yellow-900">
+              <li *ngFor="let c of conflictsDetails()"> 
+                <strong *ngIf="c.type === 'reservation'">Réservation (ID {{ c.id }})</strong>
+                <strong *ngIf="c.type === 'activity'">Activité (ID {{ c.id }})</strong>
+                — {{ c.start_at }} → {{ c.end_at }}
+              </li>
+            </ul>
+          </div>
     </aside>
 
     <!-- Right Content: Terrains Grid -->
@@ -232,8 +243,10 @@
   </div>
   <!-- Payment Modal -->
   <app-payment-modal *ngIf="showPaymentModal()"
-                     [reservationId]="paymentReservationId()"
+                     [amountCents]="paymentAmountCents()"
+                     [currency]="'tnd'"
                      [paymentDeadlineMinutes]="paymentDeadlineMinutes()"
+                     [reservationId]="paymentReservationId()"
                      (paid)="onPaymentModalPaid($event)"
                      (closed)="onPaymentModalCancelled()"></app-payment-modal>
 </div>

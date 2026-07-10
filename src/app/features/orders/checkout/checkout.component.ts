@@ -25,6 +25,8 @@ export class CheckoutComponent implements OnInit {
   cartTotal = this.cartSvc.total;
   submitting = signal(false);
   showPaymentModal = signal(false);
+  readonly stripeCurrency: 'tnd' = 'tnd';
+  complexeId?: number | null = null;
 
   checkoutForm = this.fb.group({
     modalite_paiement: ['carte', [Validators.required]],
@@ -54,6 +56,10 @@ export class CheckoutComponent implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
+
+    // Precompute complexeId for the payment modal
+    const firstItem = this.cartItems()[0];
+    this.complexeId = firstItem.product.complexe?.id;
   }
 
   submitOrder(): void {
@@ -69,9 +75,9 @@ export class CheckoutComponent implements OnInit {
   }
 
   /** Called when card credentials are confirmed in the payment modal */
-  onCardConfirmed(_token: string): void {
+  onCardConfirmed(paymentId?: string): void {
     this.showPaymentModal.set(false);
-    this.placeOrder();
+    this.placeOrder(true, paymentId);
   }
 
   /** Called when the payment modal is dismissed — do nothing, user stays on checkout */
@@ -79,7 +85,7 @@ export class CheckoutComponent implements OnInit {
     this.showPaymentModal.set(false);
   }
 
-  private placeOrder(): void {
+  private placeOrder(paymentConfirmed = false, paymentIntentId?: string): void {
     this.submitting.set(true);
 
     // Get complexe_id from the first item (all items share the same complexe — validated in ngOnInit)
@@ -95,6 +101,8 @@ export class CheckoutComponent implements OnInit {
     const payload = {
       complexe_id: complexeId,
       modalite_paiement: this.checkoutForm.value.modalite_paiement as 'carte' | 'especes',
+      payment_confirmed: paymentConfirmed && this.checkoutForm.value.modalite_paiement === 'carte',
+      stripe_payment_intent_id: paymentIntentId || undefined,
       notes: this.checkoutForm.value.notes || undefined,
       items: this.cartItems().map(item => ({
         produit_id: item.product.id,
@@ -115,5 +123,10 @@ export class CheckoutComponent implements OnInit {
         this.submitting.set(false);
       }
     });
+  }
+
+  getAmountCents(): number {
+    const tndAmount = this.cartTotal();
+    return Math.round(tndAmount * 1000);
   }
 }

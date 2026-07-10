@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { AbonnementService } from '../../../services/abonnement.service';
 import { ComplexeService } from '../../../services/complexe.service';
 import { AuthService } from '../../../services/auth.service';
-import { TypeAbonnement, AbonnementAdherent } from '../../../models/abonnement-adherent.model';
+import { TypeAbonnement, AbonnementAdherent, ReglementAbonnement } from '../../../models/abonnement-adherent.model';
 import { ToastService } from '../../../services/toast.service';
 import { LoaderComponent } from '../../shared/loader/loader.component';
 
@@ -38,6 +38,54 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                <p class="mt-2 text-xs text-emerald-100/60">Lieux</p>
              </div>
            </div>
+            <!-- Reglements Modal -->
+            <div *ngIf="reglementsModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+              <div class="relative w-full max-w-2xl rounded-[2rem] bg-white p-6 shadow-2xl">
+                <button type="button" class="absolute right-4 top-4 text-gray-600 hover:text-gray-800 bg-transparent p-1 rounded-full" (click)="closeReglementsModal()">✕</button>
+                <h3 class="font-bold text-lg">Historique des paiements — {{ selectedAbonnement?.id }}</h3>
+
+                <div *ngIf="loadingReglements" class="py-6"><app-loader></app-loader></div>
+
+                <div *ngIf="!loadingReglements">
+                  <div *ngIf="reglements.length === 0" class="py-6 text-sm text-gray-600">Aucun paiement enregistré.</div>
+                  <div *ngIf="reglements.length > 0" class="space-y-2">
+                    <div *ngFor="let r of reglements" class="flex items-center justify-between p-3 bg-slate-50 border rounded">
+                      <div>
+                        <div class="font-semibold">{{ r.montant | number:'1.2-2' }} TND</div>
+                        <div class="text-xs text-slate-500">{{ r.date_reglement | date:'dd/MM/yyyy' }} • {{ r.modalite }}</div>
+                      </div>
+                      <div class="text-xs text-slate-500">{{ r.reference || '' }}</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 border-t pt-4">
+                    <h4 class="font-semibold mb-2">Ajouter un règlement</h4>
+                    <form [formGroup]="paymentForm" (ngSubmit)="createReglement()" class="grid grid-cols-1 gap-3">
+                      <div>
+                        <label class="block text-sm font-semibold mb-1">Montant</label>
+                        <input type="number" step="0.01" formControlName="montant" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold mb-1">Modalité</label>
+                        <select formControlName="modalite_paiement" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                          <option value="">Sélectionner...</option>
+                          <option value="especes">Espèces</option>
+                          <option value="carte">Carte</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold mb-1">Référence (optionnel)</label>
+                        <input type="text" formControlName="reference" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                      </div>
+                      <div class="flex justify-end gap-2 mt-2">
+                        <button type="button" class="px-4 py-2 bg-slate-100 rounded" (click)="closeReglementsModal()">Annuler</button>
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded" [disabled]="paymentForm.invalid || confirmingPayment">Enregistrer</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
         </div>
       </section>
 
@@ -45,22 +93,22 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
       <div class="flex mb-6 gap-2">
         <button
           type="button"
-          (click)="activeTab = 'types'"
-          [class]="activeTab === 'types' ? 'bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold' : 'bg-white border border-gray-200 px-4 py-2 rounded-lg'"
+          (click)="showTypesTab = true; showSubscriptionsTab = false"
+          [class]="showTypesTab ? 'bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold' : 'bg-white border border-gray-200 px-4 py-2 rounded-lg'"
         >
           📋 Formules ({{ types.length }})
         </button>
         <button
           type="button"
-          (click)="activeTab = 'subscriptions'"
-          [class]="activeTab === 'subscriptions' ? 'bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold' : 'bg-white border border-gray-200 px-4 py-2 rounded-lg'"
+          (click)="showTypesTab = false; showSubscriptionsTab = true"
+          [class]="showSubscriptionsTab ? 'bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold' : 'bg-white border border-gray-200 px-4 py-2 rounded-lg'"
         >
           👥 Abonnements ({{ abonnements.length }})
         </button>
       </div>
 
       <!-- Types Tab -->
-      <div *ngIf="activeTab === 'types'" class="space-y-6">
+      <div *ngIf="showTypesTab" class="space-y-6">
         <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6 mb-6">
             <div class="flex items-start gap-4">
               <div class="text-3xl">📋</div>
@@ -85,28 +133,61 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   <option value="">Sélectionner un complexe...</option>
                   <option *ngFor="let c of complexes" [value]="c.id">{{ c.name }}</option>
                 </select>
+                <div *ngIf="typeForm.get('complexe_id')?.invalid && (typeForm.get('complexe_id')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                  <div *ngIf="typeForm.get('complexe_id')?.errors?.['required']">Le complexe est requis.</div>
+                  <div *ngIf="typeForm.get('complexe_id')?.errors?.['server']">{{ typeForm.get('complexe_id')?.errors?.['server'] }}</div>
+                </div>
               </div>
 
               <div>
                 <label class="block text-sm font-semibold mb-1">Nom *</label>
                 <input name="nom" type="text" formControlName="nom" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                <div *ngIf="typeForm.get('nom')?.invalid && (typeForm.get('nom')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                  <div *ngIf="typeForm.get('nom')?.errors?.['required']">Le nom est requis.</div>
+                  <div *ngIf="typeForm.get('nom')?.errors?.['server']">{{ typeForm.get('nom')?.errors?.['server'] }}</div>
+                </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-semibold mb-1">Tarif TND *</label>
                   <input name="tarif" type="number" step="0.01" formControlName="tarif" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <div *ngIf="typeForm.get('tarif')?.invalid && (typeForm.get('tarif')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                    <div *ngIf="typeForm.get('tarif')?.errors?.['required']">Le tarif est requis.</div>
+                    <div *ngIf="typeForm.get('tarif')?.errors?.['server']">{{ typeForm.get('tarif')?.errors?.['server'] }}</div>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-semibold mb-1">Prix Unitaire TND *</label>
                   <input name="prix_unitaire" type="number" step="0.01" formControlName="prix_unitaire" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <div *ngIf="typeForm.get('prix_unitaire')?.invalid && (typeForm.get('prix_unitaire')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                    <div *ngIf="typeForm.get('prix_unitaire')?.errors?.['required']">Le prix unitaire est requis.</div>
+                    <div *ngIf="typeForm.get('prix_unitaire')?.errors?.['server']">{{ typeForm.get('prix_unitaire')?.errors?.['server'] }}</div>
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold mb-1">Remise (%) - Optionnel</label>
+                <input name="discount_percentage" type="number" min="0" max="100" step="1" formControlName="discount_percentage" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+              </div>
+
+              <div *ngIf="typeForm.value.complexe_id" class="rounded-3xl bg-blue-50 border border-blue-200 p-4">
+                <p class="text-sm font-semibold text-blue-900">Remise adhérent de ce complexe</p>
+                <p class="text-sm text-gray-700 mt-1">
+                  {{ getSelectedComplexeMemberDiscount() ?? 20 }}% <span *ngIf="getSelectedComplexeMemberDiscount() === null" class="text-gray-500">(valeur par défaut)</span>
+                </p>
+                <p class="text-xs text-gray-500 mt-1">Cette remise s'applique aux réservations du complexe et se modifie dans Complexes > Modifier.</p>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-semibold mb-1">Durée (mois) *</label>
                   <input name="nb_mois" type="number" formControlName="nb_mois" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  <div *ngIf="typeForm.get('nb_mois')?.invalid && (typeForm.get('nb_mois')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                    <div *ngIf="typeForm.get('nb_mois')?.errors?.['required']">La durée est requise.</div>
+                    <div *ngIf="typeForm.get('nb_mois')?.errors?.['server']">{{ typeForm.get('nb_mois')?.errors?.['server'] }}</div>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-semibold mb-1">Niveau sportif *</label>
@@ -117,6 +198,10 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                     <option value="expert">Expert</option>
                     <option value="tous">Tous</option>
                   </select>
+                  <div *ngIf="typeForm.get('niveau_sportif_cible')?.invalid && (typeForm.get('niveau_sportif_cible')?.touched || submittedTypeAttempt)" class="text-red-600 text-sm mt-1">
+                    <div *ngIf="typeForm.get('niveau_sportif_cible')?.errors?.['required']">Le niveau sportif est requis.</div>
+                    <div *ngIf="typeForm.get('niveau_sportif_cible')?.errors?.['server']">{{ typeForm.get('niveau_sportif_cible')?.errors?.['server'] }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -173,6 +258,7 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   <div class="flex items-center gap-3">
                     <h4 class="font-semibold text-gray-900">{{ type.nom }}
                       <span *ngIf="(type.abonnements_count ?? 0) > 0" class="ml-2 inline-block text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">{{ type.abonnements_count }} abonnés</span>
+                      <span *ngIf="(type.discount_percentage ?? 0) > 0" class="ml-2 inline-block text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">-{{ type.discount_percentage }}%</span>
                     </h4>
                     <span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                       {{ type.active ? 'Actif' : 'Inactif' }}
@@ -236,7 +322,7 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
       </div>
 
       <!-- Subscriptions Tab -->
-      <div *ngIf="activeTab === 'subscriptions'" class="space-y-6">
+      <div *ngIf="showSubscriptionsTab" class="space-y-6">
         <div class="rounded-[2rem] border border-blue-100 bg-blue-50 p-6 mb-6">
           <div class="flex items-start gap-4">
             <div class="text-3xl">👥</div>
@@ -368,6 +454,7 @@ import { LoaderComponent } from '../../shared/loader/loader.component';
                   >
                     Confirmer paiement
                   </button>
+                  <button *ngIf="ab.reste_a_payer > 0" class="bg-white border border-gray-200 text-sm py-2 px-3 rounded-md ml-2" (click)="openReglementsModal(ab)">Historique</button>
                   <button
                     *ngIf="ab.statut === 'actif'"
                     class="bg-red-500 hover:bg-red-600 text-white border-0 rounded-lg text-sm py-2 px-4 w-full sm:w-auto"
@@ -450,7 +537,8 @@ export class SubscriptionAdminComponent implements OnInit {
   private readonly ngZone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  activeTab: string = 'types';
+  showTypesTab = true;
+  showSubscriptionsTab = false;
   types: TypeAbonnement[] = [];
   abonnements: AbonnementAdherent[] = [];
   complexes: any[] = [];
@@ -466,10 +554,17 @@ export class SubscriptionAdminComponent implements OnInit {
   deletingSubscriptionId: number | null = null;
   confirmingPayment = false;
   paymentModalVisible = false;
+  // reglements (payment history)
+  reglementsModalVisible = false;
+  reglements: ReglementAbonnement[] = [];
+  loadingReglements = false;
 
   editingType: TypeAbonnement | null = null;
   editingMode = false;
   selectedAbonnement: AbonnementAdherent | null = null;
+
+  // UX helpers
+  submittedTypeAttempt = false;
 
   typeForm: FormGroup;
   paymentForm: FormGroup;
@@ -481,6 +576,16 @@ export class SubscriptionAdminComponent implements OnInit {
 
   get pendingPaymentTotal(): number {
     return this.pendingPayments.reduce((total, ab) => total + (ab.reste_a_payer || 0), 0);
+  }
+
+  getSelectedComplexeMemberDiscount(): number | null {
+    const complexeId = Number(this.typeForm.get('complexe_id')?.value);
+    if (!complexeId) {
+      return null;
+    }
+
+    const complexe = this.complexes.find((c) => c.id === complexeId);
+    return complexe?.member_discount_percentage ?? null;
   }
 
   deleteSubscription(id: number): void {
@@ -507,6 +612,7 @@ export class SubscriptionAdminComponent implements OnInit {
       nom: ['', Validators.required],
       tarif: ['', Validators.required],
       prix_unitaire: ['', Validators.required],
+      discount_percentage: [''],
       nb_mois: ['', Validators.required],
       niveau_sportif_cible: ['tous', Validators.required],
       description: [''],
@@ -535,6 +641,29 @@ export class SubscriptionAdminComponent implements OnInit {
       this.loadComplexes();
     }
     this.loadStats();
+
+    // Auto-calculate prix_unitaire when tarif or nb_mois changes
+    const tarifCtrl = this.typeForm.get('tarif');
+    const nbMoisCtrl = this.typeForm.get('nb_mois');
+    const prixCtrl = this.typeForm.get('prix_unitaire');
+
+    tarifCtrl?.valueChanges.subscribe((val) => {
+      const tarif = Number(val) || 0;
+      const nb = Number(nbMoisCtrl?.value) || 1;
+      // only auto-update if user hasn't filled a custom prix_unitaire
+      const currentPrix = Number(prixCtrl?.value) || 0;
+      const calc = nb > 0 ? +(tarif / nb) : tarif;
+      if (!currentPrix || Math.abs(currentPrix - calc) < 0.0001) {
+        prixCtrl?.setValue(+calc.toFixed(2), { emitEvent: false });
+      }
+    });
+
+    nbMoisCtrl?.valueChanges.subscribe((val) => {
+      const nb = Number(val) || 1;
+      const tarif = Number(tarifCtrl?.value) || 0;
+      const calc = nb > 0 ? +(tarif / nb) : tarif;
+      prixCtrl?.setValue(+calc.toFixed(2), { emitEvent: false });
+    });
   }
 
   loadComplexes(): void {
@@ -620,10 +749,19 @@ export class SubscriptionAdminComponent implements OnInit {
   }
 
   onSaveType(): void {
+    this.submittedTypeAttempt = true;
+    Object.values(this.typeForm.controls).forEach((c) => c.markAsTouched());
     if (!this.typeForm.valid) return;
 
     this.savingType = true;
-    const payload = this.typeForm.value;
+    const payload: any = { ...this.typeForm.value };
+    payload.discount_percentage = payload.discount_percentage ? Number(payload.discount_percentage) : undefined;
+
+    // If complexe_id missing and current user is gerant, attach their complexe
+    if (!payload.complexe_id && !this.auth.isSuperAdmin()) {
+      const gerantComplexe = this.auth.user()?.complexe;
+      if (gerantComplexe && gerantComplexe.id) payload.complexe_id = gerantComplexe.id;
+    }
 
     if (this.editingType) {
       this.abonnementService.adminUpdateType(this.editingType.id, payload).subscribe({
@@ -648,9 +786,21 @@ export class SubscriptionAdminComponent implements OnInit {
           this.resetTypeForm();
           this.editingMode = false;
           this.savingType = false;
+          this.submittedTypeAttempt = false;
         },
-        error: () => {
-          this.toast.error('Erreur lors de la création');
+        error: (err) => {
+          // map backend validation errors (422) to form controls
+          if (err?.status === 422 && err?.error?.errors) {
+            const errors = err.error.errors;
+            Object.keys(errors).forEach((key) => {
+              if (this.typeForm.controls[key]) {
+                this.typeForm.controls[key].setErrors({ server: errors[key][0] });
+              }
+            });
+            this.toast.error('Erreur de validation — veuillez vérifier les champs.');
+          } else {
+            this.toast.error('Erreur lors de la création');
+          }
           this.savingType = false;
         },
       });
@@ -664,6 +814,7 @@ export class SubscriptionAdminComponent implements OnInit {
       nom: type.nom,
       tarif: type.tarif,
       prix_unitaire: type.prix_unitaire,
+      discount_percentage: (type as any).discount_percentage ?? '',
       nb_mois: type.nb_mois,
       niveau_sportif_cible: type.niveau_sportif_cible,
       description: type.description ?? '',
@@ -682,9 +833,9 @@ export class SubscriptionAdminComponent implements OnInit {
     this.typeForm.reset();
     const gerantComplexe = this.auth.user()?.complexe;
     if (this.auth.isGerant() && gerantComplexe && gerantComplexe.id) {
-      this.typeForm.patchValue({ complexe_id: gerantComplexe.id });
+      this.typeForm.patchValue({ complexe_id: gerantComplexe.id, discount_percentage: '' });
     } else {
-      this.typeForm.patchValue({ complexe_id: '' });
+      this.typeForm.patchValue({ complexe_id: '', discount_percentage: '' });
     }
   }
 
@@ -746,6 +897,28 @@ export class SubscriptionAdminComponent implements OnInit {
     this.paymentForm.patchValue({ montant: ab.reste_a_payer ?? 0 });
   }
 
+  openReglementsModal(ab: AbonnementAdherent): void {
+    this.selectedAbonnement = ab;
+    this.reglementsModalVisible = true;
+    this.loadingReglements = true;
+    this.abonnementService.getAbonnementDetail(ab.id).subscribe({
+      next: (detail) => {
+        this.reglements = detail.reglements ?? [];
+        this.loadingReglements = false;
+      },
+      error: () => {
+        this.toast.error('Erreur lors du chargement des paiements');
+        this.loadingReglements = false;
+      }
+    });
+  }
+
+  closeReglementsModal(): void {
+    this.reglementsModalVisible = false;
+    this.reglements = [];
+    this.selectedAbonnement = null;
+  }
+
   closePaymentModal(): void {
     this.paymentModalVisible = false;
     this.selectedAbonnement = null;
@@ -781,6 +954,26 @@ export class SubscriptionAdminComponent implements OnInit {
           this.confirmingPayment = false;
         },
       });
+  }
+
+  createReglement(): void {
+    if (!this.paymentForm.valid || !this.selectedAbonnement) return;
+    this.confirmingPayment = true;
+    const { montant, modalite_paiement, reference } = this.paymentForm.value;
+    this.abonnementService.adminConfirmPayment(this.selectedAbonnement.id, { montant, modalite_paiement, reference }).subscribe({
+      next: (updated) => {
+        this.toast.success('Règlement enregistré');
+        this.confirmingPayment = false;
+        // refresh reglements list
+        this.abonnementService.getAbonnementDetail(this.selectedAbonnement!.id).subscribe({ next: (d) => { this.reglements = d.reglements ?? []; this.loadStats(); } });
+        // update abonnements list
+        this.loadAbonnements();
+      },
+      error: () => {
+        this.toast.error('Erreur lors de l\'enregistrement du règlement');
+        this.confirmingPayment = false;
+      }
+    });
   }
 
   cancelSubscription(id: number): void {

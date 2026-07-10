@@ -227,11 +227,12 @@
         <div *ngIf="bookingDate()" class="mb-6">
           <div *ngIf="placesLoading()" class="text-sm text-gray-500">Chargement des places…</div>
           <div *ngIf="!placesLoading() && (placesRestantes() ?? 0) > 0" class="text-sm font-bold text-[#16a34a]">
-            {{ placesRestantes() }} places disponibles
-          </div>
-          <div *ngIf="!placesLoading() && placesRestantes() !== null && (placesRestantes() ?? 0) <= 0" class="text-sm font-bold text-red-600">
-            Complet
-          </div>
+              {{ placesRestantes() }} places disponibles
+              <span *ngIf="userConflict() === true" class="text-sm font-medium text-red-600 ml-2">Vous avez déjà une réservation qui chevauche ce créneau.</span>
+            </div>
+            <div *ngIf="!placesLoading() && placesRestantes() !== null && (placesRestantes() ?? 0) <= 0" class="text-sm font-bold text-red-600">
+              Complet
+            </div>
         </div>
 
         <!-- Payment method -->
@@ -268,7 +269,7 @@
       <div class="p-6 border-t border-gray-100 bg-white" *ngIf="selectedActivite() as act">
         <button
           (click)="confirm()"
-          [disabled]="bookingInProgress() || bookingSuccess() !== '' || !bookingDate() || !isDateAllowed(bookingDate(), act.jours) || (placesRestantes() !== null && (placesRestantes() ?? 0) <= 0)"
+          [disabled]="bookingInProgress() || bookingSuccess() !== '' || !bookingDate() || !isDateAllowed(bookingDate(), act.jours) || (placesRestantes() !== null && (placesRestantes() ?? 0) <= 0) || userConflict() === true"
           class="w-full bg-[#16a34a] hover:bg-[#15803d] disabled:bg-gray-300 text-white py-4 rounded-xl font-semibold text-lg transition-colors flex justify-center items-center shadow-lg shadow-[#16a34a]/20 active:scale-[0.98]">
           <span *ngIf="bookingInProgress()" class="mr-2">
             <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -284,8 +285,10 @@
 <!-- Payment modal for card payments -->
 <app-payment-modal
   *ngIf="showPaymentModal()"
-  [reservationId]="paymentReservationId()"
+  [amountCents]="getReservationAmountCents()"
+  [currency]="'tnd'"
   [paymentDeadlineMinutes]="30"
+  [reservationId]="paymentReservationId()"
   (paid)="onPaymentModalPaid($event)"
   (closed)="onPaymentModalCancelled()">
 </app-payment-modal>

@@ -44,6 +44,7 @@ export class ActivitesComponent implements OnInit {
   bookingError    = signal('');
   placesRestantes = signal<number | null>(null);
   placesLoading   = signal(false);
+  userConflict = signal<boolean | null>(null);
   
   // Payment modal state (for card payment)
   showPaymentModal = signal(false);
@@ -161,9 +162,14 @@ export class ActivitesComponent implements OnInit {
     return jours.map(j => map[j] ?? j).join(' · ');
   }
 
+  private parseDate(dateStr: string | null | undefined): Date {
+    if (!dateStr) return new Date(NaN);
+    return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+  }
+
   isDateAllowed(date: string, jours: string[]): boolean {
     if (!date) return false;
-    const dayIdx = new Date(date + 'T00:00:00').getDay(); // 0=Sun
+    const dayIdx = this.parseDate(date).getDay(); // 0=Sun
     const dayMap: Record<number, string> = {
       0: 'dimanche', 1: 'lundi', 2: 'mardi', 3: 'mercredi',
       4: 'jeudi', 5: 'vendredi', 6: 'samedi',
@@ -209,10 +215,12 @@ export class ActivitesComponent implements OnInit {
       next: (data) => {
         this.placesLoading.set(false);
         this.placesRestantes.set(data.places_restantes);
+        this.userConflict.set(Boolean(data.user_conflict));
       },
       error: () => {
         this.placesLoading.set(false);
         this.placesRestantes.set(null);
+        this.userConflict.set(null);
       },
     });
   }
@@ -245,7 +253,8 @@ export class ActivitesComponent implements OnInit {
           // Cash payment - reservation confirmed
           this.showPanel.set(false);
           this.toastSvc.success('Activité réservée avec succès !');
-          this.bookingSuccess.set(`Activité réservée ! Rendez-vous le ${new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')} à ${act.heure_debut.slice(0,5)}.`);
+          const formattedDate = this.parseDate(date).toLocaleDateString('fr-FR');
+          this.bookingSuccess.set(`Activité réservée ! Rendez-vous le ${formattedDate} à ${act.heure_debut.slice(0,5)}.`);
         }
         this.load();
       },
@@ -261,58 +270,40 @@ export class ActivitesComponent implements OnInit {
     });
   }
   
-  onPaymentModalPaid(token: string): void {
+  getReservationAmountCents(): number | null {
+    const act = this.selectedActivite();
+    if (!act) return null;
+    return Math.round(act.prix * 1000);
+  }
+
+  onPaymentModalPaid(paymentIntentId: string): void {
     const id = this.paymentReservationId();
     if (!id) return;
-    this.activiteSvc.payReservation(id).subscribe({
+    this.activiteSvc.payReservation(id, paymentIntentId).subscribe({
       next: () => {
         this.showPaymentModal.set(false);
         this.paymentReservationId.set(null);
+        this.bookingInProgress.set(false);
+        this.showPanel.set(false);
         this.toastSvc.success('Paiement effectué avec succès !');
         this.load();
       },
       error: (err) => {
         this.showPaymentModal.set(false);
         this.paymentReservationId.set(null);
+        this.bookingInProgress.set(false);
         this.toastSvc.error(err?.error?.message || 'Erreur lors du paiement.');
       }
     });
   }
   
   onPaymentModalCancelled(): void {
-    const id = this.paymentReservationId();
-    if (id) {
-      // Cancel the reservation since user aborted payment
-      this.activiteSvc.cancelReservation(id).subscribe({
-        next: () => {
-          this.showPaymentModal.set(false);
-          this.paymentReservationId.set(null);
-          this.toastSvc.warning('Réservation annulée. Vous pouvez choisir une autre date ou finaliser votre paiement depuis Mes Activités.');
-          this.load();
-        },
-        error: () => {
-          // Retry with force flag for unpaid card reservations
-          this.activiteSvc.cancelReservation(id, true).subscribe({
-            next: () => {
-              this.showPaymentModal.set(false);
-              this.paymentReservationId.set(null);
-              this.toastSvc.warning('Paiement annulé — réservation annulée.');
-              this.load();
-            },
-            error: () => {
-              this.showPaymentModal.set(false);
-              this.paymentReservationId.set(null);
-              this.toastSvc.warning(
-                'Votre réservation est toujours active. Elle sera annulée automatiquement.'
-              );
-            }
-          });
-        }
-      });
-    } else {
-      this.showPaymentModal.set(false);
-      this.paymentReservationId.set(null);
-    }
+    this.showPaymentModal.set(false);
+    this.paymentReservationId.set(null);
+    this.bookingInProgress.set(false);
+    this.showPanel.set(false);
+    this.toastSvc.warning('Paiement non effectué. Votre réservation est conservée en attente de paiement dans Mes Activités.');
+    this.load();
   }
 
   resetFilters(): void {

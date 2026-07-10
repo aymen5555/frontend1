@@ -34,9 +34,9 @@ export class ReservationService {
     return this.http.post<ApiItem<Reservation>>(this.api, payload).pipe(map(r => r.data));
   }
 
-  /** PUT /admin/reservations/{id}/confirm-cash — admin confirms cash payment */
-  confirmCashPayment(id: number): Observable<Reservation> {
-    return this.http.put<ApiItem<Reservation>>(`${environment.apiUrl}/admin/reservations/${id}/confirm-cash`, {}, { headers: { 'X-Skip-Error-Toast': '1' } }).pipe(map(r => r.data));
+  /** PUT /admin/reservations/{id}/confirm-cash — admin confirms cash payment. Optional payload: { montant?, reference? } */
+  confirmCashPayment(id: number, payload?: { montant?: number; reference?: string }): Observable<Reservation> {
+    return this.http.put<ApiItem<Reservation>>(`${environment.apiUrl}/admin/reservations/${id}/confirm-cash`, payload ?? {}, { headers: { 'X-Skip-Error-Toast': '1' } }).pipe(map(r => r.data));
   }
 
   /** PUT /reservations/{id}/cancel (client) */
@@ -75,9 +75,14 @@ export class ReservationService {
       .pipe(map(r => r.data));
   }
 
-  /** PUT /admin/reservations/{id}/confirm-payment — confirm payment (admin) */
-  adminConfirmPayment(id: number): Observable<void> {
-    return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}/confirm-payment`, {});
+  /** PUT /admin/reservations/{id}/confirm-payment — confirm payment (admin). Accepts optional montant and reference for partial payments */
+  adminConfirmPayment(id: number, payload?: { montant?: number; reference?: string }): Observable<void> {
+    return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}/confirm-payment`, payload ?? {});
+  }
+
+  /** PUT /admin/reservations/{id}/confirm-refund — confirm refund (admin/gerant) */
+  adminConfirmRefund(id: number): Observable<void> {
+    return this.http.put<void>(`${environment.apiUrl}/admin/reservations/${id}/confirm-refund`, {});
   }
 
   /** PUT /admin/reservations/{id}/cancel — cancel reservation (admin) */

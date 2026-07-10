@@ -20,6 +20,10 @@
             <option value="" disabled>Sélectionner</option>
             <option *ngFor="let c of complexes()" [value]="c.id">{{ c.name }}</option>
           </select>
+          <div *ngIf="bonForm.get('complexe_id')?.invalid && (bonForm.get('complexe_id')?.touched || submittedAttempt)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="bonForm.get('complexe_id')?.errors?.['required']">Le complexe est requis.</div>
+            <div *ngIf="bonForm.get('complexe_id')?.errors?.['server']">{{ bonForm.get('complexe_id')?.errors?.['server'] }}</div>
+          </div>
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Motif</label>
@@ -35,6 +39,10 @@
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Date *</label>
           <input type="date" formControlName="date_bon_sor" max="{{ today }}" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+          <div *ngIf="bonForm.get('date_bon_sor')?.invalid && (bonForm.get('date_bon_sor')?.touched || submittedAttempt)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="bonForm.get('date_bon_sor')?.errors?.['required']">La date est requise.</div>
+            <div *ngIf="bonForm.get('date_bon_sor')?.errors?.['server']">{{ bonForm.get('date_bon_sor')?.errors?.['server'] }}</div>
+          </div>
         </div>
       </div>
 
@@ -51,6 +59,10 @@
                 <option value="" disabled>Choisir un produit</option>
                 <option *ngFor="let p of filteredProducts()" [value]="p.id">{{ p.nom }} (dispo: {{ p.stock?.quantite_disponible ?? 0 }})</option>
               </select>
+              <div *ngIf="ctrl.get('produit_id')?.invalid && (ctrl.get('produit_id')?.touched || submittedAttempt)" class="text-red-600 text-sm mt-1">
+                <div *ngIf="ctrl.get('produit_id')?.errors?.['required']">Le produit est requis.</div>
+                <div *ngIf="ctrl.get('produit_id')?.errors?.['server']">{{ ctrl.get('produit_id')?.errors?.['server'] }}</div>
+              </div>
             </div>
             <div class="w-32 flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Qté *</label>
@@ -107,15 +119,111 @@
           @for (b of bons(); track b.id) {
             <tr class="hover:bg-slate-50/50 transition-colors">
               <td class="py-4 px-3 font-bold text-slate-700">{{ b.reference }}</td>
-              <td class="py-4 px-3 text-slate-600">{{ b.date_bon_sor }}</td>
+              <td class="py-4 px-3 text-slate-600">{{ b.date_bon_sor | date:'yyyy-MM-dd' }}</td>
               <td class="py-4 px-3 text-slate-600">{{ b.motif || '—' }}</td>
               <td class="py-4 px-3 text-slate-600">{{ b.complexe?.name || '—' }}</td>
               <td class="py-4 px-3 text-slate-600">{{ b.lignes.length || 0 }}</td>
               <td class="py-4 px-3 font-bold text-primary">{{ b.total_ttc_bon_sor | number:'1.2-2' }} TND</td>
+              <td class="py-4 px-3 text-right">
+                <button (click)="viewBon(b.id)" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Voir</button>
+              </td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div *ngIf="selectedBon()" class="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 overflow-auto">
+    <div class="relative w-full max-w-3xl bg-white rounded-2xl p-6 shadow-2xl">
+      <button type="button" class="absolute right-4 top-4 text-gray-600" (click)="closeDetail()">✕</button>
+      <h3 class="text-xl font-bold mb-2">Bon de sortie — {{ selectedBon()?.reference }}</h3>
+      <p class="text-sm text-slate-600 mb-4">Date: {{ selectedBon()?.date_bon_sor | date:'yyyy-MM-dd' }} — Motif: {{ selectedBon()?.motif || '—' }}</p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-slate-500 text-xs uppercase tracking-wider border-b">
+              <th class="py-2 px-2 text-left">Produit</th>
+              <th class="py-2 px-2">Réf</th>
+              <th class="py-2 px-2">Qté</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of selectedBon()?.lignes">
+              <td class="py-2 px-2">{{ l.produit?.nom || 'Prod #' + l.produit_id }}</td>
+              <td class="py-2 px-2">{{ l.produit?.reference || '—' }}</td>
+              <td class="py-2 px-2 text-center">{{ l.quantite_entree_lig_bon_sor }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <div class="text-right">
+          <div class="text-2xl font-bold text-primary">Total articles: {{ selectedBon()?.lignes?.length || 0 }}</div>
+        </div>
+      </div>
+        <div class="flex justify-end gap-6 mt-2">
+          <div class="text-right">
+            <div class="text-sm text-slate-600">Montant payé</div>
+            <div class="text-lg font-semibold">{{ selectedBon()?.montant_paye | number:'1.2-2' }} TND</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-slate-600">Reste</div>
+            <div class="text-lg font-semibold text-red-600">{{ remaining | number:'1.2-2' }} TND</div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedBon()?.reglements?.length" class="mt-4">
+          <h4 class="font-bold mb-2">Historique des paiements</h4>
+          <ul class="space-y-2 max-h-40 overflow-auto">
+            <li *ngFor="let r of selectedBon()?.reglements" class="flex justify-between bg-slate-50 p-2 rounded">
+              <div>
+                <div class="text-sm font-semibold">{{ r.type || 'paiement' }} — {{ r.reference || '' }}</div>
+                <div class="text-xs text-slate-500">{{ r.created_at | date:'yyyy-MM-dd HH:mm' }}</div>
+              </div>
+              <div class="text-right font-bold">{{ r.montant | number:'1.2-2' }} TND</div>
+            </li>
+          </ul>
+        </div>
+      <div class="flex justify-end gap-2 mt-4">
+          <button class="px-4 py-2 bg-white border rounded" (click)="printBon()">Imprimer</button>
+          <button class="px-4 py-2 bg-white border rounded" (click)="printBon()">Exporter (PDF)</button>
+          <button class="px-4 py-2 bg-emerald-600 text-white rounded" (click)="openPaymentModal()">Confirmer paiement</button>
+          <button class="px-4 py-2 bg-slate-100 border rounded" (click)="closeDetail()">Fermer</button>
+      </div>
+
+      <!-- Payment Modal -->
+      <div *ngIf="paymentModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div class="relative w-full max-w-xl rounded-[1rem] bg-white p-6 shadow-2xl">
+          <button type="button" class="absolute right-4 top-4 text-gray-600 hover:text-gray-800 bg-transparent p-1 rounded-full" (click)="closePaymentModal()">✕</button>
+          <h3 class="font-bold text-lg">Confirmer le paiement</h3>
+          <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()" class="space-y-4 mt-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">Montant TND</label>
+              <input type="number" step="0.01" formControlName="montant" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Modalité</label>
+              <select formControlName="modalite_paiement" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">Sélectionner...</option>
+                <option value="especes">Espèces</option>
+                <option value="carte">Carte</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Référence (optionnel)</label>
+              <input type="text" formControlName="reference" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </div>
+            <div class="flex justify-end gap-2 mt-2">
+              <button type="button" class="px-4 py-2 bg-slate-100 rounded" (click)="closePaymentModal()">Annuler</button>
+              <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded" [disabled]="paymentForm.invalid">Confirmer</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

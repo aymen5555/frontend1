@@ -21,7 +21,7 @@
     <form [formGroup]="depenseForm" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Date *</label>
-        <input type="date" formControlName="date_depense" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+        <input type="date" formControlName="date_depense" [max]="todayDate" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Montant (DT) *</label>

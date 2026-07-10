@@ -28,6 +28,18 @@
 
   <!-- Product Table -->
   <div *ngIf="!loading() && products().length > 0" class="glass-panel p-6 rounded-2xl overflow-hidden">
+    <!-- Search Bar -->
+    <div class="mb-6 flex justify-end">
+      <label for="productSearch" class="sr-only">Rechercher un produit</label>
+      <input 
+        id="productSearch"
+        type="text" 
+        placeholder="Rechercher un produit..." 
+        [(ngModel)]="searchTerm" 
+        class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-64"
+      />
+    </div>
+
     <div class="overflow-x-auto">
       <table class="w-full text-sm text-left border-collapse">
         <thead>
@@ -43,7 +55,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-50 text-slate-700 font-medium">
-          @for (p of products(); track p.id) {
+          @for (p of filteredProducts(); track p.id) {
             <tr class="hover:bg-slate-50/50 transition-colors">
               <!-- Image -->
               <td class="py-4 px-3">

@@ -33,6 +33,7 @@ export class AdminDepensesComponent implements OnInit {
   editing = signal<Depense | null>(null);
   submitting = signal(false);
   totalMois = signal(0);
+  todayDate = new Date().toISOString().split('T')[0];
 
   depenseForm!: FormGroup;
 
@@ -70,7 +71,7 @@ export class AdminDepensesComponent implements OnInit {
     const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const total = this.depenses()
       .filter(d => d.date_depense.startsWith(ym))
-      .reduce((s, d) => s + d.montant_dep, 0);
+      .reduce((s, d) => s + Number(d.montant_dep || 0), 0);
     this.totalMois.set(Math.round(total * 1000) / 1000);
   }
 

@@ -23,11 +23,16 @@ export class HistoriqueAbonnementsComponent implements OnInit {
     const from = this.dateFrom();
     const to = this.dateTo();
 
+    const parseDate = (dateStr: string | null | undefined): Date => {
+      if (!dateStr) return new Date(NaN);
+      return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+    };
+
     if (from) {
-      const fromDate = new Date(from + 'T00:00:00');
+      const fromDate = parseDate(from);
       list = list.filter(a => {
         if (!a.date_debut) return false;
-        const d = new Date(a.date_debut);
+        const d = parseDate(a.date_debut);
         return d >= fromDate;
       });
     }

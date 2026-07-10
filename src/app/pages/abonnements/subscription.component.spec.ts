@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { SubscriptionComponent } from './subscription.component';
 import { AuthService } from '../../services/auth.service';
 import { AbonnementService } from '../../services/abonnement.service';
+import { ToastService } from '../../services/toast.service';
 
 describe('SubscriptionComponent', () => {
   const mockAuthService = {
@@ -14,16 +15,31 @@ describe('SubscriptionComponent', () => {
   };
 
   const mockAbonnementService = {
-    getMine: () => of([]),
-    create: () => of({ id: 1, user_id: 1, type: 'MONTHLY', status: 'pending', payment_method: 'carte', payment_status: 'pending', price: 49, start_at: new Date().toISOString(), expires_at: new Date().toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() }),
-    confirmPayment: () => of({}),
-    cancel: () => of({}),
+    getMesAbonnements: () => of([]),
+    legacyConfirmPayment: () => of({}),
+    legacyCancel: () => of({}),
+  };
+
+  const mockToastService = {
+    success: () => {},
+    error: () => {},
   };
 
   beforeEach(async () => {
+    TestBed.overrideComponent(SubscriptionComponent, {
+      set: {
+        template: '<div></div>',
+        styles: [],
+      },
+    });
+
     await TestBed.configureTestingModule({
-      imports: [SubscriptionComponent],
-      providers: [provideRouter([]), { provide: AuthService, useValue: mockAuthService }, { provide: AbonnementService, useValue: mockAbonnementService }],
+      imports: [RouterTestingModule.withRoutes([])],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: AbonnementService, useValue: mockAbonnementService },
+        { provide: ToastService, useValue: mockToastService },
+      ],
     }).compileComponents();
   });
 

@@ -7,11 +7,14 @@
     "build": "ng build",
     "download:fonts": "node ./scripts/download-inter-fonts.js",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:unit": "vitest",
+    "test:smoke": "vitest src/tests --reporter=verbose"
   },
   "private": true,
   "packageManager": "npm@11.11.0",
   "dependencies": {
+    "@angular/animations": "^21.2.16",
     "@angular/cdk": "^21.2.14",
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
@@ -28,6 +31,7 @@
     "@angular/build": "^21.2.14",
     "@angular/cli": "^21.2.14",
     "@angular/compiler-cli": "^21.2.0",
+    "@angular/platform-browser-dynamic": "^21.2.16",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",

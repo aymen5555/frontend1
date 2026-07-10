@@ -23,12 +23,15 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 flex-wrap">
         <span class="border px-3 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getStatusBadgeClass(order()!.statut)">
           {{ getStatusLabel(order()!.statut) }}
         </span>
         <span class="border px-3 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getPaymentBadgeClass(order()!.statut_paiement)">
           {{ getPaymentLabel(order()!.statut_paiement) }}
+        </span>
+        <span *ngIf="order()?.refund_status && order()!.refund_status !== 'not_requested'" class="border px-3 py-1 text-xs font-bold rounded-lg shadow-2xs" [ngClass]="getRefundBadgeClass(order()!.refund_status)">
+          {{ getRefundLabel(order()!.refund_status) }}
         </span>
       </div>
     </div>
@@ -67,11 +70,13 @@
             Total
           </h2>
           <div class="py-4">
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Montant total réglé / dû</p>
-            <p class="text-3xl font-black text-primary mt-1">
-              {{ order()?.montant_total | number:'1.2-2' }} TND
-            </p>
-          </div>
+              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Montant total</p>
+              <p class="text-3xl font-black text-primary mt-1">{{ order()?.montant_total | number:'1.2-2' }} TND</p>
+              <div class="mt-3 text-sm text-slate-600">
+                <div>Montant payé : <strong>{{ (order()?.montant_paye ?? 0) | number:'1.2-2' }} TND</strong></div>
+                <div>Reste : <strong class="text-red-600">{{ ((order()?.montant_total ?? 0) - (order()?.montant_paye ?? 0)) | number:'1.2-2' }} TND</strong></div>
+              </div>
+            </div>
         </div>
 
         <!-- Cancel order CTA if pending -->
@@ -153,6 +158,19 @@
           </div>
         }
       </div>
+    </div>
+
+    <div *ngIf="order()?.reglements?.length" class="glass-panel p-6 rounded-2xl mt-4">
+      <h2 class="font-bold text-lg text-slate-900 mb-4 pb-2 border-b border-slate-100">Historique des paiements</h2>
+      <ul class="space-y-3">
+        <li *ngFor="let r of order()?.reglements" class="flex items-center justify-between p-3 bg-white rounded border">
+          <div>
+            <div class="font-semibold text-sm">{{ r.type || 'Paiement' }} — {{ r.reference || '' }}</div>
+              <div class="text-xs text-slate-500">{{ r.created_at | date:'dd/MM/yyyy HH:mm' }} • {{ r.type || '' }}</div>
+          </div>
+          <div class="text-right font-bold">{{ r.montant | number:'1.2-2' }} TND</div>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

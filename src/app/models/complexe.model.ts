@@ -34,6 +34,7 @@ export interface Complexe {
         image_url: string;
         sort_order?: number;
     }[];
+    member_discount_percentage?: number;
 }
 
 export interface ComplexePayload {

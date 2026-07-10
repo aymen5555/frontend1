@@ -91,9 +91,13 @@
                     Notes (optional)
                     <input type="text" formControlName="notes" placeholder="e.g. 4 players" />
                 </label>
-                <button type="submit" class="btn-primary" [disabled]="bookForm.invalid || booking()">
-                    {{ booking() ? 'Booking…' : 'Book court' }}
-                </button>
+                <div style="margin-top: .5rem;">
+                    <small *ngIf="slotAvailable() === false" style="color: #b91c1c; display:block">Ce créneau est indisponible — il y a un conflit avec une réservation existante.</small>
+                    <small *ngIf="slotAvailable() === null" style="color: #666; display:block">Vérification de la disponibilité…</small>
+                    <button type="submit" class="btn-primary" [disabled]="bookForm.invalid || booking() || slotAvailable() === false">
+                        {{ booking() ? 'Booking…' : 'Book court' }}
+                    </button>
+                </div>
             </form>
         </section>
     </div>
@@ -140,6 +144,8 @@
 
 <!-- Payment modal -->
 @if (showPaymentModal()) {
-  <app-payment-modal [reservationId]="paymentReservationId()"
-      (paid)="onPaymentModalPaid($event)" (closed)="onPaymentModalCancelled()"></app-payment-modal>
+    <app-payment-modal [amountCents]="paymentAmountCents()"
+                                         [currency]="'tnd'"
+                                         [reservationId]="paymentReservationId()"
+            (paid)="onPaymentModalPaid($event)" (closed)="onPaymentModalCancelled()"></app-payment-modal>
 }

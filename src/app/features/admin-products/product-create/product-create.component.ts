@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { ComplexeService } from '../../../services/complexe.service';
@@ -36,6 +36,7 @@ export class ProductCreateComponent implements OnInit {
   productId = signal<number | null>(null);
   loading = signal(false);
   submitting = signal(false);
+  submittedAttempt = false;
   imagePlaceholder = 'https://... (URL valide requise, ex: https://exemple.com/photo.jpg)';
 
   sports = [
@@ -90,6 +91,9 @@ export class ProductCreateComponent implements OnInit {
       // Only validated on edit mode
       actif: [true]
     });
+
+    // Form-level validator: prix_achat must be <= prix when provided
+    this.productForm.setValidators(this.prixAchatNotGreaterThanPrix.bind(this));
 
     // Subscribe to name changes (no longer auto-generates placeholder URL)
 
@@ -163,6 +167,8 @@ export class ProductCreateComponent implements OnInit {
   }
 
   saveProduct(): void {
+    this.submittedAttempt = true;
+    Object.values(this.productForm.controls).forEach(c => c.markAsTouched());
     if (this.productForm.invalid) return;
 
     this.submitting.set(true);
@@ -190,12 +196,20 @@ export class ProductCreateComponent implements OnInit {
           this.router.navigate(['/admin/products']);
         },
         error: (err) => {
-          const errs = err?.error?.errors;
-          const msg = errs
-            ? (Object.values(errs)[0] as string[])?.[0]
-            : err?.error?.message;
-          this.toastSvc.error(msg || 'Erreur lors de la mise à jour.');
           this.submitting.set(false);
+          if (err?.status === 422 && err?.error?.errors) {
+            const errors = err.error.errors;
+            Object.keys(errors).forEach(key => {
+              if (this.productForm.controls[key]) {
+                this.productForm.controls[key].setErrors({ server: errors[key][0] });
+              }
+            });
+            this.toastSvc.error('Erreur de validation — veuillez vérifier les champs.');
+            return;
+          }
+          const errs = err?.error?.errors;
+          const msg = errs ? (Object.values(errs)[0] as string[])?.[0] : err?.error?.message;
+          this.toastSvc.error(msg || 'Erreur lors de la mise à jour.');
         }
       });
     } else {
@@ -221,15 +235,34 @@ export class ProductCreateComponent implements OnInit {
           this.router.navigate(['/admin/products']);
         },
         error: (err) => {
-          const errs = err?.error?.errors;
-          const msg = errs
-            ? (Object.values(errs)[0] as string[])?.[0]
-            : err?.error?.message;
-          this.toastSvc.error(msg || 'Erreur lors de la création.');
           this.submitting.set(false);
+          if (err?.status === 422 && err?.error?.errors) {
+            const errors = err.error.errors;
+            Object.keys(errors).forEach(key => {
+              if (this.productForm.controls[key]) {
+                this.productForm.controls[key].setErrors({ server: errors[key][0] });
+              }
+            });
+            this.toastSvc.error('Erreur de validation — veuillez vérifier les champs.');
+            return;
+          }
+          const errs = err?.error?.errors;
+          const msg = errs ? (Object.values(errs)[0] as string[])?.[0] : err?.error?.message;
+          this.toastSvc.error(msg || 'Erreur lors de la création.');
         }
       });
     }
+  }
+
+  private prixAchatNotGreaterThanPrix(control: AbstractControl): ValidationErrors | null {
+    const group = control as FormGroup;
+    const prix = Number(group.get('prix')?.value) || 0;
+    const prixAchatVal = group.get('prix_achat')?.value;
+    if (prixAchatVal !== null && prixAchatVal !== undefined && prixAchatVal !== '') {
+      const prixAchat = Number(prixAchatVal) || 0;
+      return prixAchat <= prix ? null : { prix_achat_gt_prix: 'Le prix d\'achat ne peut pas être supérieur au prix de vente.' };
+    }
+    return null;
   }
 
   onImagePreviewError(event: Event): void {

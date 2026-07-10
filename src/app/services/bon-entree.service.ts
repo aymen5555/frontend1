@@ -27,4 +27,8 @@ export class BonEntreeService {
   create(payload: { fournisseur_interne_id: number; complexe_id: number; date_bon_ent: string; lignes: { produit_id: number; quantite: number; prix_unitaire: number }[] }): Observable<{ success: boolean; data: BonEntree; reference: string }> {
     return this.http.post<{ success: boolean; data: BonEntree; reference: string }>(this.api, payload);
   }
+
+  confirmPayment(id: number, payload: { montant: number; type?: string; reference?: string }) {
+    return this.http.put<{ success: boolean; data: any }>(`${this.api}/${id}/confirmer-paiement`, payload);
+  }
 }

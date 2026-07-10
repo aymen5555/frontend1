@@ -21,6 +21,7 @@ export class ReservationsComponent implements OnInit {
   // Payment modal state and user messages
   showPaymentModal = signal(false);
   paymentReservationId = signal<number | null>(null);
+  paymentAmountCents = signal<number | null>(null);
   errorMessage = signal('');
   successMessage = signal('');
 
@@ -61,16 +62,21 @@ export class ReservationsComponent implements OnInit {
   cancelReservation(id: number): void {
     const reservation = this.reservations().find(r => r.id === id);
     if (!reservation) return;
-    
-    const isPaid = reservation.statut_paiement === 'paye';
+
+    const isPaidCardReservation = reservation.statut_paiement === 'paye' && reservation.modalite_paiement === 'carte';
     const montant = reservation.montant_paye ?? 0;
-    const msg = isPaid 
-      ? `Votre réservation sera annulée et un remboursement de ${montant} DT sera initié. Confirmer ?`
+    const msg = isPaidCardReservation
+      ? `Votre réservation sera annulée et une demande de remboursement de ${montant} DT sera soumise à validation par l'équipe. Confirmer ?`
       : 'Voulez-vous vraiment annuler cette réservation ?';
-    
+
     if (!confirm(msg)) return;
     this.reservationSvc.cancel(id).subscribe({
-      next: () => this.loadReservations(),
+      next: () => {
+        this.successMessage.set(isPaidCardReservation
+          ? 'Réservation annulée. Une demande de remboursement a été enregistrée et sera traitée par l’équipe.'
+          : 'Réservation annulée.');
+        this.loadReservations();
+      },
       error: (err) => this.errorMessage.set(err.error?.message || err.message || 'Erreur lors de l\'annulation')
     });
   }
@@ -91,6 +97,17 @@ export class ReservationsComponent implements OnInit {
   payReservation(id: number): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+    // Compute amount from terrain price × slot duration (TND millimes)
+    // montant_paye is 0 on pending reservations — use terrain pricing instead
+    const reservation = this.reservations().find(r => r.id === id);
+    if (reservation?.terrain) {
+      const pricePerHour = Number(reservation.terrain.price_per_hour) || 0;
+      const durationHours = (new Date(reservation.end_at).getTime() - new Date(reservation.start_at).getTime()) / 3_600_000;
+      const amountTnd = pricePerHour * Math.max(durationHours, 1);
+      this.paymentAmountCents.set(Math.round(amountTnd * 1000));
+    } else {
+      this.paymentAmountCents.set(null);
+    }
     this.paymentReservationId.set(id);
     this.showPaymentModal.set(true);
   }
@@ -136,6 +153,15 @@ export class ReservationsComponent implements OnInit {
   }
 
   getPaymentStatusBadge(res: Reservation): { label: string, class: string } {
+    if (res.refund_status === 'pending') {
+      return { label: 'Remboursement en attente', class: 'bg-amber-100 text-amber-700' };
+    }
+    if (res.refund_status === 'succeeded') {
+      return { label: 'Remboursé', class: 'bg-blue-100 text-blue-700' };
+    }
+    if (res.refund_status === 'failed') {
+      return { label: 'Échec remboursement', class: 'bg-red-100 text-red-700' };
+    }
     if (res.statut_paiement === 'paye') {
       return { label: 'Payé', class: 'bg-green-100 text-green-700' };
     }

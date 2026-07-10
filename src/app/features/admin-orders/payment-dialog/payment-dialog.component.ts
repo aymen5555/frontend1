@@ -22,7 +22,8 @@ export class PaymentDialogComponent implements OnInit {
   ngOnInit(): void {
     this.paymentForm = this.fb.group({
       modalite_paiement: [this.data.order.modalite_paiement || 'especes', [Validators.required]],
-      reference: ['', [Validators.pattern(/^TXN-\d{4}-\d{3,8}$/i)]]
+      reference: ['', [Validators.pattern(/^TXN-\d{4}-\d{3,8}$/i)]],
+      montant: [this.computeDefaultMontant(), [Validators.min(0)]]
     });
 
     // Dynamically add/remove required validator on `reference` based on payment method
@@ -64,4 +65,12 @@ export class PaymentDialogComponent implements OnInit {
   cancel(): void {
     this.dialogRef.close();
   }
+
+  private computeDefaultMontant(): number {
+    const total = this.data.order.montant_total ?? 0;
+    const paid = this.data.order.montant_paye ?? 0;
+    const reste = Math.max(0, total - paid);
+    return parseFloat(reste.toFixed(2));
+  }
 }
+

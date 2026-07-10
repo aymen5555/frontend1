@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { PaymentModalComponent } from '../../components/payment-modal/payment-modal.component';
 import { SaleService } from '../../services/sale.service';
 import { ProductService } from '../../services/product.service';
 import { ComplexeService } from '../../services/complexe.service';
@@ -12,7 +13,7 @@ import { Product } from '../../models/product.interface';
 @Component({
   selector: 'app-admin-sales',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaymentModalComponent],
   templateUrl: './admin-sales.component.html',
   styleUrls: ['./admin-sales.component.css']
 })
@@ -34,6 +35,9 @@ export class AdminSalesComponent implements OnInit {
   selectedComplexeId = signal<number | null>(null);
 
   saleForm!: FormGroup;
+  paymentItems = signal<{ produit_id: number; quantite: number }[]>([]);
+  showPaymentModal = signal(false);
+  pendingSalePayload: any = null;
 
   /** Products filtered by the currently selected complexe — reactive via signals */
   filteredProducts = computed(() => {
@@ -52,6 +56,10 @@ export class AdminSalesComponent implements OnInit {
       const prix = Number(ctrl.get('prix_unitaire')?.value) || 0;
       return sum + qty * prix;
     }, 0);
+  }
+
+  get amountCents(): number | null {
+    return this.total > 0 ? Math.round(this.total * 1000) : null;
   }
 
   ngOnInit(): void {
@@ -160,6 +168,14 @@ export class AdminSalesComponent implements OnInit {
       })),
     };
 
+    if (payload.modalite_paiement === 'carte') {
+      this.pendingSalePayload = payload;
+      this.paymentItems.set(payload.lignes);
+      this.showPaymentModal.set(true);
+      this.submitting.set(false);
+      return;
+    }
+
     this.saleSvc.create(payload).subscribe({
       next: (res) => {
         const ref = res?.data?.reference;
@@ -173,6 +189,44 @@ export class AdminSalesComponent implements OnInit {
         this.submitting.set(false);
       }
     });
+  }
+
+  onPaymentModalPaid(paymentIntentId: string): void {
+    if (!this.pendingSalePayload) {
+      this.toastSvc.error('Aucune vente en attente de paiement.');
+      this.showPaymentModal.set(false);
+      return;
+    }
+
+    const payload = {
+      ...this.pendingSalePayload,
+      stripe_payment_intent_id: paymentIntentId,
+    };
+
+    this.saleSvc.create(payload).subscribe({
+      next: (res) => {
+        const ref = res?.data?.reference;
+        this.toastSvc.success(ref ? `Paiement et vente enregistrés — Réf: ${ref}` : 'Paiement et vente enregistrés.');
+        this.pendingSalePayload = null;
+        this.showPaymentModal.set(false);
+        this.closeForm();
+        this.loadData();
+      },
+      error: (err) => {
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'enregistrement après paiement.');
+        this.pendingSalePayload = null;
+        this.showPaymentModal.set(false);
+      },
+      complete: () => {
+        this.submitting.set(false);
+      }
+    });
+  }
+
+  onPaymentModalCancelled(): void {
+    this.pendingSalePayload = null;
+    this.showPaymentModal.set(false);
+    this.submitting.set(false);
   }
 
   generateRef(): void {

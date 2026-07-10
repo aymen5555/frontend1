@@ -61,9 +61,18 @@ export class MesActivitesComponent implements OnInit {
     }
   }
 
-  paiementBadge(statut: string): { class: string; label: string } {
-    return statut === 'paye'
-      ? { class: 'bg-green-100 text-green-700',  label: 'Payé' }
+  paiementBadge(res: ReservationActivite): { class: string; label: string } {
+    if (res.refund_status === 'pending') {
+      return { class: 'bg-amber-100 text-amber-700', label: 'Remboursement en attente' };
+    }
+    if (res.refund_status === 'succeeded') {
+      return { class: 'bg-blue-100 text-blue-700', label: 'Remboursé' };
+    }
+    if (res.refund_status === 'failed') {
+      return { class: 'bg-red-100 text-red-700', label: 'Échec remboursement' };
+    }
+    return res.statut_paiement === 'paye'
+      ? { class: 'bg-green-100 text-green-700', label: 'Payé' }
       : { class: 'bg-orange-100 text-orange-700', label: 'Non Payé' };
   }
 
@@ -82,11 +91,19 @@ export class MesActivitesComponent implements OnInit {
   }
 
   cancel(res: ReservationActivite): void {
-    if (!confirm('Annuler cette réservation ?')) return;
+    const isPaidCardReservation = res.statut_paiement === 'paye' && res.modalite_paiement === 'carte';
+    const confirmMessage = isPaidCardReservation
+      ? 'Annuler cette réservation ? Une demande de remboursement sera envoyée pour validation.'
+      : 'Annuler cette réservation ?';
+
+    if (!confirm(confirmMessage)) return;
     this.activiteSvc.cancelReservation(res.id).subscribe({
       next: () => {
-        this.toastSvc.success('Réservation annulée.');
-        this.successMessage.set('Réservation annulée.');
+        const successMessage = isPaidCardReservation
+          ? 'Réservation annulée. Une demande de remboursement a été enregistrée.'
+          : 'Réservation annulée.';
+        this.toastSvc.success(successMessage);
+        this.successMessage.set(successMessage);
         this.load();
       },
       error: (err) => {
@@ -119,12 +136,17 @@ export class MesActivitesComponent implements OnInit {
     this.showPaymentModal.set(true);
   }
 
+  getReservationAmountCents(): number | null {
+    const res = this.payingReservation();
+    return res?.activite ? Math.round(res.activite.prix * 1000) : null;
+  }
+
   /** Called when the payment modal completes successfully */
-  onPaymentModalPaid(token: string): void {
+  onPaymentModalPaid(paymentIntentId: string): void {
     const res = this.payingReservation();
     if (!res) return;
 
-    this.activiteSvc.payReservation(res.id).subscribe({
+    this.activiteSvc.payReservation(res.id, paymentIntentId).subscribe({
       next: () => {
         this.showPaymentModal.set(false);
         this.payingReservation.set(null);
@@ -149,8 +171,14 @@ export class MesActivitesComponent implements OnInit {
     this.toastSvc.warning('Paiement non effectué. Vous pouvez payer depuis Mes Activités.');
   }
 
+  private parseDate(dateStr: string | null | undefined): Date {
+    if (!dateStr) return new Date(NaN);
+    return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+  }
+
   formatDate(dateStr: string): string {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
+    const d = this.parseDate(dateStr);
+    return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     });
   }

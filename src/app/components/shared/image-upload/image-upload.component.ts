@@ -67,14 +67,19 @@ export class ImageUploadComponent {
     const formData = new FormData();
     formData.append('image', file);
  
-    this.http.post<{ success: boolean; url: string }>(
+    this.http.post<{ success: boolean; url?: string; data?: { url?: string } }>(
       `${environment.apiUrl}/admin/upload-image`,
       formData
     ).subscribe({
       next: (res) => {
         this.uploading.set(false);
+        const url = res.data?.url ?? res.url;
+        if (!url) {
+          this.toastSvc.error('Aucune URL de photo reçue du serveur.');
+          return;
+        }
         this.toastSvc.success('Photo téléversée avec succès.');
-        this.imageUploaded.emit(res.url);
+        this.imageUploaded.emit(url);
       },
       error: (err) => {
         this.uploading.set(false);

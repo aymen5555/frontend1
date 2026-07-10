@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProductService } from '../../../services/product.service';
@@ -10,7 +11,7 @@ import { Product } from '../../../models/product.interface';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatDialogModule],
+  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css']
 })
@@ -21,7 +22,18 @@ export class ProductListComponent implements OnInit {
   private readonly router = inject(Router);
 
   products = signal<Product[]>([]);
+  searchTerm = signal('');
   loading = signal(true);
+
+  filteredProducts = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.products();
+    return this.products().filter(p =>
+      p.nom?.toLowerCase().includes(term) ||
+      p.reference?.toLowerCase().includes(term) ||
+      p.categorie?.nom?.toLowerCase().includes(term)
+    );
+  });
 
   ngOnInit(): void {
     this.loadProducts();

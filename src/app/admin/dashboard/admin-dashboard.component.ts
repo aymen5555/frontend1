@@ -142,6 +142,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         city: [''],
         phone: [''],
         description: [''],
+        member_discount_percentage: [null as number | null, [Validators.min(0), Validators.max(100)]],
         image_url: [''],
         facebook_url: [''],
         instagram_url: [''],
@@ -199,6 +200,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         niveau_sportif_cible: ['tous', Validators.required],
         sport_cible: [''],
         avantages: [''],
+        discount_percentage: [null as number | null, [Validators.min(0), Validators.max(100)]],
     });
 
     gerantForm = this.fb.group({
@@ -937,13 +939,29 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     }
 
     getActiviteReservationPaymentBadge(res: ReservationActivite): { label: string; class: string } {
-        return res.statut_paiement === 'paye'
-            ? { label: 'Payé', class: 'payment-cash' }
-            : { label: 'Non payé', class: 'payment-pending' };
+        const refundStatuses = ['rembourse', 'remboursé', 'refunded'];
+        if (res.statut_paiement === 'paye') {
+            return { label: 'Payé', class: 'payment-cash' };
+        }
+        if (refundStatuses.includes(res.statut_paiement ?? '') || res.refund_status === 'succeeded') {
+            return { label: 'Remboursé', class: 'payment-cash' };
+        }
+        return { label: 'Non payé', class: 'payment-pending' };
     }
 
     canConfirmActivitePayment(res: ReservationActivite): boolean {
         return res.statut_paiement === 'non_paye' && (res.statut === 'reservee' || res.statut === 'confirmee');
+    }
+
+    confirmRefundActiviteReservation(reservation: ReservationActivite): void {
+        if (!confirm(`Confirmer le remboursement pour ${reservation.user?.first_name ?? ''} ${reservation.user?.last_name ?? ''} ?`)) return;
+        this.activiteSvc.adminConfirmRefund(reservation.id).subscribe({
+            next: () => {
+                this.loadActiviteReservations();
+                this.toastSvc.success('Remboursement confirmé.');
+            },
+            error: (err) => this.toastSvc.error(err?.error?.message || err.message || 'Impossible de confirmer le remboursement.'),
+        });
     }
 
     private loadSlots(): void {
@@ -1027,6 +1045,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
                 city: complexe.city ?? '',
                 phone: complexe.phone ?? '',
                 description: complexe.description ?? '',
+                member_discount_percentage: complexe.member_discount_percentage ?? null,
                 image_url: complexe.image_url ?? complexe.image_c ?? '',
                 facebook_url: complexe.facebook_url ?? complexe.facebook_c ?? '',
                 instagram_url: complexe.instagram_url ?? complexe.instagram_c ?? '',
@@ -1040,6 +1059,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             this.complexForm.patchValue({ gallery_images: [] });
         }
         this.showComplexForm.set(true);
+    }
+
+    viewComplexeDetails(complexe: Complexe): void {
+        if (complexe.id) {
+            this.router.navigate(['/complexes', complexe.id]);
+        }
     }
 
     saveComplex(): void {
@@ -1356,7 +1381,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         if (res.statut_paiement === 'paye') {
             return { label: 'Payé', class: 'bg-green-100 text-green-700' };
         }
-        if (res.statut_paiement === 'rembourse') {
+        const refundStatuses = ['rembourse', 'remboursé', 'refunded'];
+        if (refundStatuses.includes(res.statut_paiement ?? '')) {
             return { label: 'Remboursé', class: 'bg-blue-100 text-blue-700' };
         }
         return { label: 'Non payé', class: 'bg-orange-100 text-orange-700' };
@@ -1364,6 +1390,23 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
     canConfirmCashPayment(res: Reservation): boolean {
         return res.modalite_paiement === 'especes' && res.statut_paiement === 'non_paye';
+    }
+
+    confirmRefund(reservation: Reservation): void {
+        if (!confirm(`Confirmer le remboursement pour ${reservation.user?.first_name ?? ''} ${reservation.user?.last_name ?? ''} ?`)) {
+            return;
+        }
+
+        this.reservationSvc.adminConfirmRefund(reservation.id).subscribe({
+            next: () => {
+                this.loadReservations();
+                this.toastSvc.success('Remboursement confirmé.');
+            },
+            error: (err) => {
+                const msg = err?.error?.message || err.message || 'Impossible de confirmer le remboursement.';
+                this.toastSvc.error(msg);
+            },
+        });
     }
 
     selectedComplexName(): string {
@@ -1490,6 +1533,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.editingType.set(null);
     }
 
+    getSelectedComplexeMemberDiscount(): number | null {
+        const complexeId = Number(this.typeForm.get('complexe_id')?.value);
+        if (!complexeId) {
+            return null;
+        }
+
+        const complexe = this.complexes().find((c) => c.id === complexeId);
+        return complexe?.member_discount_percentage ?? null;
+    }
+
     editType(type: TypeAbonnement): void {
         this.editingType.set(type);
         this.typeForm.patchValue({
@@ -1523,6 +1576,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             niveau_sportif_cible: val.niveau_sportif_cible as 'debutant' | 'intermediaire' | 'expert',
             sport_cible: val.sport_cible || undefined,
             avantages: advantagesArray,
+            discount_percentage: val.discount_percentage ? Number(val.discount_percentage) : undefined,
         };
 
         const isEdit = !!this.editingType();
@@ -1625,6 +1679,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         });
     }
 
+    confirmAbonnementRefund(sub: AbonnementAdherent): void {
+        if (!confirm(`Confirmer le remboursement de ${sub.user?.first_name} ${sub.user?.last_name} ?`)) return;
+        this.abonnementSvc.adminConfirmRefund(sub.id).subscribe({
+            next: () => {
+                this.loadClientSubscriptions();
+                this.toastSvc.success('Remboursement confirmé.');
+            },
+            error: (err) => this.toastSvc.error(err?.error?.message || 'Erreur lors de la confirmation du remboursement.')
+        });
+    }
+
     deleteAbonnement(sub: AbonnementAdherent): void {
         if (!confirm(`Supprimer l'abonnement de ${sub.user?.first_name} ${sub.user?.last_name} ?`)) return;
         this.abonnementSvc.adminDelete(sub.id).subscribe({
@@ -1666,6 +1731,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             case 'non_paye':
             case 'unpaid':
                 return { bg: 'bg-orange-100', text: 'text-orange-700', icon: '⏳' };
+            case 'rembourse':
             case 'remboursé':
             case 'refunded':
                 return { bg: 'bg-cyan-100', text: 'text-cyan-700', icon: '↺' };

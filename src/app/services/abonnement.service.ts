@@ -135,4 +135,9 @@ export class AbonnementService {
   adminCancel(id: number): Observable<void> {
     return this.http.put<void>(`${this.apiBase}/admin/abonnements-adherent/${id}/cancel`, {});
   }
+
+  adminConfirmRefund(id: number): Observable<AbonnementAdherent> {
+    return this.http.put<ApiItem<AbonnementAdherent>>(`${this.apiBase}/admin/abonnements-adherent/${id}/confirm-refund`, {})
+      .pipe(map(r => r.data));
+  }
 }

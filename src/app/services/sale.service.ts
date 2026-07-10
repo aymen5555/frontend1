@@ -4,22 +4,21 @@ import { Observable } from 'rxjs';
 import { DirectSale } from '../models/sale.interface';
 import { environment } from '../../environments/environment';
 
+type BaseDirectSalePayload = {
+  complexe_id: number;
+  modalite_paiement: 'especes' | 'carte';
+  client_nom?: string;
+  user_id?: number;
+  notes?: string;
+  stripe_payment_intent_id?: string;
+};
+
 export type DirectSalePayload =
-  | {
+  | BaseDirectSalePayload & {
       produit_id: number;
-      complexe_id: number;
       quantite: number;
-      modalite_paiement: 'especes' | 'carte';
-      client_nom?: string;
-      user_id?: number;
-      notes?: string;
     }
-  | {
-      complexe_id: number;
-      modalite_paiement: 'especes' | 'carte';
-      client_nom?: string;
-      user_id?: number;
-      notes?: string;
+  | BaseDirectSalePayload & {
       lignes: { produit_id: number; quantite: number }[];
     };
 

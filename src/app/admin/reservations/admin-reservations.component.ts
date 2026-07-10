@@ -46,6 +46,7 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-505 uppercase tracking-wider">Horaire</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paiement</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -56,22 +57,31 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                 <td class="px-6 py-4 text-sm">{{ r.start_at | date:'dd/MM/yyyy' }}</td>
                 <td class="px-6 py-4 text-sm">{{ r.start_at | date:'HH:mm' }} – {{ r.end_at | date:'HH:mm' }}</td>
                 <td class="px-6 py-4 text-sm">
-                  <span [ngClass]="{
-                    'bg-yellow-100 text-yellow-800': r.status === 'pending',
-                    'bg-green-100 text-green-800': r.status === 'confirmed',
-                    'bg-red-100 text-red-800': r.status === 'cancelled',
-                    'bg-gray-100 text-gray-800': r.status === 'expired' || r.status === 'played'
-                  }" class="px-2 py-1 rounded-full text-xs font-medium">
-                    {{ statutLabel(r.status) }}
-                  </span>
+                  <div class="space-y-2">
+                    <span [ngClass]="{
+                      'bg-yellow-100 text-yellow-800': r.status === 'pending',
+                      'bg-green-100 text-green-800': r.status === 'confirmed',
+                      'bg-red-100 text-red-800': r.status === 'cancelled',
+                      'bg-gray-100 text-gray-800': r.status === 'expired' || r.status === 'played'
+                    }" class="px-2 py-1 rounded-full text-xs font-medium">
+                      {{ statutLabel(r.status) }}
+                    </span>
+                    <span *ngIf="r.refund_status === 'pending'" class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Remboursement en attente</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 text-sm">
-                  <span [ngClass]="{'bg-green-100 text-green-800': r.statut_paiement === 'paye', 'bg-orange-100 text-orange-800': r.statut_paiement !== 'paye'}" class="px-2 py-1 rounded-full text-xs font-medium">
-                    {{ r.statut_paiement === 'paye' ? 'Payé' : 'Non payé' }}
+                  <span [ngClass]="{
+                    'bg-green-100 text-green-800': r.statut_paiement === 'paye',
+                    'bg-cyan-100 text-cyan-800': r.statut_paiement === 'rembourse',
+                    'bg-orange-100 text-orange-800': r.statut_paiement !== 'paye' && r.statut_paiement !== 'rembourse'
+                  }" class="px-2 py-1 rounded-full text-xs font-medium">
+                    {{ r.statut_paiement === 'paye' ? 'Payé' : (r.statut_paiement === 'rembourse' ? 'Remboursé' : 'Non payé') }}
                   </span>
                 </td>
+                <td class="px-6 py-4 text-sm font-semibold">{{ r.montant_paye ? (r.montant_paye | number:'1.2-2') + ' TND' : '-' }}</td>
                 <td class="px-6 py-4 text-sm space-x-2">
                   <button *ngIf="r.statut_paiement !== 'paye' && r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="confirmPayment(r)" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition">Confirmer paiement</button>
+                  <button *ngIf="r.refund_status === 'pending'" (click)="confirmRefund(r)" class="px-3 py-1 rounded text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition">Confirmer remboursement</button>
                   <button *ngIf="r.status !== 'cancelled' && r.status !== 'played' && r.status !== 'expired'" (click)="cancelReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Annuler</button>
                 </td>
               </tr>
@@ -135,10 +145,34 @@ export class AdminReservationsComponent implements OnInit {
   }
 
   confirmPayment(r: any): void {
-    if (!confirm('Confirmer le paiement ?')) return;
-    this.reservationSvc.adminConfirmPayment(r.id).subscribe({
+    if (!confirm('Confirmer le paiement (partiel possible) ?')) return;
+    const montantInput = prompt('Montant reçu (laisser vide pour montant total):', '');
+    let montant: number | undefined = undefined;
+    if (montantInput !== null && montantInput.trim() !== '') {
+      const parsed = parseFloat(montantInput.replace(',', '.'));
+      if (isNaN(parsed) || parsed <= 0) { this.toast.error('Montant invalide'); return; }
+      montant = parsed;
+    }
+    const reference = prompt('Référence paiement (optionnel):', '') || undefined;
+    if (r.modalite_paiement === 'especes') {
+      // cash confirmation route accepts montant/ref for partial payments
+      this.reservationSvc.confirmCashPayment(r.id, { montant, reference }).subscribe({
+        next: () => { this.toast.success('Paiement confirmé'); this.load(); },
+        error: (err) => this.toast.error(err?.error?.message || 'Erreur'),
+      });
+    } else {
+      this.reservationSvc.adminConfirmPayment(r.id, { montant, reference }).subscribe({
+        next: () => { this.toast.success('Paiement confirmé'); this.load(); },
+        error: (err) => this.toast.error(err?.error?.message || 'Erreur'),
+      });
+    }
+  }
+
+  confirmRefund(r: any): void {
+    if (!confirm('Confirmer le remboursement ?')) return;
+    this.reservationSvc.adminConfirmRefund(r.id).subscribe({
       next: () => {
-        this.toast.success('Paiement confirmé');
+        this.toast.success('Remboursement confirmé');
         this.load();
       },
       error: (err) => this.toast.error(err?.error?.message || 'Erreur'),

@@ -14,8 +14,16 @@ export class OrderService {
   private readonly adminApi = `${environment.apiUrl}/admin/commandes`;
 
   // Client: Create order (checkout)
-  create(payload: { complexe_id: number; modalite_paiement: 'especes' | 'carte'; notes?: string; items: { produit_id: number; quantite: number }[] }): Observable<{ success: boolean; data: Order }> {
+  create(payload: { complexe_id: number; modalite_paiement: 'especes' | 'carte'; payment_confirmed?: boolean; stripe_payment_intent_id?: string; notes?: string; items: { produit_id: number; quantite: number }[] }): Observable<{ success: boolean; data: Order }> {
     return this.http.post<{ success: boolean; data: Order }>(this.clientApi, payload);
+  }
+
+  createPaymentIntent(payload: any): Observable<{ success: boolean; data: { clientSecret: string; paymentIntentId: string; computed?: { amount: number; currency: string } } }> {
+    return this.http.post<{ success: boolean; data: { clientSecret: string; paymentIntentId: string; computed?: { amount: number; currency: string } } }>(`${environment.apiUrl}/payments/create-intent`, payload);
+  }
+
+  previewPayment(payload: any): Observable<{ success: boolean; data: { amount: number; currency: string; amount_display?: string } }> {
+    return this.http.post<{ success: boolean; data: { amount: number; currency: string; amount_display?: string } }>(`${environment.apiUrl}/payments/preview`, payload);
   }
 
   // Client: Get logged-in user's orders
@@ -56,7 +64,12 @@ export class OrderService {
   }
 
   // Admin/Gérant: Confirm payment
-  confirmPayment(id: number, payload: { modalite_paiement: 'especes' | 'carte'; reference?: string }): Observable<{ success: boolean; data: Order }> {
+  confirmPayment(id: number, payload: { modalite_paiement: 'especes' | 'carte'; reference?: string; montant?: number }): Observable<{ success: boolean; data: Order }> {
     return this.http.put<{ success: boolean; data: Order }>(`${this.adminApi}/${id}/confirmer-paiement`, payload);
+  }
+
+  // Admin/Gérant: Confirm refund
+  adminConfirmRefund(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.put<{ success: boolean; message: string }>(`${this.adminApi}/${id}/confirmer-remboursement`, {});
   }
 }

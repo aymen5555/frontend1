@@ -34,6 +34,25 @@ export const gerantGuard: CanActivateFn = (route, state) => {
     return false;
 };
 
+// Protects CLIENT-only routes
+export const clientGuard: CanActivateFn = (route, state) => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+
+    if (auth.isLoggedIn()) {
+        if (auth.isClient()) return true;
+        // Non-client users redirect to their dashboard
+        if (auth.isGerant() || auth.isAdmin()) {
+            router.navigate(['/admin/dashboard']);
+        } else {
+            router.navigate(['/home']);
+        }
+    } else {
+        router.navigate(['/auth/login'], { queryParams: { redirect: state.url } });
+    }
+    return false;
+};
+
 // Protects SUPER_ADMIN routes
 export const superAdminGuard: CanActivateFn = (route, state) => {
     const auth = inject(AuthService);

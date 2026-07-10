@@ -14,6 +14,8 @@ export interface Reservation {
     modalite_paiement?: PaymentMethod;
     statut_paiement?: PaymentStatus;
     montant_paye?: number;
+    refund_status?: 'not_requested' | 'succeeded' | 'pending' | 'failed' | null;
+    refund_reference?: string | null;
     notes?: string;
     paid?: boolean;
     heure_debut?: string;

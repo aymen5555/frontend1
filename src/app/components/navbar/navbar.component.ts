@@ -24,6 +24,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showGerantBoutique = signal(false);
   showGerantOffice = signal(false);
   showNotifications = signal(false);
+  showAllNotifications = signal(false);
 
   private pollInterval: any;
 
@@ -104,10 +105,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   toggleNotifications(event: Event): void {
     event.stopPropagation();
-    this.showNotifications.update(v => !v);
+    const next = !this.showNotifications();
+    this.showNotifications.set(next);
+    if (!next) {
+      this.showAllNotifications.set(false);
+    }
     this.showClientEspace.set(false);
     this.showGerantBoutique.set(false);
     this.showGerantOffice.set(false);
+  }
+
+  toggleShowAllNotifications(event: Event): void {
+    event.stopPropagation();
+    this.showAllNotifications.update(v => !v);
   }
 
   markAllAsRead(event: Event): void {
@@ -119,8 +129,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return this.notificationSvc.unreadCount();
   }
 
-  recentNotifications() {
-    return this.notificationSvc.notifications().slice(0, 5);
+  visibleNotifications() {
+    const list = this.notificationSvc.notifications();
+    return this.showAllNotifications() ? list : list.slice(0, 5);
   }
 
   closeEspaces(): void {
@@ -128,6 +139,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.showGerantBoutique.set(false);
     this.showGerantOffice.set(false);
     this.showNotifications.set(false);
+    this.showAllNotifications.set(false);
   }
 
   closeMobileMenu(): void {

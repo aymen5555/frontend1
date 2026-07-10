@@ -36,10 +36,13 @@ export class DashboardComponent implements OnInit {
     booking = signal(false);
     errorMessage = signal('');
     successMessage = signal('');
+    // availability state: null = unknown, true = available, false = unavailable
+    slotAvailable = signal<boolean | null>(null);
 
     // Payment modal state
     showPaymentModal = signal(false);
     paymentReservationId = signal<number | null>(null);
+    paymentAmountCents = signal<number | null>(null);
 
     bookForm = this.fb.group({
         terrain_id: [null as number | null, Validators.required],
@@ -53,6 +56,8 @@ export class DashboardComponent implements OnInit {
     ngOnInit(): void {
         this.reload();
         this.loadRecommendations();
+        // react to booking form changes to compute availability
+        this.bookForm.valueChanges.subscribe(() => this.checkAvailability());
     }
 
     private loadRecommendations(): void {
@@ -104,6 +109,11 @@ export class DashboardComponent implements OnInit {
 
     submitBooking(): void {
         if (this.bookForm.invalid) return;
+        // final availability check before submitting
+        if (this.slotAvailable() === false) {
+            this.errorMessage.set('Ce créneau est indisponible. Choisissez un autre horaire.');
+            return;
+        }
         this.booking.set(true);
         this.errorMessage.set('');
         this.successMessage.set('');
@@ -124,12 +134,48 @@ export class DashboardComponent implements OnInit {
             },
             error: (err) => {
                 this.booking.set(false);
-                this.errorMessage.set(err.message || 'Booking failed.');
+                this.errorMessage.set(err.error?.message || err.message || 'Booking failed.');
             },
         });
     }
 
+    checkAvailability(): void {
+        this.slotAvailable.set(null);
+        const v = this.bookForm.value;
+        if (!v.terrain_id || !v.start_at || !v.end_at) return this.slotAvailable.set(null);
+        const start = new Date(v.start_at);
+        const end = new Date(v.end_at);
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) return this.slotAvailable.set(false);
+
+        // fetch reservations for the terrain and check overlaps
+        this.reservationSvc.list({ terrain_id: v.terrain_id }).subscribe({
+            next: (resvs) => {
+                const overlapping = resvs.some(r => {
+                    if (!r.start_at || !r.end_at) return false;
+                    const rStart = new Date(r.start_at);
+                    const rEnd = new Date(r.end_at);
+                    // consider only pending/confirmed
+                    if (!(r.status === 'pending' || r.status === 'confirmed')) return false;
+                    return start < rEnd && end > rStart;
+                });
+                this.slotAvailable.set(!overlapping);
+            },
+            error: () => this.slotAvailable.set(null),
+        });
+    }
+
     openPaymentModal(reservationId: number): void {
+        // Compute amount from terrain price × duration (TND millimes)
+        // montant_paye is 0 on pending reservations — use terrain pricing instead
+        const reservation = this.reservations().find(r => r.id === reservationId);
+        if (reservation?.terrain) {
+            const pricePerHour = Number(reservation.terrain.price_per_hour) || 0;
+            const durationHours = (new Date(reservation.end_at).getTime() - new Date(reservation.start_at).getTime()) / 3_600_000;
+            const amountTnd = pricePerHour * Math.max(durationHours, 1);
+            this.paymentAmountCents.set(Math.round(amountTnd * 1000));
+        } else {
+            this.paymentAmountCents.set(null);
+        }
         this.paymentReservationId.set(reservationId);
         this.showPaymentModal.set(true);
     }

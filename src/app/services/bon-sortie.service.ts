@@ -27,4 +27,8 @@ export class BonSortieService {
   create(payload: { complexe_id: number; date_bon_sor: string; motif?: string; lignes: { produit_id: number; quantite: number }[] }): Observable<{ success: boolean; data: BonSortie; reference: string }> {
     return this.http.post<{ success: boolean; data: BonSortie; reference: string }>(this.api, payload);
   }
+
+  confirmPayment(id: number, payload: { montant: number; type?: string; reference?: string }) {
+    return this.http.put<{ success: boolean; data: any }>(`${this.api}/${id}/confirmer-paiement`, payload);
+  }
 }

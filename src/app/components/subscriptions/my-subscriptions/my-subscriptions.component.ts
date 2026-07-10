@@ -104,9 +104,13 @@ export class MySubscriptionsComponent implements OnInit {
     });
   }
 
+  private parseDate(dateStr: string): Date {
+    return dateStr.length > 10 ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+  }
+
   isActif(ab: AbonnementAdherent): boolean {
     if (ab.statut !== 'actif') return false;
-    const dateFin = new Date(ab.date_fin + 'T00:00:00');
+    const dateFin = this.parseDate(ab.date_fin);
     return dateFin >= new Date();
   }
 }

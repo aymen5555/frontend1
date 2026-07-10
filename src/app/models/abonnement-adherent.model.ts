@@ -12,6 +12,7 @@ export interface TypeAbonnement {
   active?: boolean;
   abonnements_count?: number;
   categorie_abonnement_adherent_id?: number;
+  discount_percentage?: number;
   categorie_abonnement_adherent?: {
     id: number;
     nom_cat_abo_ad: string;
@@ -45,6 +46,9 @@ export interface AbonnementAdherent {
   statut: 'actif' | 'expire' | 'annule';
   paye: boolean;
   reste_a_payer: number;
+  refund_status?: 'not_requested' | 'pending' | 'succeeded' | 'failed';
+  refund_reference?: string;
+  stripe_payment_intent_id?: string;
   created_at?: string;
   updated_at?: string;
   complexe?: import('./complexe.model').Complexe;

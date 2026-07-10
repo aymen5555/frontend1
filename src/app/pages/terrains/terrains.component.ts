@@ -52,11 +52,13 @@ export class TerrainsComponent implements OnInit, OnDestroy {
   bookingInProgress = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
+  conflictsDetails = signal<any[] | null>(null);
   paymentDeadlineMinutes = signal<number | null>(null);
   paymentDeadlineTimer = signal<number | undefined>(undefined);
   // Payment modal state
   showPaymentModal = signal(false);
   paymentReservationId = signal<number | null>(null);
+  paymentAmountCents = signal<number | null>(null);
 
   filteredTerrains = computed(() => {
     return this.terrains().filter(t => {
@@ -238,7 +240,8 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     const slot = this.selectedSlot();
 
     if (!terrain || !slot) return;
-
+    // reset any previous conflict details
+    this.conflictsDetails.set(null);
     this.bookingInProgress.set(true);
     this.errorMessage.set('');
 
@@ -267,6 +270,18 @@ export class TerrainsComponent implements OnInit, OnDestroy {
         this.loadTerrains();
       }, 1500);
     } else {
+      // Compute amount from terrain price × slot duration (TND millimes)
+      // montant_paye in DB is 0 until payment is confirmed, so we calculate here
+      const terrain = this.selectedTerrain();
+      const slot = this.selectedSlot();
+      if (terrain && slot) {
+        const pricePerHour = Number(terrain.price_per_hour) || 0;
+        const startStr = slot.starts_at || `${this.selectedDate()} ${slot.time}:00`;
+        const endStr = slot.ends_at || `${this.selectedDate()} ${String(Number((slot.time || '00:00').split(':')[0]) + 1).padStart(2, '0')}:${(slot.time || '00:00').split(':')[1]}:00`;
+        const durationHours = (new Date(endStr).getTime() - new Date(startStr).getTime()) / 3_600_000;
+        const amountTnd = pricePerHour * Math.max(durationHours, 1);
+        this.paymentAmountCents.set(Math.round(amountTnd * 1000));
+      }
       this.startPaymentDeadlineCountdown();
       this.paymentReservationId.set(reservation.id);
       this.showPaymentModal.set(true);
@@ -357,10 +372,16 @@ export class TerrainsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleReservationError(err: { status: number; error?: { message?: string; errors?: Record<string, string[]> }; message?: string }): void {
+  private handleReservationError(err: any): void {
     this.bookingInProgress.set(false);
     if (err.status === 409) {
-      this.errorMessage.set('Ce créneau vient d\'être pris. Choisissez-en un autre.');
+      // Backend may return structured conflict info
+      if (err.error?.error === 'conflict' && Array.isArray(err.error?.conflicts)) {
+        this.conflictsDetails.set(err.error.conflicts);
+        this.errorMessage.set(err.error.message || 'Ce créneau est en conflit avec une autre réservation.');
+      } else {
+        this.errorMessage.set('Ce créneau vient d\'être pris. Choisissez-en un autre.');
+      }
     } else if (err.error?.errors) {
       const messages = Object.values(err.error.errors).flat().join(' ');
       this.errorMessage.set(messages);

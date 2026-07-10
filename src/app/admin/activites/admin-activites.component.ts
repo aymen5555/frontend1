@@ -81,9 +81,15 @@ import { LoaderComponent } from '../../components/shared/loader/loader.component
                     }" class="px-2 py-1 rounded-full text-xs font-medium">
                       {{ statutLabel(r.statut) }}
                     </span>
+                    <span *ngIf="r.refund_status === 'pending'" class="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                      Remboursement en attente
+                    </span>
                   </td>
                   <td class="px-6 py-4 text-sm">
-                    <button *ngIf="r.statut !== 'annulee'" (click)="cancelReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Annuler</button>
+                    <div class="flex gap-2">
+                      <button *ngIf="r.refund_status === 'pending'" (click)="confirmRefundReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition">Confirmer remboursement</button>
+                      <button *ngIf="r.statut !== 'annulee'" (click)="cancelReservation(r)" class="px-3 py-1 rounded text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition">Annuler</button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -177,6 +183,17 @@ export class AdminActivitesComponent {
         this.load();
       },
       error: () => this.toast.error('Erreur'),
+    });
+  }
+
+  confirmRefundReservation(r: any): void {
+    if (!confirm(`Confirmer le remboursement pour ${r.user?.first_name ?? ''} ${r.user?.last_name ?? ''} ?`)) return;
+    this.activiteSvc.adminConfirmRefund(r.id).subscribe({
+      next: () => {
+        this.toast.success('Remboursement confirmé');
+        this.load();
+      },
+      error: () => this.toast.error('Erreur lors de la confirmation du remboursement'),
     });
   }
 }

@@ -77,6 +77,11 @@
           <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Prix de vente (TND) *</label>
           <input type="number" step="0.01" formControlName="prix"
             class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
+          <div *ngIf="(productForm.get('prix')?.invalid && (productForm.get('prix')?.touched || submittedAttempt)) || productForm.errors?.['prix_achat_gt_prix']" class="text-red-600 text-sm mt-1">
+            <div *ngIf="productForm.get('prix')?.errors?.['required']">Le prix de vente est requis.</div>
+            <div *ngIf="productForm.get('prix')?.errors?.['server']">{{ productForm.get('prix')?.errors?.['server'] }}</div>
+            <div *ngIf="productForm.errors?.['prix_achat_gt_prix']">{{ productForm.errors?.['prix_achat_gt_prix'] }}</div>
+          </div>
         </div>
 
         <!-- Price (Achat) -->
@@ -84,6 +89,10 @@
           <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Prix d'achat (TND)</label>
           <input type="number" step="0.01" formControlName="prix_achat" placeholder="Optionnel"
             class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" />
+          <div *ngIf="productForm.get('prix_achat')?.invalid && (productForm.get('prix_achat')?.touched || submittedAttempt)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="productForm.get('prix_achat')?.errors?.['min']">Le prix d'achat doit être positif.</div>
+            <div *ngIf="productForm.get('prix_achat')?.errors?.['server']">{{ productForm.get('prix_achat')?.errors?.['server'] }}</div>
+          </div>
         </div>
 
         <!-- Sport -->

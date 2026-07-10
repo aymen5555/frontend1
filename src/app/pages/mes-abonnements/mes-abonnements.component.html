@@ -191,6 +191,9 @@
 
   <!-- Payment Modal -->
   <app-payment-modal *ngIf="showPaymentModal()"
+                     [amountCents]="getAbonnementAmountCents()"
+                     [currency]="'tnd'"
+                     [abonnementId]="payingAbonnement()?.id"
                      (paid)="onPaymentModalPaid($event)"
                      (closed)="onPaymentModalCancelled()"></app-payment-modal>
 </div>

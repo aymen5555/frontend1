@@ -43,7 +43,9 @@ export class AdminOrdersComponent implements OnInit {
   paymentStatuses = [
     { value: '', label: 'Tous' },
     { value: 'non_paye', label: 'Non Payé' },
-    { value: 'paye', label: 'Payé' }
+    { value: 'partiel', label: 'Partiel' },
+    { value: 'paye', label: 'Payé' },
+    { value: 'rembourse', label: 'Remboursé' }
   ];
 
   ngOnInit(): void {
@@ -109,7 +111,9 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   getPaymentBadgeClass(s: string): string {
-    return s === 'paye' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200';
+    if (s === 'rembourse') return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (s === 'paye') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    return 'bg-red-50 text-red-700 border-red-200';
   }
 
   cancelOrder(order: Order): void {
@@ -123,6 +127,21 @@ export class AdminOrdersComponent implements OnInit {
       },
       error: (err) => {
         this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'annulation de la commande.');
+      }
+    });
+  }
+
+  confirmRefund(order: Order): void {
+    if (!confirm(`Confirmer le remboursement pour la commande #${order.id} ?`)) {
+      return;
+    }
+    this.orderSvc.adminConfirmRefund(order.id).subscribe({
+      next: () => {
+        this.toastSvc.success('Remboursement confirmé.');
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de la confirmation du remboursement.');
       }
     });
   }

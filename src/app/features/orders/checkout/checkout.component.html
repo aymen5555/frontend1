@@ -105,5 +105,9 @@
 
 <!-- Payment Modal -->
 <app-payment-modal *ngIf="showPaymentModal()"
+                   [amountCents]="getAmountCents()"
+                   [currency]="stripeCurrency"
+                   [shopItems]="cartItems().map(item => ({ produit_id: item.product.id, quantite: item.quantity }))"
+                   [complexeId]="complexeId"
                    (paid)="onCardConfirmed($event)"
                    (closed)="onCardCancelled()"></app-payment-modal>

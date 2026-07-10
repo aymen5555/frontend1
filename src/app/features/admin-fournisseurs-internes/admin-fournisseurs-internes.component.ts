@@ -28,6 +28,7 @@ export class AdminFournisseursInternesComponent implements OnInit {
   showForm = signal(false);
   editing = signal<FournisseurInterne | null>(null);
   submitting = signal(false);
+  submittedAttempt = false;
 
   fournisseurForm!: FormGroup;
 
@@ -98,9 +99,17 @@ export class AdminFournisseursInternesComponent implements OnInit {
   }
 
   save(): void {
+    this.submittedAttempt = true;
+    Object.values(this.fournisseurForm.controls).forEach(c => c.markAsTouched());
     if (this.fournisseurForm.invalid) return;
     this.submitting.set(true);
-    const vals = this.fournisseurForm.value;
+    let vals = this.fournisseurForm.value;
+
+    // GERANTs should not send complexe_id; backend sets it automatically
+    const user = this.authSvc.currentUser();
+    if (user?.role === 'GERANT') {
+      delete vals.complexe_id;
+    }
 
     const req = this.editing()
       ? this.fournisseurSvc.update(this.editing()!.id, vals)
@@ -114,8 +123,18 @@ export class AdminFournisseursInternesComponent implements OnInit {
         this.loadData();
       },
       error: (err) => {
-        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'enregistrement.');
         this.submitting.set(false);
+        if (err?.status === 422 && err?.error?.errors) {
+          const errors = err.error.errors;
+          Object.keys(errors).forEach(key => {
+            if (this.fournisseurForm.controls[key]) {
+              this.fournisseurForm.controls[key].setErrors({ server: errors[key][0] });
+            }
+          });
+          this.toastSvc.error('Erreur de validation — veuillez vérifier les champs.');
+          return;
+        }
+        this.toastSvc.error(err?.error?.message || 'Erreur lors de l\'enregistrement.');
       }
     });
   }

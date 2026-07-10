@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 
 interface ApiList<T> { success: boolean; data: T[] }
 interface ApiItem<T> { success: boolean; data: T; message?: string }
-interface PlacesResponse { success: boolean; places_restantes: number; booked: number | null; message?: string }
+interface PlacesResponse { success: boolean; places_restantes: number; booked: number | null; message?: string; user_conflict?: boolean }
 
 @Injectable({ providedIn: 'root' })
 export class ActiviteService {
@@ -61,8 +61,11 @@ export class ActiviteService {
   }
 
   /** PUT /activites/reservations/{id}/pay — client card payment */
-  payReservation(id: number): Observable<ReservationActivite> {
-    return this.http.put<ApiItem<ReservationActivite>>(`${this.api}/activites/reservations/${id}/pay`, {}).pipe(map(r => r.data));
+  payReservation(id: number, paymentIntentId?: string): Observable<ReservationActivite> {
+    return this.http.put<ApiItem<ReservationActivite>>(`${this.api}/activites/reservations/${id}/pay`, {
+      payment_intent_id: paymentIntentId,
+      reference: paymentIntentId,
+    }).pipe(map(r => r.data));
   }
 
   /** GET /admin/activites */
@@ -98,5 +101,10 @@ export class ActiviteService {
   /** PUT /admin/activites/reservations/{id}/cancel */
   adminCancelReservation(id: number): Observable<void> {
     return this.http.put<void>(`${this.api}/admin/activites/reservations/${id}/cancel`, {});
+  }
+
+  /** PUT /admin/activites/reservations/{id}/confirm-refund — confirm refund */
+  adminConfirmRefund(id: number): Observable<void> {
+    return this.http.put<void>(`${this.api}/admin/activites/reservations/${id}/confirm-refund`, {});
   }
 }
